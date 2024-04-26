@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchArtworkById } from './ArtworkApi';
-import { Box, CardMedia, Divider, Grid, Link, Typography, Button, useMediaQuery, IconButton, Stack } from '@mui/material';
+import { Box, Divider, Grid, Link, Typography, useMediaQuery} from '@mui/material';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
 import 'react-photo-view/dist/react-photo-view.css';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -46,9 +46,10 @@ const ArtworkDetailPage = () => {
         navigate(-1);
     }
 
+
     return (
         <Grid container justifyContent="center">
-            <Grid container sx={{ margin: '15px 5px 5px 20px' }} >
+            <Grid container sx={{ margin: '20px 10px 20px 10px' }} >
                 <Grid item md={2} >
                     <Box display="flex" alignItems="center" onClick={goBack} style={{ cursor: 'pointer' }}>
                         <ArrowBackIcon />
