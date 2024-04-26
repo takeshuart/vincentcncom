@@ -9,6 +9,7 @@ import { SearchInput, FilterAccordion } from './VincentFilter';
 import { fetchArtData, fetchConfigData } from './ArtworkApi';
 
 import '../ArtTableStyles.css';
+import { fetchQuotes } from './utils';
 
 
 export default function ArtTable() {
@@ -28,6 +29,7 @@ export default function ArtTable() {
   const [totalResults, setTotalResults] = useState(0);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [isLoading, setIsLoading] = useState(false); // Track loading state
+  const [randomQuote, setRandomQuote] = useState('');
 
   useEffect(() => {
 
@@ -52,6 +54,7 @@ export default function ArtTable() {
         setPeriods(configData.periods);
         setTechniques(configData.techniques);
       });
+      setRandomQuote(await fetchQuotes()+ '——文森特·梵·高')
 
     } catch (error) {
       console.error('Error fetching art data', error);
@@ -100,8 +103,8 @@ export default function ArtTable() {
     <Container maxWidth={false}>
 
       {/* -----Banner------ */}
-      <Grid container sx={{ margin: '20px 10px 20px 10px' }}>
-        <Grid item md={9} justifyContent="center" >
+      <Grid container sx={{ margin: '20px 10px 60px 10px' }}>
+        <Grid item md={3} justifyContent="center" >
           <Box onClick={goHome} style={{ cursor: 'pointer' }}>
             <ThemeProvider theme={theme}>
               <Typography
@@ -113,6 +116,9 @@ export default function ArtTable() {
             </ThemeProvider>
           </Box>
         </Grid>
+        <Grid item md={6}>
+        {/* <Typography display="flex">{randomQuote}</Typography> */}
+        </Grid>
         <Grid item md={2} sx={{ marginRight: '20px' }} display="flex" justifyContent='right' >
           <Typography >登录</Typography>
         </Grid>
@@ -120,7 +126,6 @@ export default function ArtTable() {
 
       {/* Content Box */}
       <Container justifyContent="center" width='70%' >
-
         {/* -----Filter Box------ */}
         <Grid container sx={{ margin: '10px 1px 20px 10px' }}>
           <SearchInput
@@ -174,7 +179,7 @@ export default function ArtTable() {
                           height: '150px'
                         },
 
-                        // backgroundColor: '#fafafa'
+                       backgroundColor: '#fafafa'
                       }}
                     />
                     <CardContent align="left">

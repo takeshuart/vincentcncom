@@ -1,4 +1,4 @@
-import { TextField, IconButton, InputAdornment, Grid } from '@mui/material';
+import { TextField, IconButton, InputAdornment, Grid, Input, Stack } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { FormControl, FilledInput, InputLabel, Select, MenuItem, FormGroup, FormControlLabel, Checkbox } from '@mui/material';
@@ -56,8 +56,7 @@ export function FilterSection({
     return (
         <Grid container sx={{ marginTop: '10px', marginBottom: '20px' }}>
             <Grid item xs={12} sm={6} md={3} sx={{ '@media (min-width: 600px)': { marginRight: '20px' } }}>
-                <GenreSelect
-                    label="主题"
+                <GenreSelect label="主题"
                     value={genreSelected}
                     onChange={handleGenreChange}
                     items={genresCond}
@@ -117,13 +116,13 @@ export const SearchInput = ({ value, onChange, onKeyDown, onSearch }) => {
 //TODO 把select抽象出一个通用组件
 export const GenreSelect = ({ label, value, onChange, items }) => {
     return (
-        <FormControl fullWidth variant="filled" size='small' sx={{ mt: 1 }}>
+        <FormControl fullWidth variant='standard' size='small' sx={{ mt: 1 }}>
             <InputLabel id={`${label}-label`}>{label}</InputLabel>
             <Select
                 labelId={`${label}-label`}
                 value={value}
                 onChange={onChange}
-                input={<FilledInput />}
+                input={<Input />}
                 MenuProps={{
                     PaperProps: {
                         style: {
@@ -147,13 +146,13 @@ export const GenreSelect = ({ label, value, onChange, items }) => {
 
 export const PeriodSelect = ({ label, value, onChange, items }) => {
     return (
-        <FormControl fullWidth variant="filled" size='small' sx={{ mt: 1 }}>
+        <FormControl fullWidth variant='standard' size='small' sx={{ mt: 1 }}>
             <InputLabel id={`${label}-label`}>{label}</InputLabel>
             <Select
                 labelId={`${label}-label`}
                 value={value}
                 onChange={onChange}
-                input={<FilledInput />}
+                input={<Input />}
                 MenuProps={{
                     PaperProps: {
                         style: {
@@ -176,13 +175,13 @@ export const PeriodSelect = ({ label, value, onChange, items }) => {
 
 export const TechniqueSelect = ({ label, value, onChange, items }) => {
     return (
-        <FormControl fullWidth variant="filled" size='small' sx={{ mt: 1 }}>
+        <FormControl fullWidth variant='standard' size='small' sx={{ mt: 1 }}>
             <InputLabel id={`${label}-label`}>{label}</InputLabel>
             <Select
                 labelId={`${label}-label`}
                 value={value}
                 onChange={onChange}
-                input={<FilledInput />}
+                input={<Input />}
                 MenuProps={{
                     PaperProps: {
                         style: {

@@ -121,7 +121,7 @@ const ArtworkDetailPage = () => {
                 </Grid>
 
             </>
-            )};
+            )}
         </Grid >
     );
 };
