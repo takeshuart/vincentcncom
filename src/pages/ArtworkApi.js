@@ -30,6 +30,8 @@ export async function fetchArtData(page, pageSize, searchKeyword, hasImage, genr
   }
 }
 
+//对数据表所有数据执行distinct操作，成本价高
+//TODO 考虑单独维护一个配置表
 export async function fetchConfigData() {
   try {
     const [genreRes, periodRes, techniques] = await Promise.all([

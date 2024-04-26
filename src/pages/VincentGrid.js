@@ -13,7 +13,6 @@ import '../ArtTableStyles.css';
 
 export default function ArtTable() {
   const isDesktop = useMediaQuery('(min-width:600px)');
-
   const pageSize = 21
   const [artworks, setArtWorks] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
@@ -30,8 +29,34 @@ export default function ArtTable() {
   const [isLoading, setIsLoading] = useState(false); // Track loading state
 
   useEffect(() => {
+    const savedState = JSON.parse(localStorage.getItem('artTableState')) || {};
+    console.log('saveState:\t' + JSON.stringify(savedState))
+    setHasImage(savedState.hasImage || true);
+    setGenreSelected(savedState.genreSelected || '');
+    setPeriodSelected(savedState.periodSelected || '');
+    setTechniqueSelected(savedState.techniqueSelected || '');
+    setSearchKeyword(savedState.searchKeyword || '');
+  }, []);
+
+  //save filter conditions
+  useEffect(() => {
+    localStorage.setItem(
+      'artTableState',
+      JSON.stringify({
+        hasImage,
+        genreSelected,
+        periodSelected,
+        techniqueSelected,
+        searchKeyword
+      })
+    );
+  }, [hasImage, genreSelected, periodSelected, techniqueSelected, searchKeyword]);
+
+  //TODO 为什么总是会被执行两次
+  useEffect(() => {
 
     fetchData()
+    console.log('fetchDate')
     //listening  data change
   }, [page, hasImage, genreSelected, periodSelected, techniqueSelected]);
 
@@ -45,10 +70,12 @@ export default function ArtTable() {
       setTotalResults(artData.count);
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
-      const configData = await fetchConfigData();
-      setGenres(configData.genres);
-      setPeriods(configData.periods);
-      setTechniques(configData.techniques);
+      //异步获取配置信息，不影响结果列表的渲染
+      fetchConfigData().then(configData => {
+        setGenres(configData.genres);
+        setPeriods(configData.periods);
+        setTechniques(configData.techniques);
+      });
 
     } catch (error) {
       console.error('Error fetching art data', error);
@@ -58,9 +85,8 @@ export default function ArtTable() {
 
   }
 
-  const handleSearch = (value) => {
-    fetchData();
-    fetchConfigData();
+  const handleSearch = async (value) => {
+    await fetchData();
     //reset 
     setHasImage(false);
     setGenreSelected('');
@@ -114,7 +140,7 @@ export default function ArtTable() {
           />
         </Grid>
         {/* ------line 3 ------- */}
-        <Grid container xs={12} sm={6} md={12} justifyContent="center" sx={{ marginBottom: '20px', marginTop: '20px' }}>
+        <Grid container justifyContent="center" sx={{ marginBottom: '20px', marginTop: '20px' }}>
           <Typography variant="subtitle1" sx={{ color: 'grey' }}>
             发现 <span style={{ fontWeight: 'bold' }}>{totalResults}</span> 个作品
           </Typography>
@@ -162,8 +188,8 @@ export default function ArtTable() {
         )};
         {/* image box end */}
 
-        <Grid item xs={12} sx={{ pb: 8 }}>
-          <Grid container justifyContent="center" >
+        <Grid container justifyContent="center" >
+          <Grid item xs={6} sx={{ pb: 8 }}>
             <Pagination count={totalPages} page={page}
               onChange={(event, value) => setPage(value)}
               color="secondary"

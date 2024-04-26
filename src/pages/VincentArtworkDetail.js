@@ -1,16 +1,23 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { fetchArtworkById } from './ArtworkApi';
-import { CardMedia, Divider, Grid, Link, Typography } from '@mui/material';
+import { Box, CardMedia, Divider, Grid, Link, Typography, Button, useMediaQuery, IconButton, Stack } from '@mui/material';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
+import 'react-photo-view/dist/react-photo-view.css';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+
 
 const ArtworkDetailPage = () => {
+    const isMobile = useMediaQuery('(max-width:600px)');
     const { id } = useParams();
     const [artwork, setArtwork] = useState(null);
     const [extLinks, setExtLinks] = useState('');
+    const navigate = useNavigate();
+
 
 
     useEffect(() => {
+        console.log('fetchartwork')
         const fetchArtwork = async () => {
             try {
                 //TODO 不暴露api，返回渲染后的html
@@ -35,34 +42,44 @@ const ArtworkDetailPage = () => {
 
     }, []);
 
+    const goBack = () => {
+        navigate(-1);
+    }
+
     return (
         <Grid container justifyContent="center">
-
-            <Grid item md={11} align='left' sx={{ marginTop: '30px' }}>
-                <Typography variant='h5'
-                    style={{ letterSpacing: '2px' }}
-                > 梵·高档案馆 </Typography>
+            <Grid container sx={{ margin: '15px 5px 5px 20px' }} >
+                <Grid item md={2} >
+                    <Box display="flex" alignItems="center" onClick={goBack} style={{ cursor: 'pointer' }}>
+                        <ArrowBackIcon />
+                        <Typography
+                            variant='h6'
+                            style={{ display: 'inline', letterSpacing: '2px', marginLeft: '20px' }}
+                        >
+                            <strong>梵·高档案馆</strong>
+                        </Typography>
+                    </Box>
+                </Grid>
             </Grid>
-
             {artwork && (<>
-                <Grid item md={12} sx={{ marginTop: '50px', marginBottom: '30px' }}>
-                    <PhotoProvider>
-                        <PhotoView src={artwork.primaryImageLarge}>
-                            <img src={artwork.primaryImageSmall} alt="" />
+                <Box justifyContent="center" sx={{ marginTop: '50px', marginBottom: '30px' }}>
+                    <PhotoProvider
+                        maskOpacity={isMobile ? 0.9 : 0.1}
+                        bannerVisible={false}
+                        speed={() => (isMobile ? 500 : 1500)}>
+
+                        <PhotoView src={artwork.primaryImageLarge} >
+                            <img
+                                src={`https://www.pubhist.com${artwork.primaryImageSmall}`}
+                                alt=""
+                                style={{
+                                    maxWidth: '100%',
+                                    maxHeight: isMobile ? '200px' : '500px',
+                                }}
+                            />
                         </PhotoView>
                     </PhotoProvider>
-                    <CardMedia
-                        component="img"
-                        image={artwork.primaryImageLarge}
-                        alt=""
-                        sx={{
-                            height: '500px', width: '100%', objectFit: 'contain', objectPosition: 'center',
-                            '@media (max-width: 600px)': {
-                                height: '250px'
-                            },
-                        }}
-                    />
-                </Grid>
+                </Box>
                 <Grid container justifyContent="center" sx={{ marginBottom: '10px' }}>
                     <Grid item md={6}>
                         <Divider />
@@ -101,26 +118,9 @@ const ArtworkDetailPage = () => {
 
                     </Grid>
                 </Grid>
-                <Grid container justifyContent="center" sx={{ marginTop: '20px' }}>
 
-                </Grid>
             </>
             )};
-            {/* <Grid container justifyContent="center" sx={{ marginTop: '20px' }}>
-                {exhibitions.length > 0 && (
-                    <Grid item md={6}>
-                        <Typography variant="h6">展览信息：</Typography>
-                        {exhibitions
-                            .filter(exhibition => exhibition.trim() !== "")
-                            .map((exhibition, index) => (
-                                <li key={index}>
-                                    <Typography>{exhibition.trim()}</Typography>
-                                </li>
-                            ))}
-                    </Grid>
-                )}
-            </Grid> */}
-
         </Grid >
     );
 };
