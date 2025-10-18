@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.fetchArtworkById = fetchArtworkById;
 exports.fetchArtData = fetchArtData;
+exports.fetchSurpriseArt = fetchSurpriseArt;
 exports.fetchConfigData = fetchConfigData;
 
 var _axios = _interopRequireDefault(require("axios"));
@@ -19,7 +20,7 @@ function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) ||
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
-var apiDomain = 'http://192.168.50.156:5001/artworks';
+var apiDomain = 'http://localhost:5001/artworks';
 
 function fetchArtworkById(artworkId) {
   var response;
@@ -83,6 +84,33 @@ function fetchArtData(page, pageSize, searchKeyword, hasImage, genreSelected, pe
       }
     }
   }, null, null, [[0, 7]]);
+}
+
+function fetchSurpriseArt() {
+  var response;
+  return regeneratorRuntime.async(function fetchSurpriseArt$(_context3) {
+    while (1) {
+      switch (_context3.prev = _context3.next) {
+        case 0:
+          _context3.prev = 0;
+          _context3.next = 3;
+          return regeneratorRuntime.awrap(_axios["default"].get("".concat(apiDomain, "/vincent/supriseme")));
+
+        case 3:
+          response = _context3.sent;
+          return _context3.abrupt("return", response.data);
+
+        case 7:
+          _context3.prev = 7;
+          _context3.t0 = _context3["catch"](0);
+          throw new Error('Error fetching artwork details');
+
+        case 10:
+        case "end":
+          return _context3.stop();
+      }
+    }
+  }, null, null, [[0, 7]]);
 } //对数据表所有数据执行distinct操作，成本价高
 //TODO 考虑单独维护一个配置表
 
@@ -90,34 +118,34 @@ function fetchArtData(page, pageSize, searchKeyword, hasImage, genreSelected, pe
 function fetchConfigData() {
   var _ref, _ref2, genreRes, periodRes, techniques;
 
-  return regeneratorRuntime.async(function fetchConfigData$(_context3) {
+  return regeneratorRuntime.async(function fetchConfigData$(_context4) {
     while (1) {
-      switch (_context3.prev = _context3.next) {
+      switch (_context4.prev = _context4.next) {
         case 0:
-          _context3.prev = 0;
-          _context3.next = 3;
+          _context4.prev = 0;
+          _context4.next = 3;
           return regeneratorRuntime.awrap(Promise.all([_axios["default"].get(apiDomain + '/vincent/config?cond=genre'), _axios["default"].get(apiDomain + '/vincent/config?cond=period'), _axios["default"].get(apiDomain + '/vincent/config?cond=technique')]));
 
         case 3:
-          _ref = _context3.sent;
+          _ref = _context4.sent;
           _ref2 = _slicedToArray(_ref, 3);
           genreRes = _ref2[0];
           periodRes = _ref2[1];
           techniques = _ref2[2];
-          return _context3.abrupt("return", {
+          return _context4.abrupt("return", {
             genres: genreRes.data,
             periods: periodRes.data,
             techniques: techniques.data
           });
 
         case 11:
-          _context3.prev = 11;
-          _context3.t0 = _context3["catch"](0);
+          _context4.prev = 11;
+          _context4.t0 = _context4["catch"](0);
           throw new Error('Error fetching config data');
 
         case 14:
         case "end":
-          return _context3.stop();
+          return _context4.stop();
       }
     }
   }, null, null, [[0, 11]]);

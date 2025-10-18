@@ -78,7 +78,7 @@ export function FilterSection({
                     items={techniqueCond}
                 />
             </Grid>
-            <Grid container xs={12} sm={6} md={2} justifyContent="center" alignItems="center">
+            <Grid item xs={12} sm={6} md={2} justifyContent="center" alignItems="center">
                 <FormGroup>
                     <FormControlLabel
                         control={<Checkbox checked={hasImage} onChange={handleHasImageChange} />}

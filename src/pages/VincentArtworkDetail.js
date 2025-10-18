@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchArtworkById } from './ArtworkApi';
-import { Box, Divider, Grid, Link, Typography, useMediaQuery} from '@mui/material';
-import { PhotoProvider, PhotoView } from 'react-photo-view';
+import { Box, Divider, Grid, Link, Typography, useMediaQuery } from '@mui/material';
 import 'react-photo-view/dist/react-photo-view.css';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-
+import ArtworkImage from '../components/ArtworkImage';
 
 const ArtworkDetailPage = () => {
     const isMobile = useMediaQuery('(max-width:600px)');
@@ -13,8 +12,6 @@ const ArtworkDetailPage = () => {
     const [artwork, setArtwork] = useState(null);
     const [extLinks, setExtLinks] = useState('');
     const navigate = useNavigate();
-
-
 
     useEffect(() => {
         console.log('fetchartwork')
@@ -40,12 +37,11 @@ const ArtworkDetailPage = () => {
 
         fetchArtwork();
 
-    }, []);
+    }, [id]);
 
     const goBack = () => {
         navigate(-1);
     }
-
 
     return (
         <Grid container justifyContent="center">
@@ -63,24 +59,7 @@ const ArtworkDetailPage = () => {
                 </Grid>
             </Grid>
             {artwork && (<>
-                <Box justifyContent="center" sx={{ marginTop: '50px', marginBottom: '30px' }}>
-                    <PhotoProvider
-                        maskOpacity={isMobile ? 0.9 : 0.1}
-                        bannerVisible={false}
-                        speed={() => (isMobile ? 500 : 1500)}>
-
-                        <PhotoView src={artwork.primaryImageLarge} >
-                            <img
-                                src={`https://www.pubhist.com${artwork.primaryImageSmall}`}
-                                alt=""
-                                style={{
-                                    maxWidth: '100%',
-                                    maxHeight: isMobile ? '200px' : '500px',
-                                }}
-                            />
-                        </PhotoView>
-                    </PhotoProvider>
-                </Box>
+                <ArtworkImage src={artwork.primaryImageMedium} isMobile={isMobile} />
                 <Grid container justifyContent="center" sx={{ marginBottom: '10px' }}>
                     <Grid item md={6}>
                         <Divider />
@@ -89,13 +68,18 @@ const ArtworkDetailPage = () => {
                 <Grid container justifyContent="center">
                     <Grid item xs={10} sm={6} md={6}>
                         <Typography sx={titleStyle}>{artwork.titleZh || artwork.titleEn}</Typography>
-                        <Typography sx={{ fontFamily: 'Microsoft YaHei', lineHeight: '2.5', fontSize: { xs: 18, md: 18 } }}>详情</Typography>
+
+                        {/* <IconButton onClick={toggleFavorite}>
+                            {isFavorite ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                        </IconButton> */}
+                        {/* <Typography sx={{ fontFamily: 'Microsoft YaHei', lineHeight: '2.5', fontSize: { xs: 18, md: 18 } }}>详情</Typography> */}
                         <Typography sx={typographyStyle}><strong>原标题：</strong>{artwork.titleEn}</Typography>
                         <Typography sx={typographyStyle}><strong>创作时间：</strong>{artwork.displayDate}</Typography>
                         <Typography sx={typographyStyle}><strong>创作地点：</strong>{artwork.placeOfOrigin}</Typography>
                         <Typography sx={typographyStyle}><strong>收藏地：</strong>{artwork.collection}</Typography>
                         <Typography sx={typographyStyle}><strong>尺寸：</strong>{artwork.dimension}</Typography>
                         <Typography sx={typographyStyle}><strong>材料：</strong>{artwork.material}</Typography>
+                        <Typography sx={typographyStyle}><strong>作品编码：</strong>{artwork.jhCode}/{artwork.fCode}</Typography>
                         {extLinks && Object.keys(extLinks).length > 0 && (
                             <>
                                 <Typography sx={{ ...typographyStyle, display: 'inline' }}><strong>外部链接：</strong></Typography>
@@ -120,6 +104,10 @@ const ArtworkDetailPage = () => {
                     </Grid>
                 </Grid>
 
+                {/* Footer */}
+                <Grid container mt='50px' justifyContent='center' sx={{ backgroundColor: '#fafafa', height: '100px', width: '100%' }}>
+                    <Typography alignContent='center' >梵·高档案馆 2024</Typography>
+                </Grid>
             </>
             )}
         </Grid >
@@ -136,7 +124,7 @@ const titleStyle = {
     fontWeight: 'bold',
     lineHeight: '2',
     fontFamily: 'Microsoft YaHei',
-    fontSize: { xs: 18, md: 18 }
+    fontSize: { xs: 18, md: 19 }
 }
 
 export default ArtworkDetailPage;

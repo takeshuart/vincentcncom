@@ -78,7 +78,7 @@ function ArtTable() {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, axios_1["default"].get(apiDomain, {
+                        return [4 /*yield*/, axios_1["default"].get(apiDomain + '/bypage', {
                                 params: {
                                     page: paginationModel.page + 1,
                                     pageSize: paginationModel.pageSize,

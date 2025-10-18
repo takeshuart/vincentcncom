@@ -48,7 +48,7 @@ export default function ArtTable() {
   useEffect(() => {
     const fetchArtData = async () => {
       try {
-        const response = await axios.get(apiDomain, {
+        const response = await axios.get(apiDomain+'/bypage', {
           params: {
             page: paginationModel.page + 1, // API 可能期望的页码从1开始
             pageSize: paginationModel.pageSize,
