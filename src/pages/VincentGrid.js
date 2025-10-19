@@ -1,27 +1,21 @@
 // ArtTable.js
 
 import { useEffect, useState, useRef } from 'react';
-import { Container, Typography, ThemeProvider, Grid, Card, CardMedia, CardContent, Box, CircularProgress } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import { createTheme } from '@mui/material/styles';
+import { Container, Typography, Grid, Card, CardMedia, CardContent, Box, CircularProgress } from '@mui/material';
 import { useMediaQuery } from '@mui/material';
 import { Link } from 'react-router-dom';
 import Pagination from '@mui/material/Pagination';
 import { SearchInput, FilterAccordion } from './VincentFilter';
 import { fetchArtData, fetchConfigData, fetchSurpriseArt } from './ArtworkApi';
-import ColorSelector from '../components/ColorSelector';
 import '../ArtTableStyles.css';
-import { fetchQuotes } from './utils';
-
-import SurpriseArtworkBlock from '../components/SurpriseArtworkBlock';
+import ColorSearchBar from '../components/ColorSearchBar';
+import SurprisemeBlock from '../components/SurprisemeBlock';
 
 
 export default function ArtTable() {
   const pageSize = 21
-  const navigate = useNavigate();
   const isDesktop = useMediaQuery('(min-width:600px)');
 
-  // 状态初始化，不再使用 TS 泛型
   const [artworks, setArtWorks] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
   const [page, setPage] = useState(1);
@@ -35,13 +29,12 @@ export default function ArtTable() {
   const [totalResults, setTotalResults] = useState(0);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [setRandomQuote] = useState('');
-  const [selectedColor, setSelectedColor] = useState(null);
 
   const [surpriseArtwork, setSurpriseArtwork] = useState(null);
   const [isSurpriseLoading, setIsSurpriseLoading] = useState(true);
   const surpriseRef = useRef(null); // localtion surpriseme box 
-  const searchRef = useRef(null); // 
+  const searchRef = useRef(null);
+  const [selectedColor, setSelectedColor] = useState('');
 
   // firstly olny load Surprise Artwork
   useEffect(() => {
@@ -52,18 +45,35 @@ export default function ArtTable() {
     if (!isSurpriseLoading) {
       fetchData(true);
     }
-  }, [page, hasImage, genreSelected, periodSelected, techniqueSelected, isSurpriseLoading]);
+  }, [
+    page, //监控page值变化
+    hasImage,
+    genreSelected,
+    periodSelected,
+    techniqueSelected,
+    isSurpriseLoading,
+    selectedColor
+  ]);
+  
 
   async function fetchData(shouldCheckScroll) {
 
     try {
       setIsLoading(true);
-      const artData = await fetchArtData(page, pageSize, searchKeyword, hasImage, genreSelected, periodSelected, techniqueSelected);
+      const artData = await fetchArtData(
+        page,
+        pageSize,
+        searchKeyword,
+        hasImage,
+        genreSelected,
+        periodSelected,
+        techniqueSelected,
+        selectedColor);
+
       setArtWorks(artData.rows);
       setTotalPages(Math.ceil(artData.count / pageSize));
       setTotalResults(artData.count);
 
-      // 滚动逻辑 
       if (shouldCheckScroll) {
         if (surpriseRef.current && searchRef.current) {
           const surpriseRect = surpriseRef.current.getBoundingClientRect();
@@ -124,8 +134,11 @@ export default function ArtTable() {
     localStorage.setItem('artTableState', JSON.stringify({ hasImage, genreSelected, periodSelected, techniqueSelected, searchKeyword }));
   }, [hasImage, genreSelected, periodSelected, techniqueSelected, searchKeyword]);
 
-
-  const handleSearch = async (value) => { 
+  const handleColorSelect = (color) => {
+    setSelectedColor(color);
+    setPage(1);
+  };
+  const handleSearch = async (value) => {
     await fetchData(false);
     //reset 
     setHasImage(false);
@@ -139,77 +152,24 @@ export default function ArtTable() {
       handleSearch()
     }
   }
-  const goHome = () => {
-    navigate('/vincent');
-  };
-
-  const getCardImageUrl = (primaryImageSmall) => {
-    if (!primaryImageSmall) return '';
-    const parts = primaryImageSmall.split(';').map(p => p.trim());
-    const valid = parts.find(p => p.startsWith('/works/'));
-    return `https://artworks-1257857866.cos.ap-beijing.myqcloud.com${valid || parts[0] || ''}`;
-  };
-
 
   return (
     <Container maxWidth={false} disableGutters >
+      <Container maxWidth={false} sx={{ width: '90%', mx: 'auto' }}>
 
-      {/* -----Banner------ */}
-      <Grid container
-
-        sx={{
-          margin: '20px 0 60px 0',
-          height: '60px',
-          backgroundColor: '#f5ba18ff',
-          alignItems: 'center'
-
-        }}>
-
-        <Grid item md={3} justifyContent="center" >
-
-          <Box onClick={goHome} style={{ cursor: 'pointer' }}>
-            <ThemeProvider theme={theme}>
-              <Typography
-                variant='h6'
-                style={{ display: 'inline', letterSpacing: '2px', marginLeft: '20px' }}
-              >
-                <strong>梵·高档案馆</strong>
-              </Typography>
-            </ThemeProvider>
-          </Box>
-
-        </Grid>
-
-        <Grid item md={6}>
-
-          {/* <Typography display="flex">“我还有大自然、艺术和诗歌，如果这还不够，那什么才是够呢？” —— 文森特·梵高</Typography> */}
-
-        </Grid>
-
-        <Grid item md={2} sx={{ marginRight: '20px' }} display="flex" justifyContent='right' >
-
-          <Typography >登录</Typography>
-
-        </Grid>
-
-      </Grid>
-
-      <Container maxWidth={false} sx={{ width: '90%', mx: 'auto', mt: 4 }}>
-
-        <SurpriseArtworkBlock
+        <SurprisemeBlock
           surpriseArtwork={surpriseArtwork}
           isSurpriseLoading={isSurpriseLoading}
           fetchSurpriseArtWork={fetchSurpriseArtWork}
-          ref={surpriseRef} // 传递 Ref
+          ref={surpriseRef}
         />
 
-        {/* filter\artwork table  */}
         <Grid container spacing={2}>
-          {/* ---------- Main Layout: 1/10/1 ---------- */}
+          {/* --- Main Layout: 1/10/1 --- */}
           {/** left  */}
           <Grid item xs={12} md={1}>
           </Grid>
-          {/* ----- Center (10) ----- */}
+          {/* --- Center (10) --- */}
           <Grid item xs={12} md={10}>
             <Box ref={searchRef}>
               {!isSurpriseLoading && (
@@ -232,6 +192,13 @@ export default function ArtTable() {
                       genresCond={genres}
                       periodCond={periods}
                       techniqueCond={techniques}
+                    />
+                  </Grid>
+                  {/** Color search */}
+                  <Grid item xs={12}>
+                    <ColorSearchBar
+                      onColorSelect={handleColorSelect}
+                      initialColor="#800080"
                     />
                   </Grid>
                   <Grid container justifyContent="center" sx={{ marginBottom: '20px', marginTop: '20px' }}>
@@ -259,7 +226,7 @@ export default function ArtTable() {
                           <Link to={`/vincent/id/${artwork.id}`} target="_self" style={{ textDecoration: 'none' }}>
                             <CardMedia
                               component="img"
-                              image={getCardImageUrl(artwork.primaryImageSmall)}
+                              image={`https://artworks-1257857866.cos.ap-beijing.myqcloud.com${artwork.primaryImageSmall}`}
                               alt=""
                               sx={{
                                 height: '250px', width: '100%', objectFit: 'contain', objectPosition: 'center',
@@ -271,14 +238,31 @@ export default function ArtTable() {
                             />
                           </Link>
                           <CardContent align="left">
-                            <Typography sx={{ fontWeight: 'bold', fontSize: { xs: 12, md: 16 }, textAlign: 'center' }}>
+                            <Typography
+                              sx={{
+                                fontWeight: 400, //'bold' too heavy 
+                                fontSize: { xs: 12, md: 18 },
+                                textAlign: 'center'
+                              }}>
                               {artwork.titleZh || artwork.titleEn}
                             </Typography>
-                            <Typography sx={{ fontSize: { xs: 14, md: 16 }, fontStyle: 'italic', textAlign: 'center' }} >{artwork.displayDate}</Typography>
+                            <Typography color="text.secondary" variant="body2"
+                              sx={{
+                                fontStyle: 'italic',
+                                textAlign: 'center'
+                              }} >
+                              {artwork.displayDate}{artwork.placeOfOrigin ? `, ${artwork.placeOfOrigin}` : ''}
+                            </Typography>
+                            {artwork.collection && (
+                              <Typography variant="body2" color="text.secondary" textAlign='center'>
+                                {artwork.collection}
+                              </Typography>
+                            )}
                           </CardContent>
                         </Card>
                       </Grid>
                     )))}
+
                     {/* ----- Pagination Box ------- */}
                     <Grid container justifyContent="center">
                       <Grid item>
@@ -286,7 +270,7 @@ export default function ArtTable() {
                           <Pagination
                             count={totalPages}
                             page={page}
-                            onChange={(event, value) => setPage(value)} // 移除类型标注
+                            onChange={(event, value) => setPage(value)}
                             color="secondary"
                             siblingCount={isDesktop ? 2 : 0}
                             size="large"
@@ -309,14 +293,3 @@ export default function ArtTable() {
 
   );
 }
-
-
-const theme = createTheme({
-  typography: {
-    h3: {
-      '@media (max-width: 600px)': {
-        fontSize: '1.5rem',
-      },
-    },
-  },
-});

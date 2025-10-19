@@ -17,7 +17,7 @@ export default function ArtworkImage({ src, isMobile }: ArtworkImageProps) {
   return (
     <Box
       sx={{
-        marginTop: '50px',
+        // marginTop: '30px',
         marginBottom: '30px',
         display: 'flex',
         justifyContent: 'center',

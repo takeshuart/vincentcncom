@@ -12,7 +12,7 @@ function ArtworkImage(_a) {
     var _b = react_1.useState(false), loaded = _b[0], setLoaded = _b[1];
     var fullSrc = "https://artworks-1257857866.cos.ap-beijing.myqcloud.com" + src;
     return (React.createElement(material_1.Box, { sx: {
-            marginTop: '50px',
+            // marginTop: '30px',
             marginBottom: '30px',
             display: 'flex',
             justifyContent: 'center'

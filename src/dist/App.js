@@ -6,11 +6,20 @@ var react_router_dom_1 = require("react-router-dom");
 var VincentAdmin_1 = require("./pages/VincentAdmin");
 var VincentGrid_1 = require("./pages/VincentGrid");
 var VincentArtworkDetail_1 = require("./pages/VincentArtworkDetail");
+var material_1 = require("@mui/material");
+var AppHeader_1 = require("./components/AppHeader");
+var GlobalLayout = function () {
+    return (react_1["default"].createElement(material_1.Box, { sx: { minHeight: '100vh', display: 'flex', flexDirection: 'column' } },
+        react_1["default"].createElement(AppHeader_1["default"], null),
+        react_1["default"].createElement(material_1.Box, { component: "main", sx: { flexGrow: 1, marginTop: '64px' } },
+            react_1["default"].createElement(react_router_dom_1.Outlet, null))));
+};
 function App() {
     return (react_1["default"].createElement(react_router_dom_1.BrowserRouter, null,
         react_1["default"].createElement(react_router_dom_1.Routes, null,
-            react_1["default"].createElement(react_router_dom_1.Route, { path: "/", element: react_1["default"].createElement(VincentAdmin_1["default"], null) }),
-            react_1["default"].createElement(react_router_dom_1.Route, { path: "/vincent", element: react_1["default"].createElement(VincentGrid_1["default"], null) }),
-            react_1["default"].createElement(react_router_dom_1.Route, { path: "/vincent/id/:id", element: react_1["default"].createElement(VincentArtworkDetail_1["default"], null) }))));
+            react_1["default"].createElement(react_router_dom_1.Route, { path: "/", element: react_1["default"].createElement(GlobalLayout, null) },
+                react_1["default"].createElement(react_router_dom_1.Route, { path: "/vincent", element: react_1["default"].createElement(VincentGrid_1["default"], null) }),
+                react_1["default"].createElement(react_router_dom_1.Route, { path: "/vincent/id/:id", element: react_1["default"].createElement(VincentArtworkDetail_1["default"], null) })),
+            react_1["default"].createElement(react_router_dom_1.Route, { path: "/", element: react_1["default"].createElement(VincentAdmin_1["default"], null) }))));
 }
 exports["default"] = App;

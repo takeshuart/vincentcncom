@@ -29,7 +29,7 @@ const getImageUrl = (primaryImageSmall: string | undefined): string => {
 };
 
 
-const SurpriseArtworkBlock = React.forwardRef<HTMLDivElement, SurpriseArtworkBlockProps>(
+const SurprisemeBlock = React.forwardRef<HTMLDivElement, SurpriseArtworkBlockProps>(
     ({
         surpriseArtwork,
         isSurpriseLoading,
@@ -137,4 +137,4 @@ const SurpriseArtworkBlock = React.forwardRef<HTMLDivElement, SurpriseArtworkBlo
         );
     });
 
-export default SurpriseArtworkBlock;
+export default SurprisemeBlock;

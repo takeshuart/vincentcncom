@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { fetchArtworkById } from './ArtworkApi';
 import { Box, Divider, Grid, Link, Typography, useMediaQuery } from '@mui/material';
 import 'react-photo-view/dist/react-photo-view.css';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArtworkImage from '../components/ArtworkImage';
 
 const ArtworkDetailPage = () => {
@@ -11,7 +10,6 @@ const ArtworkDetailPage = () => {
     const { id } = useParams();
     const [artwork, setArtwork] = useState(null);
     const [extLinks, setExtLinks] = useState('');
-    const navigate = useNavigate();
 
     useEffect(() => {
         console.log('fetchartwork')
@@ -39,25 +37,8 @@ const ArtworkDetailPage = () => {
 
     }, [id]);
 
-    const goBack = () => {
-        navigate(-1);
-    }
-
     return (
         <Grid container justifyContent="center">
-            <Grid container sx={{ margin: '20px 10px 20px 10px' }} >
-                <Grid item md={2} >
-                    <Box display="flex" alignItems="center" onClick={goBack} style={{ cursor: 'pointer' }}>
-                        <ArrowBackIcon />
-                        <Typography
-                            variant='h6'
-                            style={{ display: 'inline', letterSpacing: '2px', marginLeft: '20px' }}
-                        >
-                            <strong>梵·高档案馆</strong>
-                        </Typography>
-                    </Box>
-                </Grid>
-            </Grid>
             {artwork && (<>
                 <ArtworkImage src={artwork.primaryImageMedium} isMobile={isMobile} />
                 <Grid container justifyContent="center" sx={{ marginBottom: '10px' }}>
@@ -68,21 +49,41 @@ const ArtworkDetailPage = () => {
                 <Grid container justifyContent="center">
                     <Grid item xs={10} sm={6} md={6}>
                         <Typography sx={titleStyle}>{artwork.titleZh || artwork.titleEn}</Typography>
+                        <Box>
+                            <Box sx={rowStyle}>
+                                <Typography component="span" sx={keyStyle}>原标题：</Typography>
+                                <Typography component="span" sx={valueStyle}>{artwork.titleEn}</Typography>
+                            </Box>
 
-                        {/* <IconButton onClick={toggleFavorite}>
-                            {isFavorite ? <FavoriteIcon /> : <FavoriteBorderIcon />}
-                        </IconButton> */}
-                        {/* <Typography sx={{ fontFamily: 'Microsoft YaHei', lineHeight: '2.5', fontSize: { xs: 18, md: 18 } }}>详情</Typography> */}
-                        <Typography sx={typographyStyle}><strong>原标题：</strong>{artwork.titleEn}</Typography>
-                        <Typography sx={typographyStyle}><strong>创作时间：</strong>{artwork.displayDate}</Typography>
-                        <Typography sx={typographyStyle}><strong>创作地点：</strong>{artwork.placeOfOrigin}</Typography>
-                        <Typography sx={typographyStyle}><strong>收藏地：</strong>{artwork.collection}</Typography>
-                        <Typography sx={typographyStyle}><strong>尺寸：</strong>{artwork.dimension}</Typography>
-                        <Typography sx={typographyStyle}><strong>材料：</strong>{artwork.material}</Typography>
-                        <Typography sx={typographyStyle}><strong>作品编码：</strong>{artwork.jhCode}/{artwork.fCode}</Typography>
+                            <Box sx={rowStyle}>
+                                <Typography component="span" sx={keyStyle}>创作时间</Typography>
+                                <Typography component="span" sx={valueStyle}>{artwork.displayDate}</Typography>
+                            </Box>
+                            <Box sx={rowStyle}>
+                                <Typography component="span" sx={keyStyle}>收藏地</Typography>
+                                <Typography component="span" sx={valueStyle}>{artwork.collection}</Typography>
+                            </Box>
+                            <Box sx={rowStyle}>
+                                <Typography component="span" sx={keyStyle}>创作地点</Typography>
+                                <Typography component="span" sx={valueStyle}>{artwork.placeOfOrigin}</Typography>
+                            </Box>
+
+                            <Box sx={rowStyle}>
+                                <Typography component="span" sx={keyStyle}>尺寸</Typography>
+                                <Typography component="span" sx={valueStyle}>{artwork.dimension}</Typography>
+                            </Box>
+                            <Box sx={rowStyle}>
+                                <Typography component="span" sx={keyStyle}>材料</Typography>
+                                <Typography component="span" sx={valueStyle}>{artwork.material}</Typography>
+                            </Box>
+                            <Box sx={rowStyle}>
+                                <Typography component="span" sx={keyStyle}>作品编码</Typography>
+                                <Typography component="span" sx={valueStyle}>{artwork.jhCode} / {artwork.fCode}</Typography>
+                            </Box>
+                        </Box>
                         {extLinks && Object.keys(extLinks).length > 0 && (
                             <>
-                                <Typography sx={{ ...typographyStyle, display: 'inline' }}><strong>外部链接：</strong></Typography>
+                                <Typography sx={{ ...typographyStyle, display: 'inline' }}>外部链接：</Typography>
                                 {Object.keys(extLinks).length === 1 ? (
                                     <Link href={extLinks[0].url} target="_self" rel="noopener noreferrer">
                                         <Typography sx={{ ...typographyStyle, display: 'inline' }}>{extLinks[0].linkName}</Typography>
@@ -114,17 +115,37 @@ const ArtworkDetailPage = () => {
     );
 };
 
-const typographyStyle = {
-    fontFamily: 'Microsoft YaHei',
-    lineHeight: '1.5',
-    fontSize: { xs: 14, md: 15 }
-};
-
 const titleStyle = {
     fontWeight: 'bold',
     lineHeight: '2',
     fontFamily: 'Microsoft YaHei',
-    fontSize: { xs: 18, md: 19 }
+    fontSize: { xs: 18, md: 25 },
+    marginBottom: 2,
+
 }
 
+
+const typographyStyle = {
+    lineHeight: '1.5',
+    fontWeight: 500,
+    fontSize: { xs: 12, md: 14 },
+    marginBottom: 0.5,
+};
+
+const rowStyle = {
+    display: 'flex',
+    alignItems: 'flex-start',
+    ...typographyStyle,
+};
+
+const keyStyle = {
+    width: '100px',
+    minWidth: '80px',
+    marginRight: '8px',
+    fontWeight: '400',
+};
+const valueStyle = {
+    color: 'text.secondary',
+    fontSize: { xs: 12, md: 16 },
+};
 export default ArtworkDetailPage;

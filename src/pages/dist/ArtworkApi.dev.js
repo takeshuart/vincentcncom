@@ -49,7 +49,7 @@ function fetchArtworkById(artworkId) {
   }, null, null, [[0, 7]]);
 }
 
-function fetchArtData(page, pageSize, searchKeyword, hasImage, genreSelected, periodSelected, techniqueSelected) {
+function fetchArtData(page, pageSize, searchKeyword, hasImage, genreSelected, periodSelected, techniqueSelected, colorSelected) {
   var response;
   return regeneratorRuntime.async(function fetchArtData$(_context2) {
     while (1) {
@@ -65,25 +65,27 @@ function fetchArtData(page, pageSize, searchKeyword, hasImage, genreSelected, pe
               hasImage: hasImage,
               genres: genreSelected ? [genreSelected] : [],
               periods: periodSelected ? [periodSelected] : [],
-              techniques: techniqueSelected ? [techniqueSelected] : []
+              techniques: techniqueSelected ? [techniqueSelected] : [],
+              color: colorSelected || undefined
             }
           }));
 
         case 3:
           response = _context2.sent;
+          console.log("params:".concat(params));
           return _context2.abrupt("return", response.data);
 
-        case 7:
-          _context2.prev = 7;
+        case 8:
+          _context2.prev = 8;
           _context2.t0 = _context2["catch"](0);
           throw new Error('Error fetching art data');
 
-        case 10:
+        case 11:
         case "end":
           return _context2.stop();
       }
     }
-  }, null, null, [[0, 7]]);
+  }, null, null, [[0, 8]]);
 }
 
 function fetchSurpriseArt() {
