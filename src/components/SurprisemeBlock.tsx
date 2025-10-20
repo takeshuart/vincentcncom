@@ -45,24 +45,40 @@ const SurprisemeBlock = React.forwardRef<HTMLDivElement, SurpriseArtworkBlockPro
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    backgroundColor: '#f8f8f8',
-                    borderRadius: 2,
-                    position: 'relative'
+                    backgroundColor: '#E8E8F5',
+                    borderRadius: 5,
+                    position: 'relative',
+                    bgcolor: '#CBCFEA',
+                    //创造“浮动”的立体感 (bedroom 家具的立体感)
+                    boxShadow: '0 8px 15px rgba(0, 0, 0, 0.1)',
                 }}
             >
+                {/** Surprise Button */}
                 <Button
                     onClick={fetchSurpriseArtWork}
                     sx={{
                         position: 'absolute',
-                        top: { xs: 16, md: 24 },
-                        right: { xs: 16, md: 24 },
+                        top: { xs: 16, md: 40 },
+                        right: { xs: 16, md: 40 },
                         minWidth: 'auto',
                         padding: 1,
                         borderRadius: '50%',
                         zIndex: 10,
+
                     }}
                 >
-                    <CasinoIcon sx={{ fontSize: { xs: 36, md: 50 } }} />
+                    <CasinoIcon sx={{
+                        fontSize: { xs: 36, md: 60 },
+                        cursor: 'pointer',
+                        // color: '#FFC700',
+                        color: '#2A5A29',
+                        '&:hover': {
+                            transform: 'scale(1.1)',
+                            // color: '#FFA500', // 悬停时亮黄色略深
+
+                            color: '#9ACD32', //如果底色是深绿，悬停可以变浅绿 
+                        }
+                    }} />
                 </Button>
 
 
@@ -74,7 +90,7 @@ const SurprisemeBlock = React.forwardRef<HTMLDivElement, SurpriseArtworkBlockPro
                             {/** left image box */}
                             <Box sx={{
                                 width: { xs: '100%', md: 700 },
-                                height: { xs: 300, md: 650 },
+                                height: { xs: 300, md: 600 },
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -131,7 +147,17 @@ const SurprisemeBlock = React.forwardRef<HTMLDivElement, SurpriseArtworkBlockPro
                                     justifyContent: { xs: 'center', md: 'flex-start' }
                                 }}>
                                     <Link to={`/vincent/id/${surpriseArtwork!.id}`} target="_self" style={{ textDecoration: 'none' }}>
-                                        <Button variant="contained" size='large' >
+                                        <Button variant="contained" size='large' sx={{
+                                            borderColor: '#2A5A29', // 边框：深绿色
+                                            // color: '#2A5A29',       // 文字：深绿色
+                                            backgroundColor: '#2A5A29',
+                                            // 悬停样式：背景和文字色反转
+                                            '&:hover': {
+                                                backgroundColor: '#2A5A29', // 悬停背景变深绿色
+                                                color: '#FFFFFF',           // 悬停文字变白色
+                                                borderColor: '#2A5A29',
+                                            },
+                                        }}>
                                             查看详情
                                         </Button>
                                     </Link>

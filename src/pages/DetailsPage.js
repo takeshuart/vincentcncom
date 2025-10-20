@@ -5,7 +5,7 @@ import { Box, Divider, Grid, Link, Typography, useMediaQuery } from '@mui/materi
 import 'react-photo-view/dist/react-photo-view.css';
 import ArtworkImage from '../components/ArtworkImage';
 
-const ArtworkDetailPage = () => {
+const DetailsPage = () => {
     const isMobile = useMediaQuery('(max-width:600px)');
     const { id } = useParams();
     const [artwork, setArtwork] = useState(null);
@@ -38,7 +38,10 @@ const ArtworkDetailPage = () => {
     }, [id]);
 
     return (
-        <Grid container justifyContent="center">
+        <Grid container justifyContent="center" sx={{
+            paddingTop: 5,
+            // bgcolor: '#CBCFEA'
+        }}>
             {artwork && (<>
                 <ArtworkImage src={artwork.primaryImageMedium} isMobile={isMobile} />
                 <Grid container justifyContent="center" sx={{ marginBottom: '10px' }}>
@@ -56,28 +59,28 @@ const ArtworkDetailPage = () => {
                             </Box>
 
                             <Box sx={rowStyle}>
-                                <Typography component="span" sx={keyStyle}>创作时间</Typography>
+                                <Typography component="span" sx={keyStyle}>创作时间：</Typography>
                                 <Typography component="span" sx={valueStyle}>{artwork.displayDate}</Typography>
                             </Box>
                             <Box sx={rowStyle}>
-                                <Typography component="span" sx={keyStyle}>收藏地</Typography>
+                                <Typography component="span" sx={keyStyle}>收藏地：</Typography>
                                 <Typography component="span" sx={valueStyle}>{artwork.collection}</Typography>
                             </Box>
                             <Box sx={rowStyle}>
-                                <Typography component="span" sx={keyStyle}>创作地点</Typography>
+                                <Typography component="span" sx={keyStyle}>创作地点：</Typography>
                                 <Typography component="span" sx={valueStyle}>{artwork.placeOfOrigin}</Typography>
                             </Box>
 
                             <Box sx={rowStyle}>
-                                <Typography component="span" sx={keyStyle}>尺寸</Typography>
+                                <Typography component="span" sx={keyStyle}>尺寸：</Typography>
                                 <Typography component="span" sx={valueStyle}>{artwork.dimension}</Typography>
                             </Box>
                             <Box sx={rowStyle}>
-                                <Typography component="span" sx={keyStyle}>材料</Typography>
+                                <Typography component="span" sx={keyStyle}>材料：</Typography>
                                 <Typography component="span" sx={valueStyle}>{artwork.material}</Typography>
                             </Box>
                             <Box sx={rowStyle}>
-                                <Typography component="span" sx={keyStyle}>作品编码</Typography>
+                                <Typography component="span" sx={keyStyle}>作品编码：</Typography>
                                 <Typography component="span" sx={valueStyle}>{artwork.jhCode} / {artwork.fCode}</Typography>
                             </Box>
                         </Box>
@@ -119,8 +122,9 @@ const titleStyle = {
     fontWeight: 'bold',
     lineHeight: '2',
     fontFamily: 'Microsoft YaHei',
-    fontSize: { xs: 18, md: 25 },
+    fontSize: { xs: 18, md: 20 },
     marginBottom: 2,
+    color: '#5F5E7B'
 
 }
 
@@ -148,4 +152,4 @@ const valueStyle = {
     color: 'text.secondary',
     fontSize: { xs: 12, md: 16 },
 };
-export default ArtworkDetailPage;
+export default DetailsPage;

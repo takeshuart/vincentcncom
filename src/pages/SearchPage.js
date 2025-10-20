@@ -7,14 +7,13 @@ import { SearchInput, FilterAccordion } from './Filters'; // Assuming path is co
 import { fetchArtData, fetchConfigData } from './ArtworkApi'; // Assuming path is correct
 import '../ArtTableStyles.css';
 import ColorSearchBar from '../components/ColorSearchBar';
-
+import PeriodTimelineFilter from '../components/PeriodBar';
 export default function ArtSearchPage() {
-    const pageSize = 21;
+    const pageSize = 11;
     const isDesktop = useMediaQuery('(min-width:600px)');
 
     // updates on every keystroke, but DOES NOT trigger search
     const [keywordInput, setKeywordInput] = useState('');
-
     // States for all ACTUAL query parameters (updates trigger search via useEffect)
     //query: current state value
     //setQuery: update state
@@ -22,7 +21,7 @@ export default function ArtSearchPage() {
         page: 1,
         hasImage: true,
         genre: '',
-        period: '',
+        periods:[],
         technique: '',
         keyword: '',
         color: '',
@@ -37,7 +36,6 @@ export default function ArtSearchPage() {
     const [isConfigLoaded, setIsConfigLoaded] = useState(false);
     const [configData, setConfigData] = useState({
         genres: [],
-        periods: [],
         techniques: [],
     });
     // Effect for fetching config data (Runs once on mount), trigger search via useEffect
@@ -64,7 +62,7 @@ export default function ArtSearchPage() {
                 query.keyword,
                 query.hasImage,
                 query.genre,
-                query.period,
+                query.periods,
                 query.technique,
                 query.color
             );
@@ -115,7 +113,7 @@ export default function ArtSearchPage() {
         setQuery(prev => ({
             ...prev,
             color: color,
-            keyword: keywordInput, 
+            keyword: keywordInput,
             page: 1
         }));
     };
@@ -139,6 +137,9 @@ export default function ArtSearchPage() {
     const handlePageChange = (event, value) => {
         setQuery(prev => ({ ...prev, page: value }));
     };
+    const handlePeriodChange=(value)=>{
+     setQuery(prev => ({ ...prev, periods: value }));
+    }
 
     if (!isConfigLoaded) {
         // Option 1: Display a simple full-page loader until config is ready
@@ -178,11 +179,17 @@ export default function ArtSearchPage() {
                                     changeHandler={handleFilterChange}
                                     // Pass current selected values
                                     genreSelected={query.genre}
-                                    periodSelected={query.period}
                                     techniqueSelected={query.technique}
                                     hasImage={query.hasImage}
 
                                     configData={configData}
+                                />
+                            </Grid>
+                            <Grid container>
+
+                                <PeriodTimelineFilter
+                                    selectedValues={query.periods}
+                                    onSelectionChangeFunc={handlePeriodChange}
                                 />
                             </Grid>
                             {/* Color search */}
@@ -219,23 +226,29 @@ export default function ArtSearchPage() {
                                                     component="img"
                                                     image={`https://artworks-1257857866.cos.ap-beijing.myqcloud.com${artwork.primaryImageSmall}`}
                                                     alt=""
-                                                    sx={{ height: '250px', width: '100%', objectFit: 'contain', objectPosition: 'center', '@media (max-width: 600px)': { height: '150px' }, backgroundColor: '#fafafa' }}
+                                                    sx={{
+                                                        height: '250px', width: '100%', objectFit: 'contain', objectPosition: 'center',
+                                                        '@media (max-width: 600px)': { height: '150px' }, backgroundColor: '#fdfbfbff',
+                                                        '&:hover': {
+                                                            backgroundColor: '#f0f0f0'
+                                                        }
+                                                    }}
                                                 />
                                             </Link>
                                             <CardContent align="left">
-                                                <Typography sx={{ fontWeight: 400, fontSize: { xs: 12, md: 18 }, textAlign: 'center' }}>
+                                                <Typography sx={{ fontWeight: 400, fontSize: { xs: 12, md: 18 }, textAlign: 'left' }}>
                                                     {artwork.titleZh || artwork.titleEn}
                                                 </Typography>
                                                 <Typography color="text.secondary" variant="body2"
                                                     sx={{
-                                                        fontStyle: 'italic',
-                                                        textAlign: 'center',
+                                                        // fontStyle: 'italic',
+                                                        textAlign: 'left',
                                                         display: { xs: 'none', md: 'block' },
                                                     }} >
                                                     {artwork.displayDate}{artwork.placeOfOrigin ? `, ${artwork.placeOfOrigin}` : ''}
                                                 </Typography>
                                                 {artwork.collection && (
-                                                    <Typography variant="body2" color="text.secondary" textAlign='center'
+                                                    <Typography variant="body2" color="text.secondary" textAlign='left'
                                                         sx={{
                                                             display: { xs: 'none', md: 'block' },
                                                         }}>

@@ -61,7 +61,7 @@ function fetchArtworkById(artworkId) {
     });
 }
 exports.fetchArtworkById = fetchArtworkById;
-function fetchArtData(page, pageSize, searchKeyword, hasImage, genreSelected, periodSelected, techniqueSelected, colorSelected) {
+function fetchArtData(page, pageSize, searchKeyword, hasImage, genreSelected, selectedPeriods, techniqueSelected, colorSelected) {
     return __awaiter(this, void 0, void 0, function () {
         var queryParams, response, error_2;
         return __generator(this, function (_a) {
@@ -74,7 +74,7 @@ function fetchArtData(page, pageSize, searchKeyword, hasImage, genreSelected, pe
                         search: searchKeyword,
                         hasImage: hasImage,
                         genres: genreSelected ? [genreSelected] : [],
-                        periods: periodSelected ? [periodSelected] : [],
+                        periods: selectedPeriods ? [selectedPeriods] : [],
                         techniques: techniqueSelected ? [techniqueSelected] : [],
                         hexColor: colorSelected || undefined
                     };

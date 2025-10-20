@@ -20,7 +20,7 @@ export async function fetchArtData(
   searchKeyword: string,
   hasImage: boolean,
   genreSelected: string,
-  periodSelected: string,
+  selectedPeriods: string[],
   techniqueSelected: string,
   colorSelected: string | undefined
 ) {
@@ -32,7 +32,7 @@ export async function fetchArtData(
       search: searchKeyword,
       hasImage: hasImage,
       genres: genreSelected ? [genreSelected] : [],
-      periods: periodSelected ? [periodSelected] : [],
+      periods: selectedPeriods ? [selectedPeriods] : [],
       techniques: techniqueSelected ? [techniqueSelected] : [],
       hexColor: colorSelected || undefined
     };

@@ -11,7 +11,7 @@ const AppHeader = () => {
         navigate(-1);
     };
     return (
-        <AppBar position="static" sx={{ backgroundColor: '#FDB813', boxShadow: 'none' }}>
+        <AppBar position="static" sx={{ bgcolor: '#A7A6C3', boxShadow: 'none' }}>
             <Toolbar>
 
                 {shouldShowBack ? (
@@ -35,7 +35,7 @@ const AppHeader = () => {
                     sx={{
                         flexGrow: 1,
                         color: 'black',
-                        fontWeight: 'bold',
+                        fontWeight: '500',
                         textDecoration: 'none', //remove 'underline'
                         fontSize: { xs: '1rem', sm: '1rem', md: '1.25rem' } 
                     }}

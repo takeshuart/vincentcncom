@@ -9,17 +9,14 @@ import Typography from '@mui/material/Typography';
 import { FilterSelect } from '../components/Selector';
 import { GridSearchIcon } from '@mui/x-data-grid';
 
-export function FilterAccordion({ 
-    // Handlers
+export function FilterAccordion({
     changeHandler,
-    // Selected Values
     genreSelected,
-    periodSelected,
     techniqueSelected,
     hasImage,
 
     // Config Data (你传入的 configData={configData} 对应的 Prop)
-    configData 
+    configData
 
 }) {
     const isMobile = useMediaQuery('(max-width:600px)');
@@ -49,16 +46,7 @@ export function FilterAccordion({
                     />
                 </Grid>
             </Grid>
-            <Grid item xs={12} sm={6} md={3} sx={{ '@media (min-width: 600px)': { marginRight: '20px' } }}>
-                <FilterSelect
-                    label="时期"
-                    value={periodSelected}
-                    onChange={changeHandler("period")}
-                    items={configData.periods}
-                    itemValueKey="period"    // 指定 value 对应的字段名
-                    itemLabelKey="period"    // 指定显示文本对应的字段名
-                />
-            </Grid>
+
             <Grid item xs={12} sm={6} md={2} sx={{ '@media (min-width: 600px)': { marginRight: '20px' } }}>
                 <FilterSelect
                     label="技法类型"

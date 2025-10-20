@@ -19,25 +19,38 @@ var SurprisemeBlock = react_1["default"].forwardRef(function (_a, ref) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: '#f8f8f8',
-            borderRadius: 2,
-            position: 'relative'
+            backgroundColor: '#E8E8F5',
+            borderRadius: 5,
+            position: 'relative',
+            bgcolor: '#CBCFEA',
+            //创造“浮动”的立体感 (bedroom 家具的立体感)
+            boxShadow: '0 8px 15px rgba(0, 0, 0, 0.1)'
         } },
         react_1["default"].createElement(material_1.Button, { onClick: fetchSurpriseArtWork, sx: {
                 position: 'absolute',
-                top: { xs: 16, md: 24 },
-                right: { xs: 16, md: 24 },
+                top: { xs: 16, md: 40 },
+                right: { xs: 16, md: 40 },
                 minWidth: 'auto',
                 padding: 1,
                 borderRadius: '50%',
                 zIndex: 10
             } },
-            react_1["default"].createElement(icons_material_1.Casino, { sx: { fontSize: { xs: 36, md: 50 } } })),
+            react_1["default"].createElement(icons_material_1.Casino, { sx: {
+                    fontSize: { xs: 36, md: 60 },
+                    cursor: 'pointer',
+                    // color: '#FFC700',
+                    color: '#2A5A29',
+                    '&:hover': {
+                        transform: 'scale(1.1)',
+                        // color: '#FFA500', // 悬停时亮黄色略深
+                        color: '#9ACD32'
+                    }
+                } })),
         isLoading ? (react_1["default"].createElement(material_1.CircularProgress, { size: 80 })) : (react_1["default"].createElement(material_1.Grid, { container: true, alignItems: "center", sx: { p: 0 } },
             react_1["default"].createElement(material_1.Grid, { item: true, xs: 12, md: 8, display: "flex", justifyContent: "center" },
                 react_1["default"].createElement(material_1.Box, { sx: {
                         width: { xs: '100%', md: 700 },
-                        height: { xs: 300, md: 650 },
+                        height: { xs: 300, md: 600 },
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -68,6 +81,16 @@ var SurprisemeBlock = react_1["default"].forwardRef(function (_a, ref) {
                             justifyContent: { xs: 'center', md: 'flex-start' }
                         } },
                         react_1["default"].createElement(react_router_dom_1.Link, { to: "/vincent/id/" + surpriseArtwork.id, target: "_self", style: { textDecoration: 'none' } },
-                            react_1["default"].createElement(material_1.Button, { variant: "contained", size: 'large' }, "\u67E5\u770B\u8BE6\u60C5")))))))));
+                            react_1["default"].createElement(material_1.Button, { variant: "contained", size: 'large', sx: {
+                                    borderColor: '#2A5A29',
+                                    // color: '#2A5A29',       // 文字：深绿色
+                                    backgroundColor: '#2A5A29',
+                                    // 悬停样式：背景和文字色反转
+                                    '&:hover': {
+                                        backgroundColor: '#2A5A29',
+                                        color: '#FFFFFF',
+                                        borderColor: '#2A5A29'
+                                    }
+                                } }, "\u67E5\u770B\u8BE6\u60C5")))))))));
 });
 exports["default"] = SurprisemeBlock;

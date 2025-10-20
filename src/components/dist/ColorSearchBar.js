@@ -34,59 +34,31 @@ exports.ColorSearchBar = function (_a) {
                 borderRadius: '6px',
                 overflow: 'hidden',
                 border: '1px solid #ccc'
-            } },
-            react_1["default"].createElement(material_1.Box, { onClick: function () { return handleSelect(''); }, title: "\u53D6\u6D88\u989C\u8272\u7B5B\u9009\uFF0C\u663E\u793A\u6240\u6709\u4F5C\u54C1", sx: {
-                    minWidth: '60px',
-                    flexShrink: 0,
+            } }, VAN_GOGH_COLORS.map(function (block) {
+            var isSelected = selectedColor === block.color;
+            return (react_1["default"].createElement(material_1.Box, { key: block.color, onClick: function () { return handleSelect(block.color); }, title: "" + block.name + (isSelected ? ' (已选中)' : ''), sx: {
+                    flex: 1,
+                    backgroundColor: block.color,
                     cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    px: 1,
                     // 统一使用更平滑的 transition
                     transition: 'all 0.25s ease-in-out',
-                    // 选中时的样式：当 selectedColor 为空时
-                    backgroundColor: selectedColor === '' ? '#777' : '#f5f5f5',
-                    color: selectedColor === '' ? 'white' : '#555',
-                    boxShadow: selectedColor === '' ? 'inset 0 0 5px rgba(0,0,0,0.3)' : 'none',
-                    zIndex: 1,
-                    fontWeight: selectedColor === '' ? 'bold' : 'normal',
-                    // 右侧分隔线
-                    borderRight: '1px solid #ccc',
-                    // 悬停和选中状态下的放大效果
-                    transform: selectedColor === '' ? 'scale(1.05)' : 'scale(1)',
+                    // 选中时放大
+                    transform: isSelected ? 'scale(1.1)' : 'scale(1)',
+                    // 保持白色描边和阴影
+                    border: isSelected
+                        ? '2px solid white'
+                        : '2px solid transparent',
+                    boxShadow: isSelected
+                        ? '0 0 10px rgba(0,0,0,0.7)' // 略微增强阴影让放大效果更明显
+                        : 'none',
+                    // 确保选中元素在最上层
+                    zIndex: isSelected ? 3 : 1,
                     '&:hover': {
-                        backgroundColor: selectedColor === '' ? '#777' : '#e0e0e0',
-                        transform: 'scale(1.05)',
+                        // 悬停时也应用放大效果
+                        transform: 'scale(1.1)',
                         zIndex: 2
                     }
-                } },
-                react_1["default"].createElement(material_1.Typography, { variant: "caption", sx: { lineHeight: 1, fontSize: '0.8rem' } }, "\u6E05\u9664")),
-            VAN_GOGH_COLORS.map(function (block) {
-                var isSelected = selectedColor === block.color;
-                return (react_1["default"].createElement(material_1.Box, { key: block.color, onClick: function () { return handleSelect(block.color); }, title: "" + block.name + (isSelected ? ' (已选中)' : ''), sx: {
-                        flex: 1,
-                        backgroundColor: block.color,
-                        cursor: 'pointer',
-                        // 统一使用更平滑的 transition
-                        transition: 'all 0.25s ease-in-out',
-                        // ⭐️ 选中时应用放大效果
-                        transform: isSelected ? 'scale(1.1)' : 'scale(1)',
-                        // 保持白色描边和阴影（如果放大效果不足够，可以稍微增强阴影）
-                        border: isSelected
-                            ? '2px solid white'
-                            : '2px solid transparent',
-                        boxShadow: isSelected
-                            ? '0 0 8px rgba(0,0,0,0.7)' // 略微增强阴影让放大效果更明显
-                            : 'none',
-                        // 确保选中元素在最上层
-                        zIndex: isSelected ? 3 : 1,
-                        '&:hover': {
-                            // 悬停时也应用放大效果
-                            transform: 'scale(1.1)',
-                            zIndex: 2
-                        }
-                    } }));
-            }))));
+                } }));
+        }))));
 };
 exports["default"] = exports.ColorSearchBar;

@@ -32,11 +32,16 @@ export default function HomePage() {
     };
 
     return (
-        <Container maxWidth={false} disableGutters>
-            <Container maxWidth={false} sx={{ width: '90%', mx: 'auto' }}>
+        <Container maxWidth={false} disableGutters sx={{ bgcolor: '#CBCFEA' }}>
+            <Container maxWidth={false}
+                sx={{
+                    width: '90%', mx: 'auto',
+                    paddingTop: 5 //与Surprise Box 保持距离
+                }} >
 
 
                 {/* 1. Surpriseme Block */}
+
                 <SurprisemeBlock
                     surpriseArtwork={surpriseArtwork}
                     isSurpriseLoading={isSurpriseLoading}
@@ -46,11 +51,12 @@ export default function HomePage() {
                 {/** enter Search page */}
                 <Box sx={{
                     marginTop: 0,
-                    marginBottom: 8,
+                    marginBottom: 0,
                     textAlign: 'center',
                     padding: 4,
                     width: '100%'
                 }}>
+                    {/** CTA(Call to action)按钮 */}
                     <Button
                         variant="contained"
                         color="secondary"
@@ -62,7 +68,12 @@ export default function HomePage() {
                             fontSize: '1.2rem',
                             fontWeight: 'bold',
                             boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
-                            backgroundColor: '#d3a1ff	'
+                            backgroundColor: '#FFC700',
+                            color: '#212121',//font color
+                            '&:hover': {
+                                backgroundColor: '#FFA500', // 悬停时略微变深
+                                boxShadow: '0 6px 15px rgba(255, 199, 0, 0.6)',
+                            },
                         }}
                     >
                         {isSurpriseLoading ? <CircularProgress size={24} color="inherit" /> : '开始探索'}

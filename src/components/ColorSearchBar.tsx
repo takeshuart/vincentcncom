@@ -48,8 +48,8 @@ export const ColorSearchBar: React.FC<ColorSearchBarProps> = ({
                     border: '1px solid #ccc',
                 }}
             >
-                {/* ⭐️ 集成式“取消”/“全部”选项 */}
-                <Box
+              {/**  取消按钮 */}
+                {/* <Box
                     onClick={() => handleSelect('')} // 点击时传递空字符串，清除筛选
                     title="取消颜色筛选，显示所有作品"
                     sx={{
@@ -89,9 +89,8 @@ export const ColorSearchBar: React.FC<ColorSearchBarProps> = ({
                     >
                         清除
                     </Typography>
-                </Box>
+                </Box> */}
                 
-                {/* 颜色色块映射 */}
                 {VAN_GOGH_COLORS.map((block) => {
                     const isSelected = selectedColor === block.color;
                     return (
@@ -106,15 +105,15 @@ export const ColorSearchBar: React.FC<ColorSearchBarProps> = ({
                                 // 统一使用更平滑的 transition
                                 transition: 'all 0.25s ease-in-out', 
                                 
-                                // ⭐️ 选中时应用放大效果
+                                // 选中时放大
                                 transform: isSelected ? 'scale(1.1)' : 'scale(1)',
                                 
-                                // 保持白色描边和阴影（如果放大效果不足够，可以稍微增强阴影）
+                                // 保持白色描边和阴影
                                 border: isSelected
                                     ? '2px solid white'
                                     : '2px solid transparent',
                                 boxShadow: isSelected
-                                    ? '0 0 8px rgba(0,0,0,0.7)' // 略微增强阴影让放大效果更明显
+                                    ? '0 0 10px rgba(0,0,0,0.7)' // 略微增强阴影让放大效果更明显
                                     : 'none',
 
                                 // 确保选中元素在最上层
