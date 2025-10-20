@@ -1,8 +1,7 @@
 import React, { Ref } from 'react';
-import { Box, Grid, Typography, CircularProgress } from '@mui/material';
+import { Box, Grid, Typography, CircularProgress, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { Casino as CasinoIcon } from '@mui/icons-material';
-
 
 interface Artwork {
     id: number;
@@ -51,6 +50,22 @@ const SurprisemeBlock = React.forwardRef<HTMLDivElement, SurpriseArtworkBlockPro
                     position: 'relative'
                 }}
             >
+                <Button
+                    onClick={fetchSurpriseArtWork}
+                    sx={{
+                        position: 'absolute',
+                        top: { xs: 16, md: 24 },
+                        right: { xs: 16, md: 24 },
+                        minWidth: 'auto',
+                        padding: 1,
+                        borderRadius: '50%',
+                        zIndex: 10,
+                    }}
+                >
+                    <CasinoIcon sx={{ fontSize: { xs: 36, md: 50 } }} />
+                </Button>
+
+
                 {isLoading ? (
                     <CircularProgress size={80} />
                 ) : (
@@ -59,7 +74,7 @@ const SurprisemeBlock = React.forwardRef<HTMLDivElement, SurpriseArtworkBlockPro
                             {/** left image box */}
                             <Box sx={{
                                 width: { xs: '100%', md: 700 },
-                                height: { xs: 400, md: 650 },
+                                height: { xs: 300, md: 650 },
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -79,27 +94,34 @@ const SurprisemeBlock = React.forwardRef<HTMLDivElement, SurpriseArtworkBlockPro
                         </Grid>
 
                         {/* 右侧：作品信息和 Surprise Me 按钮 */}
-                        <Grid item xs={12} md={4}>
+                        <Grid item xs={12} sm={6} md={4}>
                             <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
                                 <Typography
-                                    variant="h4"
+                                    // variant="h4" 
                                     sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '1.5rem', md: '2.5rem' } }}
                                 >
                                     {surpriseArtwork!.titleZh || surpriseArtwork!.titleEn}
                                 </Typography>
+
+                                <Typography sx={{ fontSize: { xs: '0.875rem', md: '1.25rem' } }}>
+                                    {surpriseArtwork!.titleEn}
+                                </Typography>
+
                                 <Typography
-                                    variant="h6"
+                                    variant="subtitle1"
                                     color="text.secondary"
-                                    sx={{ mb: 2, fontStyle: 'italic', fontSize: { xs: '1rem', md: '1.25rem' } }}
+                                    sx={{ mb: 2, fontStyle: 'italic', display: { xs: 'none', md: 'block' } }}
                                 >
                                     {surpriseArtwork!.displayDate}
                                 </Typography>
                                 <Typography
                                     variant="subtitle1"
-                                    sx={{ mb: 4, color: 'gray', fontSize: { xs: '0.875rem', md: '1rem' } }}
+                                    sx={{
+                                        mb: 4, color: 'gray',
+                                        fontSize: { xs: '0.875rem', md: '1rem' },
+                                        display: { xs: 'none', md: 'block' }
+                                    }}
                                 >
-                                    {surpriseArtwork!.artistName || '文森特·梵·高'}
-                                    <br />
                                     {surpriseArtwork!.collection || '收藏地：未知'}
                                 </Typography>
 
@@ -109,25 +131,12 @@ const SurprisemeBlock = React.forwardRef<HTMLDivElement, SurpriseArtworkBlockPro
                                     justifyContent: { xs: 'center', md: 'flex-start' }
                                 }}>
                                     <Link to={`/vincent/id/${surpriseArtwork!.id}`} target="_self" style={{ textDecoration: 'none' }}>
-                                        <button className="btn btn-primary me-3" style={{ fontSize: '1.1rem', padding: '10px 20px' }}>
+                                        <Button variant="contained" size='large' >
                                             查看详情
-                                        </button>
+                                        </Button>
                                     </Link>
 
-                                    <button
-                                        className="btn btn-outline-secondary"
-                                        onClick={fetchSurpriseArtWork}
-                                        style={{
-                                            width: '44px',
-                                            height: '50px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            padding: 0
-                                        }}
-                                    >
-                                        <CasinoIcon sx={{ fontSize: '1.5rem' }} />
-                                    </button>
+
                                 </Box>
                             </Box>
                         </Grid>

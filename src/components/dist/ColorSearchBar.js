@@ -5,13 +5,16 @@ var react_1 = require("react");
 var material_1 = require("@mui/material"); // 移除了 IconButton
 // 梵高调色板（根据非素描作品RGB分析结果）
 var VAN_GOGH_COLORS = [
-    { name: '向日葵金黄', color: '#B39B4D' },
-    { name: '星空深蓝', color: '#3A5573' },
-    { name: '田园橄榄绿', color: '#647743' },
-    { name: '焦土赭棕', color: '#765E2F' },
-    { name: '画布米白', color: '#D7CCB0' },
-    { name: '沉静蓝灰', color: '#7A888E' },
-    { name: '暖色中调', color: '#A3A279' },
+    { name: '淡赭黄', color: '#D9C19D' },
+    { name: '奶油米白', color: '#E8D7BC' },
+    { name: '温柔灰褐', color: '#BDAF8F' },
+    { name: '天蓝灰', color: '#AAB6B3' },
+    { name: '橄榄绿', color: '#8E835A' },
+    { name: '焦赭红', color: '#C59966' },
+    { name: '深青灰', color: '#655E4A' },
+    { name: '苍绿蓝', color: '#768980' },
+    { name: '浅赭橙', color: '#D6B079' },
+    { name: '暖灰白', color: '#DCCFB9' },
 ];
 exports.ColorSearchBar = function (_a) {
     var onColorSelect = _a.onColorSelect, _b = _a.initialColor, initialColor = _b === void 0 ? '' : _b;

@@ -2,10 +2,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Outlet } from 'react-router-dom';
 import VincentAdmin from './pages/VincentAdmin';
-import VincentImages from './pages/VincentGrid';
+import VincentImages from './pages/HomePage';
 import ArtworkDetailPage from './pages/VincentArtworkDetail'
 import { Box } from '@mui/material';
 import AppHeader from './components/AppHeader';
+import ArtSearchPage from './pages/SearchPage';
 
 
 const GlobalLayout = () => {
@@ -27,6 +28,7 @@ function App() {
       <Routes>
         <Route path="/" element={<GlobalLayout />}>
           <Route path="/vincent" element={<VincentImages />} />
+          <Route path="/vincent/search" element={<ArtSearchPage />} />
           <Route path="/vincent/id/:id" element={<ArtworkDetailPage />} />
         </Route>
         <Route path="/" element={<VincentAdmin />} />

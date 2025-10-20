@@ -38,7 +38,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 exports.__esModule = true;
 exports.fetchConfigData = exports.fetchSurpriseArt = exports.fetchArtData = exports.fetchArtworkById = void 0;
 var axios_1 = require("axios");
-var apiDomain = 'http://localhost:5001/artworks';
+// const apiDomain = 'http://localhost:5001/artworks';
+//other devices cannot access if use 'localhost'
+var apiDomain = 'http://192.168.50.156:5001/artworks';
 function fetchArtworkById(artworkId) {
     return __awaiter(this, void 0, void 0, function () {
         var response, error_1;
@@ -110,10 +112,8 @@ function fetchSurpriseArt() {
     });
 }
 exports.fetchSurpriseArt = fetchSurpriseArt;
-//对数据表所有数据执行distinct操作，成本价高
-//TODO 考虑单独维护一个配置表
 function fetchConfigData() {
-    return __awaiter(this, void 0, void 0, function () {
+    return __awaiter(this, void 0, Promise, function () {
         var _a, genreRes, periodRes, techniques, error_4;
         return __generator(this, function (_b) {
             switch (_b.label) {

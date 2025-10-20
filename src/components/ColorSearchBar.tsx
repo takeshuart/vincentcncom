@@ -4,13 +4,16 @@ import { Box, Typography } from '@mui/material'; // 移除了 IconButton
 
 // 梵高调色板（根据非素描作品RGB分析结果）
 const VAN_GOGH_COLORS = [
-    { name: '向日葵金黄', color: '#B39B4D' }, 
-    { name: '星空深蓝', color: '#3A5573' }, 
-    { name: '田园橄榄绿', color: '#647743' }, 
-    { name: '焦土赭棕', color: '#765E2F' }, 
-    { name: '画布米白', color: '#D7CCB0' }, 
-    { name: '沉静蓝灰', color: '#7A888E' }, 
-    { name: '暖色中调', color: '#A3A279' }, 
+  { name: '淡赭黄', color: '#D9C19D' },       // 麦田与阳光的主调
+  { name: '奶油米白', color: '#E8D7BC' },     // 墙面、光线反射
+  { name: '温柔灰褐', color: '#BDAF8F' },     // 土地与中间调
+  { name: '天蓝灰', color: '#AAB6B3' },       // 天空与远景
+  { name: '橄榄绿', color: '#8E835A' },       // 植被与阴影
+  { name: '焦赭红', color: '#C59966' },       // 建筑与肌肤暖色
+  { name: '深青灰', color: '#655E4A' },       // 背景与冷暗面
+  { name: '苍绿蓝', color: '#768980' },       // 夜景与柏树
+  { name: '浅赭橙', color: '#D6B079' },       // 阳光中间调
+  { name: '暖灰白', color: '#DCCFB9' },       // 亮部反光
 ];
 
 interface ColorSearchBarProps {
