@@ -6,8 +6,7 @@ import { MenuItem, Checkbox, FormControl, InputLabel, OutlinedInput } from '@mui
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { DataGrid, GridColDef, GridCellParams } from '@mui/x-data-grid';
 import TableRowsIcon from '@mui/icons-material/TableRows';
-import '../ArtTableStyles.css';
-
+import '../styles/ArtTableStyles.css';
 const columns: GridColDef[] = [
   {
     field: 'primaryImageSmall', headerName: 'Image', width: 100,

@@ -9,6 +9,7 @@ var DetailsPage_1 = require("./pages/DetailsPage");
 var material_1 = require("@mui/material");
 var AppHeader_1 = require("./components/AppHeader");
 var SearchPage_1 = require("./pages/SearchPage");
+require("./styles/index.css");
 var GlobalLayout = function () {
     return (react_1["default"].createElement(material_1.Box, { sx: { minHeight: '100vh', display: 'flex', flexDirection: 'column' } },
         react_1["default"].createElement(AppHeader_1["default"], null),

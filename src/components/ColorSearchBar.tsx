@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback } from 'react';
-import { Box, Typography } from '@mui/material'; // 移除了 IconButton
+import { Box } from '@mui/material'; // 移除了 IconButton
 
 // 梵高调色板（根据非素描作品RGB分析结果）
 const VAN_GOGH_COLORS = [

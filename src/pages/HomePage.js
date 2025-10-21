@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Container, Box, Button, CircularProgress, Typography } from '@mui/material';
 import SurprisemeBlock from '../components/SurprisemeBlock';
-import { fetchSurpriseArt } from './ArtworkApi';
+import { fetchSurpriseArt } from '../api/ArtworkApi';
 import { useNavigate } from 'react-router-dom';
 
 export default function HomePage() {
@@ -32,7 +32,7 @@ export default function HomePage() {
     };
 
     return (
-        <Container maxWidth={false} disableGutters sx={{ bgcolor: '#CBCFEA' }}>
+        <Container maxWidth={false} disableGutters sx={{ bgcolor: '#d8dbf0ff'}}>
             <Container maxWidth={false}
                 sx={{
                     width: '90%', mx: 'auto',

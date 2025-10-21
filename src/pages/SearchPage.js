@@ -1,145 +1,28 @@
-import { useEffect, useState } from 'react';
+import React from 'react'; // Only need React here, other hooks are inside useArtSearch
 import { Container, Typography, Grid, Card, CardMedia, CardContent, Box, CircularProgress } from '@mui/material';
 import { useMediaQuery } from '@mui/material';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Pagination from '@mui/material/Pagination';
-import { SearchInput, FilterAccordion } from './Filters'; // Assuming path is correct
-import { fetchArtData, fetchConfigData } from './ArtworkApi'; // Assuming path is correct
-import '../ArtTableStyles.css';
+
+// Import the new custom hook
+import { useArtSearch } from '../hooks/useArtSearch';
+
+import { FilterAccordion, SearchInput } from './Filters';
+// Removed imports for fetchArtData, fetchConfigData, useEffect, useState, useMemo, useSearchParams
+import '../styles/ArtTableStyles.css';
 import ColorSearchBar from '../components/ColorSearchBar';
 import PeriodTimelineFilter from '../components/PeriodBar';
+
 export default function ArtSearchPage() {
-    const pageSize = 11;
     const isDesktop = useMediaQuery('(min-width:600px)');
 
-    // updates on every keystroke, but DOES NOT trigger search
-    const [keywordInput, setKeywordInput] = useState('');
-    // States for all ACTUAL query parameters (updates trigger search via useEffect)
-    //query: current state value
-    //setQuery: update state
-    const [query, setQuery] = useState({
-        page: 1,
-        hasImage: true,
-        genre: '',
-        periods:[],
-        technique: '',
-        keyword: '',
-        color: '',
-    });
-
-    // States for fetched results and static config data
-    const [artworks, setArtWorks] = useState([]);
-    const [totalPages, setTotalPages] = useState(0);
-    const [totalResults, setTotalResults] = useState(0);
-    const [isLoading, setIsLoading] = useState(false);
-
-    const [isConfigLoaded, setIsConfigLoaded] = useState(false);
-    const [configData, setConfigData] = useState({
-        genres: [],
-        techniques: [],
-    });
-    // Effect for fetching config data (Runs once on mount), trigger search via useEffect
-    useEffect(() => {
-        fetchConfigData().then(configData => {
-            setConfigData(configData);
-            setIsConfigLoaded(true);
-        }).catch(error => {
-            console.error('Error fetching config data', error);
-            setIsConfigLoaded(true);//empty selector
-        });
-    }, []);
-
-
-    // Main Data Fetching Logic 
-    async function fetchData() {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-
-        try {
-            setIsLoading(true);
-            const artData = await fetchArtData(
-                query.page,
-                pageSize,
-                query.keyword,
-                query.hasImage,
-                query.genre,
-                query.periods,
-                query.technique,
-                query.color
-            );
-
-            setArtWorks(artData.rows);
-            setTotalPages(Math.ceil(artData.count / pageSize));
-            setTotalResults(artData.count);
-
-        } catch (error) {
-            console.error('Error fetching art data', error);
-        } finally {
-            setIsLoading(false);
-        }
-    }
-
-    // Main Effect for data fetching (Triggers on any query change)
-    useEffect(() => {
-        fetchData();
-    }, [query]);
-
-    /**
-     * To create a unified change handler for various filter types (Select, Checkbox, etc.).
-     * This function accepts the target key (the state property to update) 
-     * and returns the actual event handler function.
-     *
-     * @param {string} key - The key of the property in the 'query' state object to be updated 
-     * (e.g., 'genre', 'period', 'hasImage').
-     * @returns {function(event): void} The event handler function.
-     */
-    const handleFilterChange = (key) => (event) => {
-        const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
-        setQuery(prev => ({
-            ...prev,
-            [key]: value,
-            page: 1, // Reset to page 1 for any new filter change
-        }));
-
-        if (key !== 'keyword') {
-            setQuery(prev => ({
-                ...prev,
-                keyword: keywordInput, // Sync current input (maybe has Uncommitted input)
-                page: 1,
-                [key]: value,
-            }));
-        }
-    };
-    const handleColorSelect = (color) => {
-        setQuery(prev => ({
-            ...prev,
-            color: color,
-            keyword: keywordInput,
-            page: 1
-        }));
-    };
-
-    // Handler for search button click and Enter key press (Triggers the search)
-    const handleSearchTrigger = (event) => {
-        // Essential fix for Enter key: prevents form submission/page reload
-        if (event && event.preventDefault) {
-            event.preventDefault();
-        }
-
-        // This update to the 'query' state will trigger the useEffect and run the search.
-        setQuery(prev => ({
-            ...prev,
-            keyword: keywordInput, // Sync input value to query state
-            page: 1
-        }));
-    };
-
-    // Handler for Pagination (only changes page)
-    const handlePageChange = (event, value) => {
-        setQuery(prev => ({ ...prev, page: value }));
-    };
-    const handlePeriodChange=(value)=>{
-     setQuery(prev => ({ ...prev, periods: value }));
-    }
+    // 1. Call the custom hook and destructure all necessary values
+    const {
+        query, keywordInput, setKeywordInput, artworks, totalPages,
+        totalResults, isLoading, isConfigLoaded, configData,
+        handleFilterChange, handleColorSelect, handlePeriodChange,
+        handleSearchTrigger, handlePageChange,
+    } = useArtSearch();
 
     if (!isConfigLoaded) {
         // Option 1: Display a simple full-page loader until config is ready
@@ -149,8 +32,9 @@ export default function ArtSearchPage() {
             </Container>
         );
     }
-    return (
 
+    // The rest is pure rendering logic, significantly cleaner
+    return (
         <Container maxWidth={false} disableGutters >
             <Container maxWidth={false} sx={{ width: '90%', mx: 'auto' }}>
                 <Grid container spacing={2}>
@@ -158,11 +42,11 @@ export default function ArtSearchPage() {
                     <Grid item xs={12} md={10}>
                         <Box >
                             {/* -----Filter Box------ */}
-                            <Grid container sx={{ margin: '10px 1px 10px 1px' }}>
+                            <Grid container sx={{ margin: '40px 1px 40px 1px' }}>
                                 <SearchInput
-                                    // Binds to the temporary input state
+                                    // Binds to the local input state
                                     value={keywordInput}
-                                    // Updates temporary input state on every keystroke
+                                    // Updates local input state on every keystroke
                                     onChange={(event) => setKeywordInput(event.target.value)}
                                     onKeyDown={(event) => {
                                         if (event.key === 'Enter') {
@@ -173,18 +57,20 @@ export default function ArtSearchPage() {
                                     onClick={handleSearchTrigger}
                                 />
                             </Grid>
-                            <Grid container >
+                            {/** filters */}
+                            {/* <Grid container >
                                 <FilterAccordion
                                     // Use unified handlers
                                     changeHandler={handleFilterChange}
                                     // Pass current selected values
                                     genreSelected={query.genre}
+                                    periodSelected={query.period}
                                     techniqueSelected={query.technique}
                                     hasImage={query.hasImage}
 
                                     configData={configData}
                                 />
-                            </Grid>
+                            </Grid> */}
                             <Grid container>
 
                                 <PeriodTimelineFilter
@@ -196,12 +82,12 @@ export default function ArtSearchPage() {
                             <Grid item xs={12}>
                                 <ColorSearchBar
                                     onColorSelect={handleColorSelect}
-                                    initialColor="#800080"
+                                    initialColor={query.color || "#800080"}
                                 />
                             </Grid>
                             <Grid container justifyContent="center" sx={{ marginBottom: '20px', marginTop: '20px' }}>
                                 <Typography variant="subtitle1" sx={{ color: 'grey' }}>
-                                    Found <span style={{ fontWeight: 'bold' }}>{totalResults}</span> results
+                                    发现 <span style={{ fontWeight: 'bold' }}>{totalResults}</span> 个作品
                                 </Typography>
                             </Grid>
 
@@ -241,7 +127,6 @@ export default function ArtSearchPage() {
                                                 </Typography>
                                                 <Typography color="text.secondary" variant="body2"
                                                     sx={{
-                                                        // fontStyle: 'italic',
                                                         textAlign: 'left',
                                                         display: { xs: 'none', md: 'block' },
                                                     }} >

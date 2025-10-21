@@ -36,3 +36,7 @@
     transform: rotate(360deg);
   }
 }
+
+:root{
+  --fancybox-bg: rgba(250, 248, 248, 0.95);
+}

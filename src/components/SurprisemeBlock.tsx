@@ -48,9 +48,9 @@ const SurprisemeBlock = React.forwardRef<HTMLDivElement, SurpriseArtworkBlockPro
                     backgroundColor: '#E8E8F5',
                     borderRadius: 5,
                     position: 'relative',
-                    bgcolor: '#CBCFEA',
-                    //创造“浮动”的立体感 (bedroom 家具的立体感)
-                    boxShadow: '0 8px 15px rgba(0, 0, 0, 0.1)',
+                    bgcolor: '#d8dbf0ff',
+                    
+                    boxShadow: '0 8px 15px rgba(0, 0, 0, 0.1)', //创造“浮动”的立体感 (bedroom 家具的立体感)
                 }}
             >
                 {/** Surprise Button */}

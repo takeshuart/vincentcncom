@@ -22,8 +22,7 @@ var SurprisemeBlock = react_1["default"].forwardRef(function (_a, ref) {
             backgroundColor: '#E8E8F5',
             borderRadius: 5,
             position: 'relative',
-            bgcolor: '#CBCFEA',
-            //创造“浮动”的立体感 (bedroom 家具的立体感)
+            bgcolor: '#d8dbf0ff',
             boxShadow: '0 8px 15px rgba(0, 0, 0, 0.1)'
         } },
         react_1["default"].createElement(material_1.Button, { onClick: fetchSurpriseArtWork, sx: {

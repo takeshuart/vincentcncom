@@ -43,7 +43,7 @@ var material_2 = require("@mui/material");
 var Select_1 = require("@mui/material/Select");
 var x_data_grid_1 = require("@mui/x-data-grid");
 var TableRows_1 = require("@mui/icons-material/TableRows");
-require("../ArtTableStyles.css");
+require("../styles/ArtTableStyles.css");
 var columns = [
     {
         field: 'primaryImageSmall', headerName: 'Image', width: 100,

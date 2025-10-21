@@ -11,7 +11,7 @@ const AppHeader = () => {
         navigate(-1);
     };
     return (
-        <AppBar position="static" sx={{ bgcolor: '#A7A6C3', boxShadow: 'none' }}>
+        <AppBar position="static" sx={{ bgcolor: '#A7A6C3', boxShadow: 'none'}}>
             <Toolbar>
 
                 {shouldShowBack ? (

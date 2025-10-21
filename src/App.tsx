@@ -7,11 +7,12 @@ import DetailsPage from './pages/DetailsPage'
 import { Box } from '@mui/material';
 import AppHeader from './components/AppHeader';
 import ArtSearchPage from './pages/SearchPage';
+import './styles/index.css';
 
 
 const GlobalLayout = () => {
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column'}}>
       <AppHeader />
       <Box component="main" sx={{ flexGrow: 1}}>
         <Outlet />

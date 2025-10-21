@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { fetchArtworkById } from './ArtworkApi';
+import { fetchArtworkById } from '../api/ArtworkApi';
 import { Box, Divider, Grid, Link, Typography, useMediaQuery } from '@mui/material';
 import 'react-photo-view/dist/react-photo-view.css';
 import ArtworkImage from '../components/ArtworkImage';
@@ -44,14 +44,32 @@ const DetailsPage = () => {
         }}>
             {artwork && (<>
                 <ArtworkImage src={artwork.primaryImageMedium} isMobile={isMobile} />
+                <Grid container justifyContent="center">
+                    <Grid item xs={10} sm={6} md={6} sx={{mb:1}}>
+                        <Box>
+                            <Typography sx={titleStyle}>{artwork.titleZh || artwork.titleEn}</Typography>
+                            <Typography color='GrayText'   fontWeight='500'>{artwork.displayDate}</Typography>
+                        </Box>
+                    </Grid>
+                </Grid>
+
                 <Grid container justifyContent="center" sx={{ marginBottom: '10px' }}>
                     <Grid item md={6}>
                         <Divider />
                     </Grid>
                 </Grid>
-                <Grid container justifyContent="center">
+                {artwork.shortDesc && (<>
+                    <Grid container justifyContent={'center'}>
+                        <Grid item md={6}>
+                            <Box sx={{ mb: 3, mt: 3 }}>
+                                <Typography>{artwork.shortDesc}</Typography>
+                            </Box>
+                        </Grid>
+                    </Grid>
+                </>)}
+                {/** Details information */}
+                <Grid container justifyContent="center" sx={{mt:5}}>
                     <Grid item xs={10} sm={6} md={6}>
-                        <Typography sx={titleStyle}>{artwork.titleZh || artwork.titleEn}</Typography>
                         <Box>
                             <Box sx={rowStyle}>
                                 <Typography component="span" sx={keyStyle}>原标题：</Typography>
@@ -123,7 +141,7 @@ const titleStyle = {
     lineHeight: '2',
     fontFamily: 'Microsoft YaHei',
     fontSize: { xs: 18, md: 20 },
-    marginBottom: 2,
+    marginBottom: 0,
     color: '#5F5E7B'
 
 }

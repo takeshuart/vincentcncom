@@ -2,7 +2,7 @@
 exports.__esModule = true;
 var react_1 = require("react");
 var client_1 = require("react-dom/client");
-require("./index.css");
+require("./styles/index.css");
 var App_1 = require("./App");
 var reportWebVitals_1 = require("./reportWebVitals");
 var root = client_1["default"].createRoot(document.getElementById('root'));
