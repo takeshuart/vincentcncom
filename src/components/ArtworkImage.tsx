@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Box, CircularProgress } from '@mui/material';
-import { Fancybox } from '@fancyapps/ui'; 
+import { Fancybox } from '@fancyapps/ui';
 import '@fancyapps/ui/dist/fancybox/fancybox.css';
 
 interface ArtworkImageProps {
@@ -8,21 +8,15 @@ interface ArtworkImageProps {
   isMobile: boolean;
 }
 
-/**
- * Show skeleton while the image is loading, to prevent layout shift.
- * Uses FancyBox for the image viewer functionality.
- */
 export default function ArtworkImage({ src, isMobile }: ArtworkImageProps) {
   const [loaded, setLoaded] = useState(false);
-  const imageRef = useRef(null);
+  const imageRef = useRef<HTMLImageElement>(null);
   const fullSrc = `https://artworks-1257857866.cos.ap-beijing.myqcloud.com${src}`;
 
   useEffect(() => {
-    setLoaded(false); 
+    setLoaded(false);
     const img = new Image();
-    img.onload = () => {
-      setLoaded(true);
-    };
+    img.onload = () => setLoaded(true);
     img.onerror = () => {
       console.error('图片加载失败：', fullSrc);
       setLoaded(true);
@@ -40,10 +34,8 @@ export default function ArtworkImage({ src, isMobile }: ArtworkImageProps) {
         {
           src: fullSrc,
           type: 'image',
-          
         },
-      ], {
-      });
+      ]);
     }
   };
 
@@ -64,7 +56,9 @@ export default function ArtworkImage({ src, isMobile }: ArtworkImageProps) {
           height: isMobile ? 300 : 650,
           overflow: 'hidden',
           borderRadius: '12px',
-          cursor: loaded ? 'pointer' : 'default',
+          cursor: loaded ? 'zoom-in' : 'default', // 放大光标
+          //图片轻微放大
+          // '&:hover img': { transform: loaded ? 'scale(1.03)' : 'scale(1)', transition: 'transform 0.3s' },
         }}
         onClick={openFancybox}
       >
@@ -100,5 +94,3 @@ export default function ArtworkImage({ src, isMobile }: ArtworkImageProps) {
     </Box>
   );
 }
-
-

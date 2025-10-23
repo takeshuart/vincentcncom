@@ -1,173 +1,208 @@
-import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { fetchArtworkById } from '../api/ArtworkApi';
-import { Box, Divider, Grid, Link, Typography, useMediaQuery } from '@mui/material';
+import { Box, Divider, Grid, Typography, useMediaQuery, List, ListItem, ListItemButton, CircularProgress } from '@mui/material';
 import 'react-photo-view/dist/react-photo-view.css';
+import useArtworkDetails from '../hooks/useArtworkDetails';
 import ArtworkImage from '../components/ArtworkImage';
-
-const DetailsPage = () => {
-    const isMobile = useMediaQuery('(max-width:600px)');
-    const { id } = useParams();
-    const [artwork, setArtwork] = useState(null);
-    const [extLinks, setExtLinks] = useState('');
-
-    useEffect(() => {
-        console.log('fetchartwork')
-        const fetchArtwork = async () => {
-            try {
-                //TODO 不暴露api，返回渲染后的html
-                const artwork = await fetchArtworkById(id);
-                if (artwork.extLinks) {
-                    setExtLinks(JSON.parse(artwork.extLinks))
-                }
-                if (artwork.primaryImageLarge) {
-                    artwork.primaryImageLarge = `/all-collections/${artwork.primaryImageLarge}`
-                } else {
-                    artwork.primaryImageLarge = `https://www.pubhist.com${artwork.primaryImageSmall}`
-                }
-
-                setArtwork(artwork);
-
-            } catch (error) {
-                console.error('Error fetching artwork data', error);
-            }
-        };
-
-        fetchArtwork();
-
-    }, [id]);
-
-    return (
-        <Grid container justifyContent="center" sx={{
-            paddingTop: 5,
-            // bgcolor: '#CBCFEA'
-        }}>
-            {artwork && (<>
-                <ArtworkImage src={artwork.primaryImageMedium} isMobile={isMobile} />
-                <Grid container justifyContent="center">
-                    <Grid item xs={10} sm={6} md={6} sx={{mb:1}}>
-                        <Box>
-                            <Typography sx={titleStyle}>{artwork.titleZh || artwork.titleEn}</Typography>
-                            <Typography color='GrayText'   fontWeight='500'>{artwork.displayDate}</Typography>
-                        </Box>
-                    </Grid>
-                </Grid>
-
-                <Grid container justifyContent="center" sx={{ marginBottom: '10px' }}>
-                    <Grid item md={6}>
-                        <Divider />
-                    </Grid>
-                </Grid>
-                {artwork.shortDesc && (<>
-                    <Grid container justifyContent={'center'}>
-                        <Grid item md={6}>
-                            <Box sx={{ mb: 3, mt: 3 }}>
-                                <Typography>{artwork.shortDesc}</Typography>
-                            </Box>
-                        </Grid>
-                    </Grid>
-                </>)}
-                {/** Details information */}
-                <Grid container justifyContent="center" sx={{mt:5}}>
-                    <Grid item xs={10} sm={6} md={6}>
-                        <Box>
-                            <Box sx={rowStyle}>
-                                <Typography component="span" sx={keyStyle}>原标题：</Typography>
-                                <Typography component="span" sx={valueStyle}>{artwork.titleEn}</Typography>
-                            </Box>
-
-                            <Box sx={rowStyle}>
-                                <Typography component="span" sx={keyStyle}>创作时间：</Typography>
-                                <Typography component="span" sx={valueStyle}>{artwork.displayDate}</Typography>
-                            </Box>
-                            <Box sx={rowStyle}>
-                                <Typography component="span" sx={keyStyle}>收藏地：</Typography>
-                                <Typography component="span" sx={valueStyle}>{artwork.collection}</Typography>
-                            </Box>
-                            <Box sx={rowStyle}>
-                                <Typography component="span" sx={keyStyle}>创作地点：</Typography>
-                                <Typography component="span" sx={valueStyle}>{artwork.placeOfOrigin}</Typography>
-                            </Box>
-
-                            <Box sx={rowStyle}>
-                                <Typography component="span" sx={keyStyle}>尺寸：</Typography>
-                                <Typography component="span" sx={valueStyle}>{artwork.dimension}</Typography>
-                            </Box>
-                            <Box sx={rowStyle}>
-                                <Typography component="span" sx={keyStyle}>材料：</Typography>
-                                <Typography component="span" sx={valueStyle}>{artwork.material}</Typography>
-                            </Box>
-                            <Box sx={rowStyle}>
-                                <Typography component="span" sx={keyStyle}>作品编码：</Typography>
-                                <Typography component="span" sx={valueStyle}>{artwork.jhCode} / {artwork.fCode}</Typography>
-                            </Box>
-                        </Box>
-                        {extLinks && Object.keys(extLinks).length > 0 && (
-                            <>
-                                <Typography sx={{ ...typographyStyle, display: 'inline' }}>外部链接：</Typography>
-                                {Object.keys(extLinks).length === 1 ? (
-                                    <Link href={extLinks[0].url} target="_self" rel="noopener noreferrer">
-                                        <Typography sx={{ ...typographyStyle, display: 'inline' }}>{extLinks[0].linkName}</Typography>
-                                    </Link>
-                                ) : (
-                                    <ul>
-                                        {Object.keys(extLinks).map((key, index) => (
-                                            <li key={index}>
-                                                <Link href={extLinks[key].url} target="_self" rel="noopener noreferrer">
-                                                    <Typography sx={typographyStyle}>{extLinks[key].linkName}</Typography>
-                                                </Link>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                )}
-                            </>
-                        )}
-
-                    </Grid>
-                </Grid>
-
-                {/* Footer */}
-                <Grid container mt='50px' justifyContent='center' sx={{ backgroundColor: '#fafafa', height: '100px', width: '100%' }}>
-                    <Typography alignContent='center' >梵·高档案馆 2024</Typography>
-                </Grid>
-            </>
-            )}
-        </Grid >
-    );
-};
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import { ArtworkExhibition, ArtworkLetters, ArtworkOverview } from '../components/ArtworkSections';
+import { ArrowForwardIos } from '@mui/icons-material';
+import useSearchContextNavigation from '../hooks/useSearchContextNavigation';
 
 const titleStyle = {
     fontWeight: 'bold',
     lineHeight: '2',
     fontFamily: 'Microsoft YaHei',
-    fontSize: { xs: 18, md: 20 },
-    marginBottom: 0,
-    color: '#5F5E7B'
-
+    fontSize: { xs: 18, md: 24 },
+    color: '#333'
 }
 
+const DetailsPage = () => {
+    const isMobile = useMediaQuery('(max-width:600px)');
+    const { id } = useParams();//current artwork id from url path
+    const {
+        artwork,
+        extLinks,
+        activeSection,
+        lettersData,
+        isLoadingLetters,
+        isLoadingArtwork,
+        sections,
+        setActiveSection,
+    } = useArtworkDetails(id);
 
-const typographyStyle = {
-    lineHeight: '1.5',
-    fontWeight: 500,
-    fontSize: { xs: 12, md: 14 },
-    marginBottom: 0.5,
+    const { canGoNext, canGoPrev, goToNext, goToPrev } = useSearchContextNavigation(id);
+
+    const renderContent = () => {
+        if (!artwork) return null;
+
+        switch (activeSection) {
+            case 'overview':
+                return <ArtworkOverview artwork={artwork} extLinks={extLinks} />;
+            case 'letters':
+                return <ArtworkLetters isLoading={isLoadingLetters} lettersData={lettersData} />;
+            case 'exhibition':
+                return <ArtworkExhibition exhibitions={artwork.exhibitionHistory} />;
+            case 'provenance':
+                return <Typography>{artwork.provenance || '暂无作品出处信息。'}</Typography>;
+            case 'references':
+                return <Typography>{artwork.references || '暂无参考文献。'}</Typography>;
+            default:
+                return null;
+        }
+    };
+
+    if (isLoadingArtwork) {
+        return (
+            <Box sx={{ p: 5, textAlign: 'center' }}>
+                <CircularProgress />
+                <Typography sx={{ mt: 2 }}>作品信息加载中...</Typography>
+            </Box>
+        );
+    }
+
+    if (!artwork) {
+        return <Box sx={{ p: 5, textAlign: 'center' }}>未能加载作品详情。</Box>;
+    }
+
+
+    return (
+        <Grid container justifyContent="center" sx={{ paddingTop: 5 }}>
+            {/* Image Box */}
+            <Box
+                sx={{
+                    position: 'relative', // <-- 关键：成为绝对定位按钮的参照物
+                    width: '100%', display: 'flex', justifyContent: 'center',
+                }}
+            >
+                <ArtworkImage src={artwork.primaryImageMedium} isMobile={isMobile} />
+
+                {canGoPrev && (
+                    <Box // left arrow
+                        onClick={goToPrev}
+                        sx={{
+                            ...NAV_BUTTON_STYLE,
+                            left: '5%'
+                        }}
+                    >
+                        <ArrowBackIosIcon fontSize="small" sx={{...ARROWICON }} />
+                    </Box>
+                )}
+
+                {canGoNext && (
+                    <Box // right arrow
+                        onClick={goToNext}
+                        sx={{
+                            ...NAV_BUTTON_STYLE,
+                            right: '5%'
+                        }}
+                    >
+                        <ArrowForwardIos fontSize="small" sx={{...ARROWICON }} />
+                    </Box>
+                )}
+            </Box>
+            {/* Artwork Title Box */}
+            <Grid container justifyContent="center">
+                <Grid item xs={10} sm={8} md={6}>
+                    <Typography sx={titleStyle}>{artwork.titleZh || artwork.titleEn}</Typography>
+                    <Typography color='GrayText' fontWeight='500' sx={{ mb: 2 }}>{artwork.displayDate}</Typography>
+                    <Divider />
+                </Grid>
+            </Grid>
+
+            {/* Short Description Box */}
+            {
+                artwork.shortDesc && (
+                    <Grid container justifyContent={'center'}>
+                        <Grid item xs={10} sm={8} md={6}>
+                            <Box sx={{ mb: 3, mt: 3 }}>
+                                <Typography>{artwork.shortDesc}</Typography>
+                            </Box>
+                        </Grid>
+                    </Grid>
+                )
+            }
+
+            {/*  More information sections  */}
+            <Grid container justifyContent="center" sx={{ mt: 5, mb: 10 }}>
+                <Grid item xs={10} sm={8} md={8}>
+                    <Grid container>
+                        {/* 1. 左侧导航目录 (在移动端隐藏) */}
+                        {!isMobile && (
+                            <Grid item md={3} sx={{ pr: 3, borderRight: '1px solid #eee' }}>
+                                <List component="nav" sx={{ p: 0 }}>
+                                    {sections.map((section) => (
+                                        <ListItem key={section.id} disablePadding>
+                                            <ListItemButton
+                                                selected={activeSection === section.id}
+                                                onClick={() => setActiveSection(section.id)}
+                                                sx={{
+                                                    borderRadius: '4px',
+                                                    '&.Mui-selected': {
+                                                        backgroundColor: '#f0f0f0',
+                                                        borderRight: '3px solid #C93636',
+                                                        color: '#C93636',
+                                                        fontWeight: 'bold',
+                                                        '&:hover': {
+                                                            backgroundColor: '#e0e0e0',
+                                                        }
+                                                    },
+                                                    py: 1,
+                                                }}
+                                            >
+                                                <Typography variant="body1">{section.label}</Typography>
+                                            </ListItemButton>
+                                        </ListItem>
+                                    ))}
+                                </List>
+                            </Grid>
+                        )}
+
+                        {/* 2. 右侧内容显示区域 */}
+                        <Grid item xs={12} md={9} sx={{ pl: isMobile ? 0 : 3 }}>
+                            <Box sx={{ minHeight: '400px' }}>
+                                {renderContent()}
+                            </Box>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Grid>
+
+            {/* Footer */}
+            <Grid container mt='50px' justifyContent='center' sx={{ backgroundColor: '#fafafa', height: '100px', width: '100%', py: 3 }}>
+                <Typography alignContent='center'>梵·高档案馆 2024</Typography>
+            </Grid>
+        </Grid >
+    );
 };
 
-const rowStyle = {
-    display: 'flex',
-    alignItems: 'flex-start',
-    ...typographyStyle,
-};
-
-const keyStyle = {
-    width: '100px',
-    minWidth: '80px',
-    marginRight: '8px',
-    fontWeight: '400',
-};
-const valueStyle = {
-    color: 'text.secondary',
-    fontSize: { xs: 12, md: 16 },
-};
 export default DetailsPage;
+
+
+const NAV_BUTTON_STYLE = {
+    position: 'absolute',
+    top: '50%', // 垂直居中
+    transform: 'translateY(-50%)',
+    zIndex: 100,
+    cursor: 'pointer',
+
+    width: '60px', 
+    height: '60px', // 强制高度，使其接近圆形
+    backgroundColor: 'rgba(255, 255, 255, 0.8)', // 带透明度的白色背景
+    borderRadius: '50%', // 确保圆形
+    ml: 2,
+
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: 3,
+    '&:hover': {
+        backgroundColor: 'rgba(255, 255, 255, 1)',
+        boxShadow: 4
+    },
+};
+
+const ARROWICON = {
+    ml: 0.5,
+    color: 'text.secondary',
+    color: '#31d847ff'
+}

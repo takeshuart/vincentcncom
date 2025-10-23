@@ -13,6 +13,8 @@ import '../styles/ArtTableStyles.css';
 import ColorSearchBar from '../components/ColorSearchBar';
 import PeriodTimelineFilter from '../components/PeriodBar';
 
+const STORAGE_KEY = 'currentPageContext';
+
 export default function ArtSearchPage() {
     const isDesktop = useMediaQuery('(min-width:600px)');
 
@@ -23,6 +25,26 @@ export default function ArtSearchPage() {
         handleFilterChange, handleColorSelect, handlePeriodChange,
         handleSearchTrigger, handlePageChange,
     } = useArtSearch();
+
+    /**
+     * execute  while click artwork in searchPage
+     * 为实现详情页的上一个/下一个功能，需存储当前页的id列表。
+     * 不支持跨页：如果展示下一页的作品，用户返回之前的列表页时，会造成不一致。
+     * 跨页查询的实现逻辑也会更复杂，暂不考虑
+     */
+    const saveSearchContext = (currentId) => {
+        const currentPageIds = artworks.map(item => String(item.id));
+        //当前详情页在当前页的索引
+        const indexInPage = currentPageIds.findIndex(id => id === String(currentId));
+        //Todo 改用ts 定义类型
+        const context = {
+            idList: currentPageIds,
+            currentIndex: indexInPage,
+        };
+        //
+        console.log(JSON.stringify(context))
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(context));
+    }
 
     if (!isConfigLoaded) {
         // Option 1: Display a simple full-page loader until config is ready
@@ -107,7 +129,10 @@ export default function ArtSearchPage() {
                                             }
                                         }}>
                                         <Card variant="outlined" sx={{ height: '100%', display: 'flex', flexDirection: 'column', border: 'none' }}>
-                                            <Link to={`/vincent/id/${artwork.id}`} target="_self" style={{ textDecoration: 'none' }}>
+                                            <Link target="_self" style={{ textDecoration: 'none' }}
+                                                to={`/vincent/id/${artwork.id}`}
+                                                onClick={() => saveSearchContext(artwork.id)} 
+                                            >
                                                 <CardMedia
                                                     component="img"
                                                     image={`https://artworks-1257857866.cos.ap-beijing.myqcloud.com${artwork.primaryImageSmall}`}

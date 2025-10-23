@@ -4,10 +4,6 @@ var react_1 = require("react");
 var material_1 = require("@mui/material");
 var ui_1 = require("@fancyapps/ui");
 require("@fancyapps/ui/dist/fancybox/fancybox.css");
-/**
- * Show skeleton while the image is loading, to prevent layout shift.
- * Uses FancyBox for the image viewer functionality.
- */
 function ArtworkImage(_a) {
     var src = _a.src, isMobile = _a.isMobile;
     var _b = react_1.useState(false), loaded = _b[0], setLoaded = _b[1];
@@ -16,9 +12,7 @@ function ArtworkImage(_a) {
     react_1.useEffect(function () {
         setLoaded(false);
         var img = new Image();
-        img.onload = function () {
-            setLoaded(true);
-        };
+        img.onload = function () { return setLoaded(true); };
         img.onerror = function () {
             console.error('图片加载失败：', fullSrc);
             setLoaded(true);
@@ -36,7 +30,7 @@ function ArtworkImage(_a) {
                     src: fullSrc,
                     type: 'image'
                 },
-            ], {});
+            ]);
         }
     };
     return (react_1["default"].createElement(material_1.Box, { sx: {
@@ -52,7 +46,7 @@ function ArtworkImage(_a) {
                 height: isMobile ? 300 : 650,
                 overflow: 'hidden',
                 borderRadius: '12px',
-                cursor: loaded ? 'pointer' : 'default'
+                cursor: loaded ? 'zoom-in' : 'default'
             }, onClick: openFancybox },
             !loaded && (react_1["default"].createElement(material_1.Box, { sx: {
                     position: 'absolute',
