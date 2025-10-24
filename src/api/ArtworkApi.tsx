@@ -36,7 +36,7 @@ export async function fetchArtData(
   searchKeyword: string,
   hasImage: boolean,
   genreSelected: string,
-  selectedPeriods: string[],
+  selectedPeriod: string,
   techniqueSelected: string,
   colorSelected: string | undefined
 ) {
@@ -48,17 +48,18 @@ export async function fetchArtData(
       search: searchKeyword,
       hasImage: hasImage,
       genres: genreSelected ? [genreSelected] : [],
-      periods: selectedPeriods ? [selectedPeriods] : [],
+      period: selectedPeriod,
       techniques: techniqueSelected ? [techniqueSelected] : [],
-      hexColor: colorSelected || undefined
+      colorField: colorSelected || undefined
     };
-
-    const response = await axios.get(API_BASE_URL + '/artworks/vincent/bypage', { params: queryParams });
 
     console.log(`Query Params:`, queryParams);
 
+    const response = await axios.get(API_BASE_URL + '/artworks/vincent/bypage', { params: queryParams });
+
     return response.data;
-  } catch (error) {
+  } catch (err) {
+    console.error(`Error fetching art data: ${err}`)
     throw new Error('Error fetching art data');
   }
 }
@@ -97,6 +98,6 @@ export async function fetchConfigData(): Promise<ConfigData> {
   }
 }
 
- export async function getLettersByIds(ids: string | string[]) {
-    return get(`${API_BASE_URL}/vincent/letter/byletids`, { params: { ids: ids } }, 'letters');
-  }
+export async function getLettersByIds(ids: string | string[]) {
+  return get(`${API_BASE_URL}/vincent/letter/byletids`, { params: { ids: ids } }, 'letters');
+}

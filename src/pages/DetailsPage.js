@@ -9,10 +9,10 @@ import { ArrowForwardIos } from '@mui/icons-material';
 import useSearchContextNavigation from '../hooks/useSearchContextNavigation';
 
 const titleStyle = {
-    fontWeight: 'bold',
+    fontWeight: '600',
     lineHeight: '2',
     fontFamily: 'Microsoft YaHei',
-    fontSize: { xs: 18, md: 24 },
+    fontSize: { xs: 18, md: 18 },
     color: '#333'
 }
 
@@ -55,7 +55,6 @@ const DetailsPage = () => {
         return (
             <Box sx={{ p: 5, textAlign: 'center' }}>
                 <CircularProgress />
-                <Typography sx={{ mt: 2 }}>作品信息加载中...</Typography>
             </Box>
         );
     }
@@ -79,33 +78,28 @@ const DetailsPage = () => {
                 {canGoPrev && (
                     <Box // left arrow
                         onClick={goToPrev}
-                        sx={{
-                            ...NAV_BUTTON_STYLE,
-                            left: '5%'
-                        }}
+                        sx={{ ...NAV_BUTTON_STYLE, left: '5%' }}
                     >
-                        <ArrowBackIosIcon fontSize="small" sx={{...ARROWICON }} />
+                        <ArrowBackIosIcon fontSize="small" sx={{ ...ARROWICON }} />
                     </Box>
                 )}
 
                 {canGoNext && (
                     <Box // right arrow
                         onClick={goToNext}
-                        sx={{
-                            ...NAV_BUTTON_STYLE,
-                            right: '5%'
-                        }}
+                        sx={{ ...NAV_BUTTON_STYLE, right: '5%' }}
                     >
-                        <ArrowForwardIos fontSize="small" sx={{...ARROWICON }} />
+                        <ArrowForwardIos fontSize="small" sx={{ ...ARROWICON }} />
                     </Box>
                 )}
             </Box>
-            {/* Artwork Title Box */}
+
+            {/* Title Box */}
             <Grid container justifyContent="center">
                 <Grid item xs={10} sm={8} md={6}>
+                    <Divider sx={{ my:3}} />
                     <Typography sx={titleStyle}>{artwork.titleZh || artwork.titleEn}</Typography>
-                    <Typography color='GrayText' fontWeight='500' sx={{ mb: 2 }}>{artwork.displayDate}</Typography>
-                    <Divider />
+                    <Typography color='#999595ff' fontWeight='600' sx={{ mb: 2 ,fontSize:14}}>{artwork.displayDate}</Typography>
                 </Grid>
             </Grid>
 
@@ -128,7 +122,7 @@ const DetailsPage = () => {
                     <Grid container>
                         {/* 1. 左侧导航目录 (在移动端隐藏) */}
                         {!isMobile && (
-                            <Grid item md={3} sx={{ pr: 3, borderRight: '1px solid #eee' }}>
+                            <Grid item md={2} sx={{ pr: 3, borderRight: '1px solid #eee' }}>
                                 <List component="nav" sx={{ p: 0 }}>
                                     {sections.map((section) => (
                                         <ListItem key={section.id} disablePadding>
@@ -158,7 +152,7 @@ const DetailsPage = () => {
                         )}
 
                         {/* 2. 右侧内容显示区域 */}
-                        <Grid item xs={12} md={9} sx={{ pl: isMobile ? 0 : 3 }}>
+                        <Grid item xs={12} md={10} sx={{ pl: isMobile ? 0 : 3 }}>
                             <Box sx={{ minHeight: '400px' }}>
                                 {renderContent()}
                             </Box>
@@ -179,13 +173,13 @@ export default DetailsPage;
 
 
 const NAV_BUTTON_STYLE = {
-    position: 'absolute',
+    position: 'absolute', //相对父容器 绝对定位
     top: '50%', // 垂直居中
     transform: 'translateY(-50%)',
     zIndex: 100,
     cursor: 'pointer',
 
-    width: '60px', 
+    width: '60px',
     height: '60px', // 强制高度，使其接近圆形
     backgroundColor: 'rgba(255, 255, 255, 0.8)', // 带透明度的白色背景
     borderRadius: '50%', // 确保圆形

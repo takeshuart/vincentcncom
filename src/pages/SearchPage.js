@@ -1,7 +1,7 @@
 import React from 'react'; // Only need React here, other hooks are inside useArtSearch
 import { Container, Typography, Grid, Card, CardMedia, CardContent, Box, CircularProgress } from '@mui/material';
 import { useMediaQuery } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import Pagination from '@mui/material/Pagination';
 
 // Import the new custom hook
@@ -17,6 +17,8 @@ const STORAGE_KEY = 'currentPageContext';
 
 export default function ArtSearchPage() {
     const isDesktop = useMediaQuery('(min-width:600px)');
+    //a URL querystring, start with '?'
+    const querystring = useLocation().search;
 
     // 1. Call the custom hook and destructure all necessary values
     const {
@@ -96,15 +98,15 @@ export default function ArtSearchPage() {
                             <Grid container>
 
                                 <PeriodTimelineFilter
-                                    selectedValues={query.periods}
-                                    onSelectionChangeFunc={handlePeriodChange}
+                                    selectedValue={query.period}
+                                    onSelectionChange={handlePeriodChange}
                                 />
                             </Grid>
                             {/* Color search */}
                             <Grid item xs={12}>
                                 <ColorSearchBar
                                     onColorSelect={handleColorSelect}
-                                    initialColor={query.color || "#800080"}
+                                    initialColor={query.color}
                                 />
                             </Grid>
                             <Grid container justifyContent="center" sx={{ marginBottom: '20px', marginTop: '20px' }}>
@@ -119,56 +121,56 @@ export default function ArtSearchPage() {
                                     <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mt: 4, minHeight: 700, }}>
                                         <CircularProgress size={100} />
                                     </Box>
-                                ) : (artworks.map((artwork, index) => (
-
-                                    <Grid item xs={6} sm={4} md={4} key={index}
-                                        sx={{
-                                            padding: '10px 40px 10px 10px',
-                                            '@media (max-width: 600px)': {
-                                                padding: '0px 0px 0px 20px'
-                                            }
-                                        }}>
-                                        <Card variant="outlined" sx={{ height: '100%', display: 'flex', flexDirection: 'column', border: 'none' }}>
-                                            <Link target="_self" style={{ textDecoration: 'none' }}
-                                                to={`/vincent/id/${artwork.id}`}
-                                                onClick={() => saveSearchContext(artwork.id)} 
-                                            >
-                                                <CardMedia
-                                                    component="img"
-                                                    image={`https://artworks-1257857866.cos.ap-beijing.myqcloud.com${artwork.primaryImageSmall}`}
-                                                    alt=""
-                                                    sx={{
-                                                        height: '250px', width: '100%', objectFit: 'contain', objectPosition: 'center',
-                                                        '@media (max-width: 600px)': { height: '150px' }, backgroundColor: '#fdfbfbff',
-                                                        '&:hover': {
-                                                            backgroundColor: '#f0f0f0'
-                                                        }
-                                                    }}
-                                                />
-                                            </Link>
-                                            <CardContent align="left">
-                                                <Typography sx={{ fontWeight: 400, fontSize: { xs: 12, md: 18 }, textAlign: 'left' }}>
-                                                    {artwork.titleZh || artwork.titleEn}
-                                                </Typography>
-                                                <Typography color="text.secondary" variant="body2"
-                                                    sx={{
-                                                        textAlign: 'left',
-                                                        display: { xs: 'none', md: 'block' },
-                                                    }} >
-                                                    {artwork.displayDate}{artwork.placeOfOrigin ? `, ${artwork.placeOfOrigin}` : ''}
-                                                </Typography>
-                                                {artwork.collection && (
-                                                    <Typography variant="body2" color="text.secondary" textAlign='left'
+                                ) : (
+                                    Array.isArray(artworks) && artworks.map((artwork, index) => (
+                                        <Grid item xs={6} sm={4} md={4} key={index}
+                                            sx={{
+                                                padding: '10px 40px 10px 10px',
+                                                '@media (max-width: 600px)': {
+                                                    padding: '0px 0px 0px 20px'
+                                                }
+                                            }}>
+                                            <Card variant="outlined" sx={{ height: '100%', display: 'flex', flexDirection: 'column', border: 'none' }}>
+                                                <Link target="_self" style={{ textDecoration: 'none' }}
+                                                    to={`/vincent/id/${artwork.id}${querystring}`}
+                                                    onClick={() => saveSearchContext(artwork.id)}
+                                                >
+                                                    <CardMedia
+                                                        component="img"
+                                                        image={`https://artworks-1257857866.cos.ap-beijing.myqcloud.com${artwork.primaryImageSmall}`}
+                                                        alt=""
                                                         sx={{
-                                                            display: { xs: 'none', md: 'block' },
-                                                        }}>
-                                                        {artwork.collection}
+                                                            height: '250px', width: '100%', objectFit: 'contain', objectPosition: 'center',
+                                                            '@media (max-width: 600px)': { height: '150px' }, backgroundColor: '#fdfbfbff',
+                                                            '&:hover': {
+                                                                backgroundColor: '#f0f0f0'
+                                                            }
+                                                        }}
+                                                    />
+                                                </Link>
+                                                <CardContent align="left">
+                                                    <Typography sx={{ fontWeight: 400, fontSize: { xs: 12, md: 18 }, textAlign: 'left' }}>
+                                                        {artwork.titleZh || artwork.titleEn}
                                                     </Typography>
-                                                )}
-                                            </CardContent>
-                                        </Card>
-                                    </Grid>
-                                )))}
+                                                    <Typography color="text.secondary" variant="body2"
+                                                        sx={{
+                                                            textAlign: 'left',
+                                                            display: { xs: 'none', md: 'block' },
+                                                        }} >
+                                                        {artwork.displayDate}{artwork.placeOfOrigin ? `, ${artwork.placeOfOrigin}` : ''}
+                                                    </Typography>
+                                                    {artwork.collection && (
+                                                        <Typography variant="body2" color="text.secondary" textAlign='left'
+                                                            sx={{
+                                                                display: { xs: 'none', md: 'block' },
+                                                            }}>
+                                                            {artwork.collection}
+                                                        </Typography>
+                                                    )}
+                                                </CardContent>
+                                            </Card>
+                                        </Grid>
+                                    )))}
 
                                 {/* ----- Pagination Box ------- */}
                                 <Grid container justifyContent="center">

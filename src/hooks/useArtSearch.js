@@ -13,18 +13,20 @@ const DEFAULT_QUERY = {
 };
 
 export const useArtSearch = () => {
+
+    //reading search parameters from url querystring 
     const [searchParams, setSearchParams] = useSearchParams();
 
     // Local state for the text input (transient state for typing speed)
     const [keywordInput, setKeywordInput] = useState('');
 
-    // Derived state from URL (the canonical source of truth)
+    // recover filters from querystring
     const query = useMemo(() => {
         return {
             page: parseInt(searchParams.get('page') || String(DEFAULT_QUERY.page), 10),
             hasImage: searchParams.get('hasImage') === 'true' || DEFAULT_QUERY.hasImage,
             genre: searchParams.get('genre') || DEFAULT_QUERY.genre,
-            periods: searchParams.get('periods') ? searchParams.get('periods').split(',') : [],
+            period: searchParams.get('period') || '',
             technique: searchParams.get('technique') || DEFAULT_QUERY.technique,
             keyword: searchParams.get('keyword') || DEFAULT_QUERY.keyword,
             color: searchParams.get('color') || DEFAULT_QUERY.color,
@@ -58,12 +60,8 @@ export const useArtSearch = () => {
 
         for (const key in newValues) {
             let value = newValues[key];
-            
-            if (key === 'periods' && Array.isArray(value)) {
-                value = value.join(',');
-            }
-            
-            const isEmpty = (value === '' || value === false || (Array.isArray(value) && value.length === 0));
+
+            const isEmpty = !value || (Array.isArray(value) && value.length === 0);
 
             if (isEmpty) {
                 delete newParams[key];
@@ -71,7 +69,7 @@ export const useArtSearch = () => {
                 newParams[key] = String(value);
             }
         }
-        
+
         if (resetPage) {
             newParams.page = String(1);
         }
@@ -80,7 +78,6 @@ export const useArtSearch = () => {
         setSearchParams(newParams);
     };
 
-    // --- Handlers (Update URL) ---
 
     // Handler for general filter changes (genre, technique, etc.)
     const handleFilterChange = (key) => (event) => {
@@ -92,10 +89,10 @@ export const useArtSearch = () => {
     const handleColorSelect = (color) => {
         updateSearchParams({ color: color, keyword: keywordInput });
     };
-    
+
     // Handler for period changes (timeline)
-    const handlePeriodChange = (values) => {
-        updateSearchParams({ periods: values });
+    const handlePeriodChange = (value) => {
+        updateSearchParams({ period: value });
     };
 
     // Handler for search button click and Enter key press
@@ -109,23 +106,28 @@ export const useArtSearch = () => {
 
     // Handler for Pagination (only changes page parameter, does not reset other filters)
     const handlePageChange = (event, value) => {
-        updateSearchParams({ page: value }, false); 
+        updateSearchParams({ page: value }, false);
     };
 
     // --- Main Data Fetching Logic (Runs on query change) ---
     async function fetchData() {
+
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         try {
             setIsLoading(true);
             const artData = await fetchArtData(
-                query.page, pageSize, query.keyword, query.hasImage, 
-                query.genre, query.periods, query.technique, query.color
+                query.page, pageSize,
+                query.keyword,
+                query.hasImage,
+                query.genre, query.period, query.technique,
+                query.color
             );
 
-            setArtWorks(artData.rows);
-            setTotalPages(Math.ceil(artData.count / pageSize));
-            setTotalResults(artData.count);
+            const received = Array.isArray(artData.rows) ? artData.rows : [];
+            setArtWorks(received);
+            setTotalPages(Math.ceil(artData.totalCount / pageSize));
+            setTotalResults(artData.totalCount);
         } catch (error) {
             console.error('Error fetching art data', error);
             setArtWorks([]);
@@ -147,7 +149,7 @@ export const useArtSearch = () => {
         query,
         keywordInput,
         setKeywordInput, // Only keywordInput setter is needed by the component
-        
+
         // Data States
         artworks,
         totalPages,
@@ -155,7 +157,7 @@ export const useArtSearch = () => {
         isLoading,
         isConfigLoaded,
         configData,
-        
+
         // Handlers
         handleFilterChange,
         handleColorSelect,

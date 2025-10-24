@@ -36,6 +36,7 @@ var DEFAULT_QUERY = {
 };
 
 var useArtSearch = function useArtSearch() {
+  //reading search parameters from url querystring 
   var _useSearchParams = (0, _reactRouterDom.useSearchParams)(),
       _useSearchParams2 = _slicedToArray(_useSearchParams, 2),
       searchParams = _useSearchParams2[0],
@@ -45,7 +46,7 @@ var useArtSearch = function useArtSearch() {
   var _useState = (0, _react.useState)(''),
       _useState2 = _slicedToArray(_useState, 2),
       keywordInput = _useState2[0],
-      setKeywordInput = _useState2[1]; // Derived state from URL (the canonical source of truth)
+      setKeywordInput = _useState2[1]; // recover filters from querystring
 
 
   var query = (0, _react.useMemo)(function () {
@@ -53,7 +54,7 @@ var useArtSearch = function useArtSearch() {
       page: parseInt(searchParams.get('page') || String(DEFAULT_QUERY.page), 10),
       hasImage: searchParams.get('hasImage') === 'true' || DEFAULT_QUERY.hasImage,
       genre: searchParams.get('genre') || DEFAULT_QUERY.genre,
-      periods: searchParams.get('periods') ? searchParams.get('periods').split(',') : [],
+      period: searchParams.get('period') || '',
       technique: searchParams.get('technique') || DEFAULT_QUERY.technique,
       keyword: searchParams.get('keyword') || DEFAULT_QUERY.keyword,
       color: searchParams.get('color') || DEFAULT_QUERY.color
@@ -116,12 +117,7 @@ var useArtSearch = function useArtSearch() {
 
     for (var key in newValues) {
       var value = newValues[key];
-
-      if (key === 'periods' && Array.isArray(value)) {
-        value = value.join(',');
-      }
-
-      var isEmpty = value === '' || value === false || Array.isArray(value) && value.length === 0;
+      var isEmpty = !value || Array.isArray(value) && value.length === 0;
 
       if (isEmpty) {
         delete newParams[key];
@@ -136,8 +132,7 @@ var useArtSearch = function useArtSearch() {
 
 
     setSearchParams(newParams);
-  }; // --- Handlers (Update URL) ---
-  // Handler for general filter changes (genre, technique, etc.)
+  }; // Handler for general filter changes (genre, technique, etc.)
 
 
   var handleFilterChange = function handleFilterChange(key) {
@@ -156,9 +151,9 @@ var useArtSearch = function useArtSearch() {
   }; // Handler for period changes (timeline)
 
 
-  var handlePeriodChange = function handlePeriodChange(values) {
+  var handlePeriodChange = function handlePeriodChange(value) {
     updateSearchParams({
-      periods: values
+      period: value
     });
   }; // Handler for search button click and Enter key press
 
@@ -183,7 +178,7 @@ var useArtSearch = function useArtSearch() {
 
 
   function fetchData() {
-    var artData;
+    var artData, received;
     return regeneratorRuntime.async(function fetchData$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
@@ -195,35 +190,36 @@ var useArtSearch = function useArtSearch() {
             _context.prev = 1;
             setIsLoading(true);
             _context.next = 5;
-            return regeneratorRuntime.awrap((0, _ArtworkApi.fetchArtData)(query.page, pageSize, query.keyword, query.hasImage, query.genre, query.periods, query.technique, query.color));
+            return regeneratorRuntime.awrap((0, _ArtworkApi.fetchArtData)(query.page, pageSize, query.keyword, query.hasImage, query.genre, query.period, query.technique, query.color));
 
           case 5:
             artData = _context.sent;
-            setArtWorks(artData.rows);
-            setTotalPages(Math.ceil(artData.count / pageSize));
-            setTotalResults(artData.count);
-            _context.next = 17;
+            received = Array.isArray(artData.rows) ? artData.rows : [];
+            setArtWorks(received);
+            setTotalPages(Math.ceil(artData.totalCount / pageSize));
+            setTotalResults(artData.totalCount);
+            _context.next = 18;
             break;
 
-          case 11:
-            _context.prev = 11;
+          case 12:
+            _context.prev = 12;
             _context.t0 = _context["catch"](1);
             console.error('Error fetching art data', _context.t0);
             setArtWorks([]);
             setTotalPages(0);
             setTotalResults(0);
 
-          case 17:
-            _context.prev = 17;
+          case 18:
+            _context.prev = 18;
             setIsLoading(false);
-            return _context.finish(17);
+            return _context.finish(18);
 
-          case 20:
+          case 21:
           case "end":
             return _context.stop();
         }
       }
-    }, null, null, [[1, 11, 17, 20]]);
+    }, null, null, [[1, 12, 18, 21]]);
   } // Effect to trigger data fetching whenever 'query' changes
 
 

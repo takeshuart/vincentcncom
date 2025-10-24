@@ -2,10 +2,9 @@
 import React from 'react';
 import { Box, Typography, List, ListItem, Link, Grid, CircularProgress } from '@mui/material';
 
-// ========== ArtworkOverview ==========
 export const ArtworkOverview = ({ artwork, extLinks }) => (
   <Box>
-    {/* 简介 & 深度阅读引导 */}
+    {/* 简介 & 深度阅读引导 （没有相关数据，demo）*/}
     {artwork.fullArticleUrl && (
       <Box
         sx={{
@@ -145,7 +144,6 @@ export const ArtworkExhibition = ({ exhibitions }) => {
   );
 };
 
-// ========== 小工具子组件 ==========
 const InfoRow = ({ label, value }) => (
   <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 0.5 }}>
     <Typography sx={{ width: 100, minWidth: 80, mr: 1, fontWeight: 600, color: '#555' }}>{label}：</Typography>

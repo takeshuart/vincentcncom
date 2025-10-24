@@ -44,8 +44,10 @@ var useSearchContextNavigation = function useSearchContextNavigation(currentId) 
   var _useState5 = (0, _react.useState)([]),
       _useState6 = _slicedToArray(_useState5, 2),
       list = _useState6[0],
-      setList = _useState6[1];
+      setList = _useState6[1]; //a URL querystring, start with '?'
 
+
+  var querystring = (0, _reactRouterDom.useLocation)().search;
   (0, _react.useEffect)(function () {
     var contextJson = sessionStorage.getItem(STORAGE_KEY);
 
@@ -85,14 +87,14 @@ var useSearchContextNavigation = function useSearchContextNavigation(currentId) 
     if (currentIndex < list.length - 1) {
       var nextIndex = currentIndex + 1;
       var nextId = list[nextIndex];
-      navigate("/vincent/id/".concat(nextId));
+      navigate("/vincent/id/".concat(nextId).concat(querystring));
     }
   }, [currentIndex, list, navigate]);
   var goToPrev = (0, _react.useCallback)(function () {
     if (currentIndex > 0) {
       var prevIndex = currentIndex - 1;
       var prevId = list[prevIndex];
-      navigate("/vincent/id/".concat(prevId));
+      navigate("/vincent/id/".concat(prevId).concat(querystring));
     }
   }, [currentIndex, list, navigate]); // 3. 计算是否可以导航
 

@@ -1,30 +1,35 @@
 "use strict";
 exports.__esModule = true;
-exports.ColorSearchBar = void 0;
+exports.ColorSearchBar = exports.VAN_GOGH_PALETTE = void 0;
 var react_1 = require("react");
 var material_1 = require("@mui/material"); // 移除了 IconButton
-// 梵高调色板（根据非素描作品RGB分析结果）
-var VAN_GOGH_COLORS = [
-    { name: '淡赭黄', color: '#D9C19D' },
-    { name: '奶油米白', color: '#E8D7BC' },
-    { name: '温柔灰褐', color: '#BDAF8F' },
-    { name: '天蓝灰', color: '#AAB6B3' },
-    { name: '橄榄绿', color: '#8E835A' },
-    { name: '焦赭红', color: '#C59966' },
-    { name: '深青灰', color: '#655E4A' },
-    { name: '苍绿蓝', color: '#768980' },
-    { name: '浅赭橙', color: '#D6B079' },
-    { name: '暖灰白', color: '#DCCFB9' },
+// 梵高调色板（根据非drawing作品RGB分析结果）
+// displayColor: 前端展示亮度和饱和度更高的色彩
+// searchColorRGB:  使用 K-Means 聚类，在感知均匀的 L^*a^*b^* 空间中，从868张图片的色彩数据中提取10个最具代表性的聚类中心（颜色）。
+exports.VAN_GOGH_PALETTE = [
+    { id: 1, name: '湖水青蓝', displayColor: '#4A97A8', searchColorRGB: [102, 125, 131], scoreField: 'score_01' },
+    { id: 2, name: '深空靛蓝', displayColor: '#4F6FA8', searchColorRGB: [107, 134, 172], scoreField: 'score_02' },
+    { id: 3, name: '柔和米灰', displayColor: '#E5EAE8', searchColorRGB: [192, 206, 201], scoreField: 'score_03' },
+    { id: 4, name: '清新薄荷绿', displayColor: '#B7D9A6', searchColorRGB: [170, 189, 161], scoreField: 'score_04' },
+    { id: 5, name: '深沉橄榄', displayColor: '#7F8D44', searchColorRGB: [104, 114, 51], scoreField: 'score_05' },
+    { id: 6, name: '古典棕绿', displayColor: '#8F754D', searchColorRGB: [100, 91, 59], scoreField: 'score_06' },
+    { id: 7, name: '浓郁焦棕', displayColor: '#594E3F', searchColorRGB: [26, 23, 14], scoreField: 'score_07' },
+    { id: 8, name: '暖调赤土', displayColor: '#C7906B', searchColorRGB: [174, 127, 95], scoreField: 'score_08' },
+    { id: 9, name: '亮金赭石', displayColor: '#C79B48', searchColorRGB: [153, 124, 80], scoreField: 'score_09' },
+    { id: 10, name: '向日葵亮黄', displayColor: '#F3D860', searchColorRGB: [217, 197, 103], scoreField: 'score_10' }
 ];
 exports.ColorSearchBar = function (_a) {
     var onColorSelect = _a.onColorSelect, _b = _a.initialColor, initialColor = _b === void 0 ? '' : _b;
     var _c = react_1.useState(initialColor), selectedColor = _c[0], setSelectedColor = _c[1];
-    // 优化选择逻辑：支持二次点击取消和“全部”按钮
-    var handleSelect = react_1.useCallback(function (color) {
-        // 如果点击的颜色就是当前选中的颜色，则取消选择（设置为 ''）
-        var newColor = selectedColor === color ? '' : color;
-        setSelectedColor(newColor);
-        onColorSelect(newColor); // 通知父组件执行新查询
+    var handleSelect = react_1.useCallback(function (color, scoreField) {
+        if (selectedColor === color) {
+            setSelectedColor('');
+            onColorSelect(''); // 通知父组件：没有颜色
+        }
+        else {
+            setSelectedColor(color);
+            onColorSelect(scoreField);
+        }
     }, [selectedColor, onColorSelect]);
     return (react_1["default"].createElement(material_1.Box, { sx: { width: '100%', my: 2 } },
         react_1["default"].createElement(material_1.Box, { sx: {
@@ -34,11 +39,11 @@ exports.ColorSearchBar = function (_a) {
                 borderRadius: '6px',
                 overflow: 'hidden',
                 border: '1px solid #ccc'
-            } }, VAN_GOGH_COLORS.map(function (block) {
-            var isSelected = selectedColor === block.color;
-            return (react_1["default"].createElement(material_1.Box, { key: block.color, onClick: function () { return handleSelect(block.color); }, title: "" + block.name + (isSelected ? ' (已选中)' : ''), sx: {
+            } }, exports.VAN_GOGH_PALETTE.map(function (color) {
+            var isSelected = selectedColor === color.displayColor;
+            return (react_1["default"].createElement(material_1.Box, { key: color.displayColor, onClick: function () { return handleSelect(color.displayColor, color.scoreField); }, title: "" + color.name + (isSelected ? ' (已选中)' : ''), sx: {
                     flex: 1,
-                    backgroundColor: block.color,
+                    backgroundColor: color.displayColor,
                     cursor: 'pointer',
                     // 统一使用更平滑的 transition
                     transition: 'all 0.25s ease-in-out',

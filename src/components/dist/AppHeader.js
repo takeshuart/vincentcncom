@@ -7,8 +7,11 @@ var AppHeader = function () {
     var navigate = react_router_dom_1.useNavigate();
     var location = react_router_dom_1.useLocation();
     var shouldShowBack = !(location.pathname === '/vincent');
+    //go back searchPage
     var goBack = function () {
-        navigate(-1);
+        //返回上一页 而不是直接到搜索页。
+        //navigate(-1)
+        navigate("/vincent/search" + location.search); //recover search fitlers from querystring
     };
     return (React.createElement(material_1.AppBar, { position: "static", sx: { bgcolor: '#A7A6C3', boxShadow: 'none' } },
         React.createElement(material_1.Toolbar, null,

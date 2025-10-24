@@ -86,9 +86,9 @@ function fetchArtworkById(artworkId) {
     });
 }
 exports.fetchArtworkById = fetchArtworkById;
-function fetchArtData(page, pageSize, searchKeyword, hasImage, genreSelected, selectedPeriods, techniqueSelected, colorSelected) {
+function fetchArtData(page, pageSize, searchKeyword, hasImage, genreSelected, selectedPeriod, techniqueSelected, colorSelected) {
     return __awaiter(this, void 0, void 0, function () {
-        var queryParams, response, error_3;
+        var queryParams, response, err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -99,17 +99,18 @@ function fetchArtData(page, pageSize, searchKeyword, hasImage, genreSelected, se
                         search: searchKeyword,
                         hasImage: hasImage,
                         genres: genreSelected ? [genreSelected] : [],
-                        periods: selectedPeriods ? [selectedPeriods] : [],
+                        period: selectedPeriod,
                         techniques: techniqueSelected ? [techniqueSelected] : [],
-                        hexColor: colorSelected || undefined
+                        colorField: colorSelected || undefined
                     };
+                    console.log("Query Params:", queryParams);
                     return [4 /*yield*/, axios_1["default"].get(API_BASE_URL + '/artworks/vincent/bypage', { params: queryParams })];
                 case 1:
                     response = _a.sent();
-                    console.log("Query Params:", queryParams);
                     return [2 /*return*/, response.data];
                 case 2:
-                    error_3 = _a.sent();
+                    err_1 = _a.sent();
+                    console.error("Error fetching art data: " + err_1);
                     throw new Error('Error fetching art data');
                 case 3: return [2 /*return*/];
             }
@@ -119,7 +120,7 @@ function fetchArtData(page, pageSize, searchKeyword, hasImage, genreSelected, se
 exports.fetchArtData = fetchArtData;
 function fetchSurpriseArt() {
     return __awaiter(this, void 0, void 0, function () {
-        var response, error_4;
+        var response, error_3;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -129,7 +130,7 @@ function fetchSurpriseArt() {
                     response = _a.sent();
                     return [2 /*return*/, response.data];
                 case 2:
-                    error_4 = _a.sent();
+                    error_3 = _a.sent();
                     throw new Error('Error fetching artwork details');
                 case 3: return [2 /*return*/];
             }
@@ -139,7 +140,7 @@ function fetchSurpriseArt() {
 exports.fetchSurpriseArt = fetchSurpriseArt;
 function fetchConfigData() {
     return __awaiter(this, void 0, Promise, function () {
-        var _a, genreRes, periodRes, techniques, error_5;
+        var _a, genreRes, periodRes, techniques, error_4;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
@@ -157,7 +158,7 @@ function fetchConfigData() {
                             techniques: techniques.data
                         }];
                 case 2:
-                    error_5 = _b.sent();
+                    error_4 = _b.sent();
                     throw new Error('Error fetching config data');
                 case 3: return [2 /*return*/];
             }

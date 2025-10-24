@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 /**
  * 详情页的上一个/下一个按钮功能
@@ -11,6 +11,8 @@ const useSearchContextNavigation = (currentId) => {
     const [searchContext, setSearchContext] = useState(null);
     const [currentIndex, setCurrentIndex] = useState(-1);
     const [list, setList] = useState([]);
+    //a URL querystring, start with '?'
+    const querystring = useLocation().search;
 
     useEffect(() => {
         const contextJson = sessionStorage.getItem(STORAGE_KEY);
@@ -49,7 +51,7 @@ const useSearchContextNavigation = (currentId) => {
         if (currentIndex < list.length - 1) {
             const nextIndex = currentIndex + 1;
             const nextId = list[nextIndex];
-            navigate(`/vincent/id/${nextId}`);
+            navigate(`/vincent/id/${nextId}${querystring}`);
         }
     }, [currentIndex, list, navigate]);
 
@@ -57,7 +59,7 @@ const useSearchContextNavigation = (currentId) => {
         if (currentIndex > 0) {
             const prevIndex = currentIndex - 1;
             const prevId = list[prevIndex];
-            navigate(`/vincent/id/${prevId}`);
+            navigate(`/vincent/id/${prevId}${querystring}`);
         }
     }, [currentIndex, list, navigate]);
 

@@ -7,8 +7,11 @@ const AppHeader = () => {
     const location = useLocation();
     const shouldShowBack = !(location.pathname === '/vincent');
 
+    //go back searchPage
     const goBack = () => {
-        navigate(-1);
+        //返回上一页 而不是直接到搜索页。
+        //navigate(-1)
+        navigate(`/vincent/search${location.search}`);//recover search fitlers from querystring
     };
     return (
         <AppBar position="static" sx={{ bgcolor: '#A7A6C3', boxShadow: 'none'}}>
