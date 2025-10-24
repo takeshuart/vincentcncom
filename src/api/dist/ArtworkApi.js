@@ -88,11 +88,11 @@ function fetchArtworkById(artworkId) {
 exports.fetchArtworkById = fetchArtworkById;
 function fetchArtData(page, pageSize, searchKeyword, hasImage, genreSelected, selectedPeriod, techniqueSelected, colorSelected) {
     return __awaiter(this, void 0, void 0, function () {
-        var queryParams, response, err_1;
+        var queryParams, delay_1, response, err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 2, , 3]);
+                    _a.trys.push([0, 3, , 4]);
                     queryParams = {
                         page: page,
                         pageSize: pageSize,
@@ -104,15 +104,19 @@ function fetchArtData(page, pageSize, searchKeyword, hasImage, genreSelected, se
                         colorField: colorSelected || undefined
                     };
                     console.log("Query Params:", queryParams);
-                    return [4 /*yield*/, axios_1["default"].get(API_BASE_URL + '/artworks/vincent/bypage', { params: queryParams })];
+                    delay_1 = Math.random() * 1000 + 500;
+                    return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, delay_1); })];
                 case 1:
+                    _a.sent();
+                    return [4 /*yield*/, axios_1["default"].get(API_BASE_URL + '/artworks/vincent/bypage', { params: queryParams })];
+                case 2:
                     response = _a.sent();
                     return [2 /*return*/, response.data];
-                case 2:
+                case 3:
                     err_1 = _a.sent();
                     console.error("Error fetching art data: " + err_1);
                     throw new Error('Error fetching art data');
-                case 3: return [2 /*return*/];
+                case 4: return [2 /*return*/];
             }
         });
     });

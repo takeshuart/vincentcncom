@@ -1,17 +1,14 @@
-import React from 'react'; // Only need React here, other hooks are inside useArtSearch
+import { useRef, useEffect } from 'react';
 import { Container, Typography, Grid, Card, CardMedia, CardContent, Box, CircularProgress } from '@mui/material';
 import { useMediaQuery } from '@mui/material';
-import { Link, useLocation, useSearchParams } from 'react-router-dom';
-import Pagination from '@mui/material/Pagination';
+import { Link, useLocation } from 'react-router-dom';
 
-// Import the new custom hook
 import { useArtSearch } from '../hooks/useArtSearch';
 
-import { FilterAccordion, SearchInput } from './Filters';
-// Removed imports for fetchArtData, fetchConfigData, useEffect, useState, useMemo, useSearchParams
 import '../styles/ArtTableStyles.css';
 import ColorSearchBar from '../components/ColorSearchBar';
 import PeriodTimelineFilter from '../components/PeriodBar';
+import { SearchInput } from './Filters';
 
 const STORAGE_KEY = 'currentPageContext';
 
@@ -19,13 +16,16 @@ export default function ArtSearchPage() {
     const isDesktop = useMediaQuery('(min-width:600px)');
     //a URL querystring, start with '?'
     const querystring = useLocation().search;
+    // 【修改 1.3】创建一个引用，用于观察列表末尾的元素
+    const loadMoreRef = useRef(null);
 
     // 1. Call the custom hook and destructure all necessary values
     const {
-        query, keywordInput, setKeywordInput, artworks, totalPages,
+        query, keywordInput, setKeywordInput, artworks, 
         totalResults, isLoading, isConfigLoaded, configData,
         handleFilterChange, handleColorSelect, handlePeriodChange,
-        handleSearchTrigger, handlePageChange,
+        handleSearchTrigger, 
+        hasNextPage, fetchNextPage, isFetchingNextPage,
     } = useArtSearch();
 
     /**
@@ -35,24 +35,63 @@ export default function ArtSearchPage() {
      * 跨页查询的实现逻辑也会更复杂，暂不考虑
      */
     const saveSearchContext = (currentId) => {
-        const currentPageIds = artworks.map(item => String(item.id));
-        //当前详情页在当前页的索引
-        const indexInPage = currentPageIds.findIndex(id => id === String(currentId));
+        const allLoadedIds = artworks.map(item => String(item.id)); // 【修改 1.5】列表改为所有已加载的作品
+        const indexInPage = allLoadedIds.findIndex(id => id === String(currentId));
         //Todo 改用ts 定义类型
         const context = {
-            idList: currentPageIds,
+            idList: allLoadedIds,
             currentIndex: indexInPage,
         };
         //
         console.log(JSON.stringify(context))
         sessionStorage.setItem(STORAGE_KEY, JSON.stringify(context));
     }
+    useEffect(() => {
+        // 如果没有下一页，或者当前正在加载下一页，则无需设置观察者
+        if (!loadMoreRef.current || !hasNextPage || isFetchingNextPage) {
+            return;
+        }
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                // 当目标元素进入视口时
+                if (entries[0].isIntersecting) {
+                    // 调用加载下一页的函数
+                    fetchNextPage();
+                }
+            },
+            {
+                // 提前触发加载，提供 200px 的裕度
+                rootMargin: '200px 0px',
+                threshold: 0.1,
+            }
+        );
+
+        // 开始观察目标元素
+        observer.observe(loadMoreRef.current);
+
+        // 清理函数
+        return () => {
+            if (loadMoreRef.current) {
+                observer.unobserve(loadMoreRef.current);
+            }
+        };
+
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     if (!isConfigLoaded) {
         // Option 1: Display a simple full-page loader until config is ready
         return (
             <Container sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
                 <CircularProgress size={80} />
+            </Container>
+        );
+    }
+    // 【修改 1.7】 新搜索/筛选时的初始加载
+    if (isLoading && artworks.length === 0) {
+        return (
+            <Container maxWidth={false} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '600px' }}>
+                <CircularProgress size={100} />
             </Container>
         );
     }
@@ -122,7 +161,7 @@ export default function ArtSearchPage() {
                                         <CircularProgress size={100} />
                                     </Box>
                                 ) : (
-                                    Array.isArray(artworks) && artworks.map((artwork, index) => (
+                                    artworks?.map((artwork, index) => (
                                         <Grid item xs={6} sm={4} md={4} key={index}
                                             sx={{
                                                 padding: '10px 40px 10px 10px',
@@ -172,20 +211,25 @@ export default function ArtSearchPage() {
                                         </Grid>
                                     )))}
 
-                                {/* ----- Pagination Box ------- */}
-                                <Grid container justifyContent="center">
-                                    <Grid item>
-                                        <Box sx={{ pb: 8, display: 'flex', justifyContent: 'center' }}>
-                                            <Pagination
-                                                count={totalPages}
-                                                page={query.page}
-                                                onChange={handlePageChange}
-                                                color="secondary"
-                                                siblingCount={isDesktop ? 2 : 0}
-                                                size="large"
-                                            />
-                                        </Box>
-                                    </Grid>
+                                <Grid item xs={12}>
+                                    <Box ref={loadMoreRef} sx={{ py: 4, display: 'flex', justifyContent: 'center', minHeight: '50px' }}>
+                                        {/* 正在加载下一页 */}
+                                        {isFetchingNextPage && (
+                                            <CircularProgress size={40} />
+                                        )}
+                                        {/* 已加载全部作品 (只有在有作品且没有下一页，并且不在加载中才显示) */}
+                                        {!hasNextPage && artworks.length > 0 && !isLoading && !isFetchingNextPage && (
+                                            <Typography variant="subtitle1" color="text.secondary">
+                                                已加载全部作品 🖼️
+                                            </Typography>
+                                        )}
+                                        {/* 未找到作品 */}
+                                        {artworks.length === 0 && !isLoading && (
+                                            <Typography variant="h6" color="text.secondary">
+                                                未找到符合条件的作品 🤔
+                                            </Typography>
+                                        )}
+                                    </Box>
                                 </Grid>
                             </Grid>
 

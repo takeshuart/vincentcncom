@@ -11,6 +11,14 @@ var _reactRouterDom = require("react-router-dom");
 
 var _ArtworkApi = require("../api/ArtworkApi");
 
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
@@ -25,7 +33,8 @@ function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) ||
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
-var pageSize = 11;
+var pageSize = 9; // 【新增常量】自动加载的页数限制 (N=3)
+
 var DEFAULT_QUERY = {
   page: 1,
   hasImage: true,
@@ -46,57 +55,77 @@ var useArtSearch = function useArtSearch() {
   var _useState = (0, _react.useState)(''),
       _useState2 = _slicedToArray(_useState, 2),
       keywordInput = _useState2[0],
-      setKeywordInput = _useState2[1]; // recover filters from querystring
+      setKeywordInput = _useState2[1]; // 【修改 2.3】 新增内部状态
+
+
+  var _useState3 = (0, _react.useState)(1),
+      _useState4 = _slicedToArray(_useState3, 2),
+      internalPage = _useState4[0],
+      setInternalPage = _useState4[1];
+
+  var _useState5 = (0, _react.useState)(false),
+      _useState6 = _slicedToArray(_useState5, 2),
+      isFetchingNextPage = _useState6[0],
+      setIsFetchingNextPage = _useState6[1];
+
+  var _useState7 = (0, _react.useState)(''),
+      _useState8 = _slicedToArray(_useState7, 2),
+      lastQueryParams = _useState8[0],
+      setLastQueryParams = _useState8[1]; // 用于检测 URL 筛选条件是否变化
+  // recover filters from querystring
 
 
   var query = (0, _react.useMemo)(function () {
-    return {
-      page: parseInt(searchParams.get('page') || String(DEFAULT_QUERY.page), 10),
+    var newQuery = {
+      // 【修改 2.4】 从 URL 读取参数时，排除 page
       hasImage: searchParams.get('hasImage') === 'true' || DEFAULT_QUERY.hasImage,
       genre: searchParams.get('genre') || DEFAULT_QUERY.genre,
       period: searchParams.get('period') || '',
       technique: searchParams.get('technique') || DEFAULT_QUERY.technique,
       keyword: searchParams.get('keyword') || DEFAULT_QUERY.keyword,
       color: searchParams.get('color') || DEFAULT_QUERY.color
-    };
+    }; // 添加一个用于唯一标识当前筛选状态的属性
+
+    newQuery.queryString = new URLSearchParams(newQuery).toString();
+    return newQuery;
   }, [searchParams]); // Initialize keywordInput from URL on mount/URL update
 
   (0, _react.useEffect)(function () {
     setKeywordInput(query.keyword);
   }, [query.keyword]); // --- Data and Loading States ---
 
-  var _useState3 = (0, _react.useState)([]),
-      _useState4 = _slicedToArray(_useState3, 2),
-      artworks = _useState4[0],
-      setArtWorks = _useState4[1];
-
-  var _useState5 = (0, _react.useState)(0),
-      _useState6 = _slicedToArray(_useState5, 2),
-      totalPages = _useState6[0],
-      setTotalPages = _useState6[1];
-
-  var _useState7 = (0, _react.useState)(0),
-      _useState8 = _slicedToArray(_useState7, 2),
-      totalResults = _useState8[0],
-      setTotalResults = _useState8[1];
-
-  var _useState9 = (0, _react.useState)(false),
+  var _useState9 = (0, _react.useState)([]),
       _useState10 = _slicedToArray(_useState9, 2),
-      isLoading = _useState10[0],
-      setIsLoading = _useState10[1];
+      artworks = _useState10[0],
+      setArtWorks = _useState10[1];
 
-  var _useState11 = (0, _react.useState)(false),
+  var _useState11 = (0, _react.useState)(0),
       _useState12 = _slicedToArray(_useState11, 2),
-      isConfigLoaded = _useState12[0],
-      setIsConfigLoaded = _useState12[1];
+      totalPages = _useState12[0],
+      setTotalPages = _useState12[1];
 
-  var _useState13 = (0, _react.useState)({
+  var _useState13 = (0, _react.useState)(0),
+      _useState14 = _slicedToArray(_useState13, 2),
+      totalResults = _useState14[0],
+      setTotalResults = _useState14[1];
+
+  var _useState15 = (0, _react.useState)(false),
+      _useState16 = _slicedToArray(_useState15, 2),
+      isLoading = _useState16[0],
+      setIsLoading = _useState16[1];
+
+  var _useState17 = (0, _react.useState)(false),
+      _useState18 = _slicedToArray(_useState17, 2),
+      isConfigLoaded = _useState18[0],
+      setIsConfigLoaded = _useState18[1];
+
+  var _useState19 = (0, _react.useState)({
     genres: [],
     techniques: []
   }),
-      _useState14 = _slicedToArray(_useState13, 2),
-      configData = _useState14[0],
-      setConfigData = _useState14[1]; // --- Configuration Fetch (Run Once) ---
+      _useState20 = _slicedToArray(_useState19, 2),
+      configData = _useState20[0],
+      setConfigData = _useState20[1]; // --- Configuration Fetch (Run Once) ---
 
 
   (0, _react.useEffect)(function () {
@@ -110,7 +139,6 @@ var useArtSearch = function useArtSearch() {
   }, []); // --- Utility Function to Update URL Parameters ---
 
   var updateSearchParams = function updateSearchParams(newValues) {
-    var resetPage = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
     var currentParams = Object.fromEntries(searchParams.entries());
 
     var newParams = _objectSpread({}, currentParams);
@@ -124,10 +152,6 @@ var useArtSearch = function useArtSearch() {
       } else {
         newParams[key] = String(value);
       }
-    }
-
-    if (resetPage) {
-      newParams.page = String(1);
     } // Apply the new parameter set to the URL
 
 
@@ -167,65 +191,109 @@ var useArtSearch = function useArtSearch() {
     updateSearchParams({
       keyword: keywordInput
     });
-  }; // Handler for Pagination (only changes page parameter, does not reset other filters)
-
-
-  var handlePageChange = function handlePageChange(event, value) {
-    updateSearchParams({
-      page: value
-    }, false);
   }; // --- Main Data Fetching Logic (Runs on query change) ---
+  // 【修改 2.8】 核心数据获取逻辑，增加了 append 参数
 
 
-  function fetchData() {
-    var artData, received;
-    return regeneratorRuntime.async(function fetchData$(_context) {
+  var executeFetch = (0, _react.useCallback)(function _callee(page) {
+    var append,
+        artData,
+        received,
+        newTotalPages,
+        _args = arguments;
+    return regeneratorRuntime.async(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            window.scrollTo({
-              top: 0,
-              behavior: 'smooth'
-            });
-            _context.prev = 1;
-            setIsLoading(true);
+            append = _args.length > 1 && _args[1] !== undefined ? _args[1] : false;
+
+            if (append) {
+              setIsFetchingNextPage(true);
+            } else {
+              setIsLoading(true);
+              window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+              });
+            }
+
+            _context.prev = 2;
             _context.next = 5;
-            return regeneratorRuntime.awrap((0, _ArtworkApi.fetchArtData)(query.page, pageSize, query.keyword, query.hasImage, query.genre, query.period, query.technique, query.color));
+            return regeneratorRuntime.awrap((0, _ArtworkApi.fetchArtData)(page, pageSize, // 使用传入的页码
+            query.keyword, query.hasImage, query.genre, query.period, query.technique, query.color));
 
           case 5:
             artData = _context.sent;
             received = Array.isArray(artData.rows) ? artData.rows : [];
-            setArtWorks(received);
-            setTotalPages(Math.ceil(artData.totalCount / pageSize));
+            newTotalPages = Math.ceil(artData.totalCount / pageSize);
+
+            if (append) {
+              // 加载下一页：追加数据
+              setArtWorks(function (prevArtworks) {
+                return [].concat(_toConsumableArray(prevArtworks), _toConsumableArray(received));
+              });
+            } else {
+              // 新搜索/筛选：替换数据并重置页码
+              setArtWorks(received);
+              setInternalPage(page); // 重置 internalPage 为 1
+            }
+
+            setTotalPages(newTotalPages);
             setTotalResults(artData.totalCount);
-            _context.next = 18;
+            _context.next = 17;
             break;
 
-          case 12:
-            _context.prev = 12;
-            _context.t0 = _context["catch"](1);
+          case 13:
+            _context.prev = 13;
+            _context.t0 = _context["catch"](2);
             console.error('Error fetching art data', _context.t0);
-            setArtWorks([]);
-            setTotalPages(0);
-            setTotalResults(0);
 
-          case 18:
-            _context.prev = 18;
-            setIsLoading(false);
-            return _context.finish(18);
+            if (!append) {
+              setArtWorks([]);
+              setTotalPages(0);
+              setTotalResults(0);
+            }
 
-          case 21:
+          case 17:
+            _context.prev = 17;
+
+            if (append) {
+              setIsFetchingNextPage(false);
+            } else {
+              setIsLoading(false);
+            }
+
+            return _context.finish(17);
+
+          case 20:
           case "end":
             return _context.stop();
         }
       }
-    }, null, null, [[1, 12, 18, 21]]);
-  } // Effect to trigger data fetching whenever 'query' changes
-
+    }, null, null, [[2, 13, 17, 20]]);
+  }, [query.keyword, query.hasImage, query.genre, query.period, query.technique, query.color]); // 【修改 2.9】 Effect to trigger data fetching whenever 'query' (filters/search) changes
 
   (0, _react.useEffect)(function () {
-    fetchData();
-  }, [query]); // --- Return all necessary states and handlers ---
+    // 如果 URL 参数字符串发生变化，说明是新的搜索或筛选
+    if (query.queryString !== lastQueryParams) {
+      // 重置并从第一页开始加载 (非追加模式)
+      executeFetch(1, false);
+      setLastQueryParams(query.queryString); // 更新上次的查询参数字符串
+    }
+  }, [query.queryString, lastQueryParams, executeFetch]); // 【修改 2.10】 暴露给组件的“加载下一页”函数
+
+  var fetchNextPage = (0, _react.useCallback)(function () {
+    // 只有当还有下一页并且当前没有其他加载在进行时才执行
+    if (internalPage < totalPages && !isFetchingNextPage && !isLoading) {
+      var nextPage = internalPage + 1;
+      executeFetch(nextPage, true); // 加载下一页，并设置为追加模式 (true)
+      // 【重要】在成功请求发起后立即更新 internalPage，防止重复触发
+
+      setInternalPage(nextPage);
+    }
+  }, [internalPage, totalPages, isFetchingNextPage, isLoading, executeFetch]); // 【修改 2.11】 判断是否还有下一页
+
+  var hasNextPage = internalPage < totalPages; // --- Return all necessary states and handlers ---
 
   return {
     // Query/Input States
@@ -235,17 +303,22 @@ var useArtSearch = function useArtSearch() {
     // Only keywordInput setter is needed by the component
     // Data States
     artworks: artworks,
+    // 移除 query.page
     totalPages: totalPages,
     totalResults: totalResults,
     isLoading: isLoading,
     isConfigLoaded: isConfigLoaded,
     configData: configData,
+    // 【修改 2.12】 新增的无限滚动相关状态和函数
+    hasNextPage: hasNextPage,
+    fetchNextPage: fetchNextPage,
+    isFetchingNextPage: isFetchingNextPage,
     // Handlers
     handleFilterChange: handleFilterChange,
     handleColorSelect: handleColorSelect,
     handlePeriodChange: handlePeriodChange,
-    handleSearchTrigger: handleSearchTrigger,
-    handlePageChange: handlePageChange
+    handleSearchTrigger: handleSearchTrigger // 移除 handlePageChange
+
   };
 };
 
