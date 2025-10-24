@@ -1,54 +1,58 @@
-import { useRef, useEffect } from 'react';
-import { Container, Typography, Grid, Card, CardMedia, CardContent, Box, CircularProgress } from '@mui/material';
+import React, { useRef, useEffect } from 'react';
+import { Container, Typography, Grid, Card, CardMedia, CardContent, Box, CircularProgress, Button, Badge } from '@mui/material';
 import { useMediaQuery } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
-
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'; // 【在此处添加这行代码】  
+// 导入新的 Hook
 import { useArtSearch } from '../hooks/useArtSearch';
 
+import { FilterAccordion, SearchInput } from './Filters';
 import '../styles/ArtTableStyles.css';
 import ColorSearchBar from '../components/ColorSearchBar';
 import PeriodTimelineFilter from '../components/PeriodBar';
-import { SearchInput } from './Filters';
 
 const STORAGE_KEY = 'currentPageContext';
 
 export default function ArtSearchPage() {
-    const isDesktop = useMediaQuery('(min-width:600px)');
-    //a URL querystring, start with '?'
     const querystring = useLocation().search;
-    // 【修改 1.3】创建一个引用，用于观察列表末尾的元素
+
+    // 【新增】引用：用于观察列表末尾的元素
     const loadMoreRef = useRef(null);
 
     // 1. Call the custom hook and destructure all necessary values
     const {
-        query, keywordInput, setKeywordInput, artworks, 
+        query, keywordInput, setKeywordInput, artworks,
         totalResults, isLoading, isConfigLoaded, configData,
         handleFilterChange, handleColorSelect, handlePeriodChange,
-        handleSearchTrigger, 
-        hasNextPage, fetchNextPage, isFetchingNextPage,
+        handleSearchTrigger,
+
+        // 【关键新增】混合加载相关的状态和函数
+        hasNextPage,
+        autoLoadNextPage, // 供 Observer 使用
+        manualLoadNextPage, // 供按钮使用
+        isFetchingNextPage,
+        canAutoLoad, // 是否允许自动加载
+
+        remainingCount, // 剩余数量
+        remainingPages, // 剩余页数
+
     } = useArtSearch();
 
-    /**
-     * execute  while click artwork in searchPage
-     * 为实现详情页的上一个/下一个功能，需存储当前页的id列表。
-     * 不支持跨页：如果展示下一页的作品，用户返回之前的列表页时，会造成不一致。
-     * 跨页查询的实现逻辑也会更复杂，暂不考虑
-     */
     const saveSearchContext = (currentId) => {
-        const allLoadedIds = artworks.map(item => String(item.id)); // 【修改 1.5】列表改为所有已加载的作品
-        const indexInPage = allLoadedIds.findIndex(id => id === String(currentId));
-        //Todo 改用ts 定义类型
+        const allLoadedIds = artworks.map(item => String(item.id));
+        const indexInList = allLoadedIds.findIndex(id => id === String(currentId));
+
         const context = {
             idList: allLoadedIds,
-            currentIndex: indexInPage,
+            currentIndex: indexInList,
         };
-        //
-        console.log(JSON.stringify(context))
         sessionStorage.setItem(STORAGE_KEY, JSON.stringify(context));
     }
+
+    // 【关键修改】使用 IntersectionObserver 实现自动加载
     useEffect(() => {
-        // 如果没有下一页，或者当前正在加载下一页，则无需设置观察者
-        if (!loadMoreRef.current || !hasNextPage || isFetchingNextPage) {
+        // 只有当 loadMoreRef 存在、允许自动加载 (canAutoLoad) 且当前不在加载中时，才设置观察者。
+        if (!loadMoreRef.current || !canAutoLoad || isFetchingNextPage) {
             return;
         }
 
@@ -56,8 +60,8 @@ export default function ArtSearchPage() {
             (entries) => {
                 // 当目标元素进入视口时
                 if (entries[0].isIntersecting) {
-                    // 调用加载下一页的函数
-                    fetchNextPage();
+                    // 调用自动加载函数
+                    autoLoadNextPage();
                 }
             },
             {
@@ -67,27 +71,25 @@ export default function ArtSearchPage() {
             }
         );
 
-        // 开始观察目标元素
         observer.observe(loadMoreRef.current);
 
-        // 清理函数
+        // 清理函数：canAutoLoad 变为 false 时 (达到 3 次限制) 观察者被清理。
         return () => {
             if (loadMoreRef.current) {
                 observer.unobserve(loadMoreRef.current);
             }
         };
 
-    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+    }, [canAutoLoad, isFetchingNextPage, autoLoadNextPage]);
 
     if (!isConfigLoaded) {
-        // Option 1: Display a simple full-page loader until config is ready
         return (
             <Container sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
                 <CircularProgress size={80} />
             </Container>
         );
     }
-    // 【修改 1.7】 新搜索/筛选时的初始加载
+
     if (isLoading && artworks.length === 0) {
         return (
             <Container maxWidth={false} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '600px' }}>
@@ -96,7 +98,6 @@ export default function ArtSearchPage() {
         );
     }
 
-    // The rest is pure rendering logic, significantly cleaner
     return (
         <Container maxWidth={false} disableGutters >
             <Container maxWidth={false} sx={{ width: '90%', mx: 'auto' }}>
@@ -104,44 +105,25 @@ export default function ArtSearchPage() {
                     <Grid item xs={12} md={1}></Grid>
                     <Grid item xs={12} md={10}>
                         <Box >
-                            {/* -----Filter Box------ */}
+                            {/* ... (Filters and Search Input UI remains the same) ... */}
                             <Grid container sx={{ margin: '40px 1px 40px 1px' }}>
                                 <SearchInput
-                                    // Binds to the local input state
                                     value={keywordInput}
-                                    // Updates local input state on every keystroke
                                     onChange={(event) => setKeywordInput(event.target.value)}
                                     onKeyDown={(event) => {
                                         if (event.key === 'Enter') {
                                             handleSearchTrigger(event);
                                         }
                                     }}
-                                    // search Icon
                                     onClick={handleSearchTrigger}
                                 />
                             </Grid>
-                            {/** filters */}
-                            {/* <Grid container >
-                                <FilterAccordion
-                                    // Use unified handlers
-                                    changeHandler={handleFilterChange}
-                                    // Pass current selected values
-                                    genreSelected={query.genre}
-                                    periodSelected={query.period}
-                                    techniqueSelected={query.technique}
-                                    hasImage={query.hasImage}
-
-                                    configData={configData}
-                                />
-                            </Grid> */}
                             <Grid container>
-
                                 <PeriodTimelineFilter
                                     selectedValue={query.period}
                                     onSelectionChange={handlePeriodChange}
                                 />
                             </Grid>
-                            {/* Color search */}
                             <Grid item xs={12}>
                                 <ColorSearchBar
                                     onColorSelect={handleColorSelect}
@@ -156,77 +138,138 @@ export default function ArtSearchPage() {
 
                             {/* ----- Artworks Box ------- */}
                             <Grid container justifyContent="center" sx={{ mt: 4, minHeight: 600 }}>
-                                {isLoading ? (
-                                    <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mt: 4, minHeight: 700, }}>
-                                        <CircularProgress size={100} />
-                                    </Box>
-                                ) : (
-                                    artworks?.map((artwork, index) => (
-                                        <Grid item xs={6} sm={4} md={4} key={index}
-                                            sx={{
-                                                padding: '10px 40px 10px 10px',
-                                                '@media (max-width: 600px)': {
-                                                    padding: '0px 0px 0px 20px'
-                                                }
-                                            }}>
-                                            <Card variant="outlined" sx={{ height: '100%', display: 'flex', flexDirection: 'column', border: 'none' }}>
-                                                <Link target="_self" style={{ textDecoration: 'none' }}
-                                                    to={`/vincent/id/${artwork.id}${querystring}`}
-                                                    onClick={() => saveSearchContext(artwork.id)}
-                                                >
-                                                    <CardMedia
-                                                        component="img"
-                                                        image={`https://artworks-1257857866.cos.ap-beijing.myqcloud.com${artwork.primaryImageSmall}`}
-                                                        alt=""
+                                {artworks?.map((artwork, index) => (
+                                    <Grid item xs={6} sm={4} md={4} key={index}
+                                        sx={{
+                                            padding: '10px 40px 10px 10px',
+                                            '@media (max-width: 600px)': {
+                                                padding: '0px 0px 0px 20px'
+                                            }
+                                        }}>
+                                        <Card variant="outlined" sx={{ height: '100%', display: 'flex', flexDirection: 'column', border: 'none' }}>
+                                            <Link target="_self" style={{ textDecoration: 'none' }}
+                                                to={`/vincent/id/${artwork.id}${querystring}`}
+                                                onClick={() => saveSearchContext(artwork.id)}
+                                            >
+                                                <CardMedia
+                                                    component="img"
+                                                    image={`https://artworks-1257857866.cos.ap-beijing.myqcloud.com${artwork.primaryImageSmall}`}
+                                                    alt=""
+                                                    sx={{
+                                                        height: '250px', width: '100%', objectFit: 'contain', objectPosition: 'center',
+                                                        '@media (max-width: 600px)': { height: '150px' }, backgroundColor: '#fdfbfbff',
+                                                        '&:hover': {
+                                                            backgroundColor: '#f0f0f0'
+                                                        }
+                                                    }}
+                                                />
+                                            </Link>
+                                            <CardContent align="left">
+                                                <Typography sx={{ fontWeight: 400, fontSize: { xs: 12, md: 18 }, textAlign: 'left' }}>
+                                                    {artwork.titleZh || artwork.titleEn}
+                                                </Typography>
+                                                <Typography color="text.secondary" variant="body2"
+                                                    sx={{
+                                                        textAlign: 'left',
+                                                        display: { xs: 'none', md: 'block' },
+                                                    }} >
+                                                    {artwork.displayDate}{artwork.placeOfOrigin ? `, ${artwork.placeOfOrigin}` : ''}
+                                                </Typography>
+                                                {artwork.collection && (
+                                                    <Typography variant="body2" color="text.secondary" textAlign='left'
                                                         sx={{
-                                                            height: '250px', width: '100%', objectFit: 'contain', objectPosition: 'center',
-                                                            '@media (max-width: 600px)': { height: '150px' }, backgroundColor: '#fdfbfbff',
-                                                            '&:hover': {
-                                                                backgroundColor: '#f0f0f0'
-                                                            }
-                                                        }}
-                                                    />
-                                                </Link>
-                                                <CardContent align="left">
-                                                    <Typography sx={{ fontWeight: 400, fontSize: { xs: 12, md: 18 }, textAlign: 'left' }}>
-                                                        {artwork.titleZh || artwork.titleEn}
-                                                    </Typography>
-                                                    <Typography color="text.secondary" variant="body2"
-                                                        sx={{
-                                                            textAlign: 'left',
                                                             display: { xs: 'none', md: 'block' },
-                                                        }} >
-                                                        {artwork.displayDate}{artwork.placeOfOrigin ? `, ${artwork.placeOfOrigin}` : ''}
+                                                        }}>
+                                                        {artwork.collection}
                                                     </Typography>
-                                                    {artwork.collection && (
-                                                        <Typography variant="body2" color="text.secondary" textAlign='left'
-                                                            sx={{
-                                                                display: { xs: 'none', md: 'block' },
-                                                            }}>
-                                                            {artwork.collection}
-                                                        </Typography>
-                                                    )}
-                                                </CardContent>
-                                            </Card>
-                                        </Grid>
-                                    )))}
+                                                )}
+                                            </CardContent>
+                                        </Card>
+                                    </Grid>
+                                ))}
 
+                                {/* 【关键修改】底部加载区，根据状态进行渲染 */}
                                 <Grid item xs={12}>
-                                    <Box ref={loadMoreRef} sx={{ py: 4, display: 'flex', justifyContent: 'center', minHeight: '50px' }}>
-                                        {/* 正在加载下一页 */}
+                                    <Box ref={loadMoreRef}
+                                        sx={{
+                                            py: 4,
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            // 保证在加载中或等待点击时有高度，提供滚动阻力
+                                            minHeight: (isFetchingNextPage || (hasNextPage && !canAutoLoad)) ? '150px' : '50px'
+                                        }}>
+
+                                        {/* 状态 1: 正在加载 (无论是自动还是手动点击) */}
                                         {isFetchingNextPage && (
-                                            <CircularProgress size={40} />
+                                            <>
+                                                <CircularProgress size={40} />
+                                                <Typography variant="body1" sx={{ ml: 2, color: 'text.secondary' }}>
+                                                    加载中...
+                                                </Typography>
+                                            </>
                                         )}
-                                        {/* 已加载全部作品 (只有在有作品且没有下一页，并且不在加载中才显示) */}
-                                        {!hasNextPage && artworks.length > 0 && !isLoading && !isFetchingNextPage && (
-                                            <Typography variant="subtitle1" color="text.secondary">
-                                                已加载全部作品 🖼️
-                                            </Typography>
+
+                                        {/* 状态 2: 达到自动加载限制，需要点击按钮 (有下一页，但不能自动加载，且当前不在加载中) */}
+                                        {hasNextPage && !canAutoLoad && !isFetchingNextPage && (
+                                            // 使用 Badge 包裹按钮，显示剩余页数
+                                            <Badge
+                                                // 样式调整：放置在按钮右侧
+                                                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                                                badgeContent={`${remainingPages} 页`}
+                                                color="primary" // 使用主题色
+                                                sx={{
+                                                    // 调整 Badge 容器与按钮的间距
+                                                    '.MuiBadge-badge': {
+                                                        right: -10, // 将徽章稍微往右推
+                                                        top: 15,    // 稍微往下推
+                                                        padding: '0 8px',
+                                                        height: 25,
+                                                        borderRadius: 12,
+                                                        fontSize: 12,
+                                                        fontWeight: 'bold',
+                                                        border: '2px solid white', // 增加白色描边以增强对比
+                                                        backgroundColor: '#9694c2ff'
+
+                                                    }
+                                                }}
+                                            >
+                                                <Button
+                                                    variant="contained"
+                                                    color="primary"
+                                                    size="large" // 增大尺寸，更易点击
+                                                    onClick={manualLoadNextPage}
+
+                                                    sx={{
+                                                        py: 1.5,
+                                                        px: 5, // 增加横向填充
+                                                        borderRadius: '30px', // 增加圆角，提升设计感
+                                                        fontWeight: 'bold',
+                                                        transition: 'transform 0.2s',
+                                                        '&:hover': {
+                                                            transform: 'scale(1.05)', // 鼠标悬停时的微交互
+                                                            backgroundColor: '#7471b8ff'
+                                                        },
+                                                        backgroundColor: '#9694c2ff'
+
+                                                    }}
+                                                >
+                                                    加载更多...({remainingCount} 个作品)
+                                                </Button>
+                                            </Badge>
                                         )}
-                                        {/* 未找到作品 */}
+
+                                        {/* 状态 3: 列表中没有作品 (无结果) */}
                                         {artworks.length === 0 && !isLoading && (
                                             <Typography variant="h6" color="text.secondary">
                                                 未找到符合条件的作品 🤔
+                                            </Typography>
+                                        )}
+
+                                        {/* 状态 4: 已加载全部作品 (没有下一页) */}
+                                        {!hasNextPage && artworks.length > 0 && !isLoading && !isFetchingNextPage && (
+                                            <Typography variant="subtitle1" color="text.secondary">
+                                                已加载全部作品 🖼️
                                             </Typography>
                                         )}
                                     </Box>

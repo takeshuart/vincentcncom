@@ -33,10 +33,10 @@ function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) ||
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
-var pageSize = 9; // 【新增常量】自动加载的页数限制 (N=3)
+var pageSize = 9; // 【关键新增】常量：设置自动加载的页数限制 (N=3)
 
+var AUTO_LOAD_THRESHOLD = 2;
 var DEFAULT_QUERY = {
-  page: 1,
   hasImage: true,
   genre: '',
   technique: '',
@@ -45,17 +45,15 @@ var DEFAULT_QUERY = {
 };
 
 var useArtSearch = function useArtSearch() {
-  //reading search parameters from url querystring 
   var _useSearchParams = (0, _reactRouterDom.useSearchParams)(),
       _useSearchParams2 = _slicedToArray(_useSearchParams, 2),
       searchParams = _useSearchParams2[0],
-      setSearchParams = _useSearchParams2[1]; // Local state for the text input (transient state for typing speed)
-
+      setSearchParams = _useSearchParams2[1];
 
   var _useState = (0, _react.useState)(''),
       _useState2 = _slicedToArray(_useState, 2),
       keywordInput = _useState2[0],
-      setKeywordInput = _useState2[1]; // 【修改 2.3】 新增内部状态
+      setKeywordInput = _useState2[1]; // --- 混合加载状态 ---
 
 
   var _useState3 = (0, _react.useState)(1),
@@ -71,61 +69,64 @@ var useArtSearch = function useArtSearch() {
   var _useState7 = (0, _react.useState)(''),
       _useState8 = _slicedToArray(_useState7, 2),
       lastQueryParams = _useState8[0],
-      setLastQueryParams = _useState8[1]; // 用于检测 URL 筛选条件是否变化
-  // recover filters from querystring
+      setLastQueryParams = _useState8[1]; // 【关键新增】追踪自从上次点击按钮以来自动加载了多少页
+
+
+  var _useState9 = (0, _react.useState)(0),
+      _useState10 = _slicedToArray(_useState9, 2),
+      pagesSinceButton = _useState10[0],
+      setPagesSinceButton = _useState10[1]; // recover filters from querystring (page parameter excluded)
 
 
   var query = (0, _react.useMemo)(function () {
     var newQuery = {
-      // 【修改 2.4】 从 URL 读取参数时，排除 page
       hasImage: searchParams.get('hasImage') === 'true' || DEFAULT_QUERY.hasImage,
       genre: searchParams.get('genre') || DEFAULT_QUERY.genre,
       period: searchParams.get('period') || '',
       technique: searchParams.get('technique') || DEFAULT_QUERY.technique,
       keyword: searchParams.get('keyword') || DEFAULT_QUERY.keyword,
       color: searchParams.get('color') || DEFAULT_QUERY.color
-    }; // 添加一个用于唯一标识当前筛选状态的属性
-
+    };
     newQuery.queryString = new URLSearchParams(newQuery).toString();
     return newQuery;
-  }, [searchParams]); // Initialize keywordInput from URL on mount/URL update
-
+  }, [searchParams]);
   (0, _react.useEffect)(function () {
     setKeywordInput(query.keyword);
   }, [query.keyword]); // --- Data and Loading States ---
 
-  var _useState9 = (0, _react.useState)([]),
-      _useState10 = _slicedToArray(_useState9, 2),
-      artworks = _useState10[0],
-      setArtWorks = _useState10[1];
-
-  var _useState11 = (0, _react.useState)(0),
+  var _useState11 = (0, _react.useState)([]),
       _useState12 = _slicedToArray(_useState11, 2),
-      totalPages = _useState12[0],
-      setTotalPages = _useState12[1];
+      artworks = _useState12[0],
+      setArtWorks = _useState12[1];
 
   var _useState13 = (0, _react.useState)(0),
       _useState14 = _slicedToArray(_useState13, 2),
-      totalResults = _useState14[0],
-      setTotalResults = _useState14[1];
+      totalPages = _useState14[0],
+      setTotalPages = _useState14[1];
 
-  var _useState15 = (0, _react.useState)(false),
+  var _useState15 = (0, _react.useState)(0),
       _useState16 = _slicedToArray(_useState15, 2),
-      isLoading = _useState16[0],
-      setIsLoading = _useState16[1];
+      totalResults = _useState16[0],
+      setTotalResults = _useState16[1]; // isLoading: 用于初始加载和新搜索/筛选
 
-  var _useState17 = (0, _react.useState)(false),
+
+  var _useState17 = (0, _react.useState)(true),
       _useState18 = _slicedToArray(_useState17, 2),
-      isConfigLoaded = _useState18[0],
-      setIsConfigLoaded = _useState18[1];
+      isLoading = _useState18[0],
+      setIsLoading = _useState18[1];
 
-  var _useState19 = (0, _react.useState)({
+  var _useState19 = (0, _react.useState)(false),
+      _useState20 = _slicedToArray(_useState19, 2),
+      isConfigLoaded = _useState20[0],
+      setIsConfigLoaded = _useState20[1];
+
+  var _useState21 = (0, _react.useState)({
     genres: [],
     techniques: []
   }),
-      _useState20 = _slicedToArray(_useState19, 2),
-      configData = _useState20[0],
-      setConfigData = _useState20[1]; // --- Configuration Fetch (Run Once) ---
+      _useState22 = _slicedToArray(_useState21, 2),
+      configData = _useState22[0],
+      setConfigData = _useState22[1]; // --- Configuration Fetch (Run Once) ---
 
 
   (0, _react.useEffect)(function () {
@@ -152,11 +153,10 @@ var useArtSearch = function useArtSearch() {
       } else {
         newParams[key] = String(value);
       }
-    } // Apply the new parameter set to the URL
-
+    }
 
     setSearchParams(newParams);
-  }; // Handler for general filter changes (genre, technique, etc.)
+  }; // --- Handlers (Filter, Search) ---
 
 
   var handleFilterChange = function handleFilterChange(key) {
@@ -164,35 +164,30 @@ var useArtSearch = function useArtSearch() {
       var value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
       updateSearchParams(_defineProperty({}, key, value));
     };
-  }; // Handler for color selection
-
+  };
 
   var handleColorSelect = function handleColorSelect(color) {
     updateSearchParams({
       color: color,
       keyword: keywordInput
     });
-  }; // Handler for period changes (timeline)
-
+  };
 
   var handlePeriodChange = function handlePeriodChange(value) {
     updateSearchParams({
       period: value
     });
-  }; // Handler for search button click and Enter key press
-
+  };
 
   var handleSearchTrigger = function handleSearchTrigger(event) {
     if (event && event.preventDefault) {
       event.preventDefault();
-    } // Sync keywordInput to URL
-
+    }
 
     updateSearchParams({
       keyword: keywordInput
     });
-  }; // --- Main Data Fetching Logic (Runs on query change) ---
-  // 【修改 2.8】 核心数据获取逻辑，增加了 append 参数
+  }; // --- Core Data Fetching Logic ---
 
 
   var executeFetch = (0, _react.useCallback)(function _callee(page) {
@@ -219,8 +214,7 @@ var useArtSearch = function useArtSearch() {
 
             _context.prev = 2;
             _context.next = 5;
-            return regeneratorRuntime.awrap((0, _ArtworkApi.fetchArtData)(page, pageSize, // 使用传入的页码
-            query.keyword, query.hasImage, query.genre, query.period, query.technique, query.color));
+            return regeneratorRuntime.awrap((0, _ArtworkApi.fetchArtData)(page, pageSize, query.keyword, query.hasImage, query.genre, query.period, query.technique, query.color));
 
           case 5:
             artData = _context.sent;
@@ -235,7 +229,7 @@ var useArtSearch = function useArtSearch() {
             } else {
               // 新搜索/筛选：替换数据并重置页码
               setArtWorks(received);
-              setInternalPage(page); // 重置 internalPage 为 1
+              setInternalPage(page);
             }
 
             setTotalPages(newTotalPages);
@@ -271,53 +265,81 @@ var useArtSearch = function useArtSearch() {
         }
       }
     }, null, null, [[2, 13, 17, 20]]);
-  }, [query.keyword, query.hasImage, query.genre, query.period, query.technique, query.color]); // 【修改 2.9】 Effect to trigger data fetching whenever 'query' (filters/search) changes
+  }, [query.keyword, query.hasImage, query.genre, query.period, query.technique, query.color]); // Effect to reset state on new query
 
   (0, _react.useEffect)(function () {
-    // 如果 URL 参数字符串发生变化，说明是新的搜索或筛选
     if (query.queryString !== lastQueryParams) {
-      // 重置并从第一页开始加载 (非追加模式)
       executeFetch(1, false);
-      setLastQueryParams(query.queryString); // 更新上次的查询参数字符串
-    }
-  }, [query.queryString, lastQueryParams, executeFetch]); // 【修改 2.10】 暴露给组件的“加载下一页”函数
+      setLastQueryParams(query.queryString); // 【关键修改】新搜索/筛选时，重置自动加载计数
 
-  var fetchNextPage = (0, _react.useCallback)(function () {
-    // 只有当还有下一页并且当前没有其他加载在进行时才执行
+      setPagesSinceButton(0);
+    }
+  }, [query.queryString, lastQueryParams, executeFetch]); // 【新增函数 1】 IntersectionObserver 调用的自动加载函数
+
+  var autoLoadNextPage = (0, _react.useCallback)(function () {
+    var nextPage = internalPage + 1;
+
     if (internalPage < totalPages && !isFetchingNextPage && !isLoading) {
-      var nextPage = internalPage + 1;
-      executeFetch(nextPage, true); // 加载下一页，并设置为追加模式 (true)
-      // 【重要】在成功请求发起后立即更新 internalPage，防止重复触发
+      // 检查是否达到自动加载阈值
+      if (pagesSinceButton < AUTO_LOAD_THRESHOLD) {
+        executeFetch(nextPage, true);
+        setInternalPage(nextPage); // 自动加载计数 +1
 
-      setInternalPage(nextPage);
+        setPagesSinceButton(function (prev) {
+          return prev + 1;
+        });
+      }
     }
-  }, [internalPage, totalPages, isFetchingNextPage, isLoading, executeFetch]); // 【修改 2.11】 判断是否还有下一页
+  }, [internalPage, totalPages, isFetchingNextPage, isLoading, executeFetch, pagesSinceButton]); // 【新增函数 2】 按钮点击调用的手动加载函数
 
-  var hasNextPage = internalPage < totalPages; // --- Return all necessary states and handlers ---
+  var manualLoadNextPage = (0, _react.useCallback)(function () {
+    var nextPage = internalPage + 1;
+
+    if (internalPage < totalPages && !isFetchingNextPage && !isLoading) {
+      executeFetch(nextPage, true);
+      setInternalPage(nextPage); // 按钮加载后，重置计数为 0，允许下一次自动加载批次从头开始
+
+      setPagesSinceButton(0);
+    }
+  }, [internalPage, totalPages, isFetchingNextPage, isLoading, executeFetch]); // --- 导出状态和计算值 ---
+  // 是否允许 IntersectionObserver 触发自动加载
+
+  var canAutoLoad = internalPage < totalPages && pagesSinceButton < AUTO_LOAD_THRESHOLD; // 剩余数量计算
+
+  var hasNextPage = internalPage < totalPages;
+  var remainingCount = totalResults - artworks.length; // 确保剩余页数至少为 0
+
+  var remainingPages = Math.max(0, Math.ceil(remainingCount / pageSize)); // --- Return all necessary states and handlers ---
 
   return {
     // Query/Input States
     query: query,
     keywordInput: keywordInput,
     setKeywordInput: setKeywordInput,
-    // Only keywordInput setter is needed by the component
     // Data States
     artworks: artworks,
-    // 移除 query.page
     totalPages: totalPages,
     totalResults: totalResults,
     isLoading: isLoading,
     isConfigLoaded: isConfigLoaded,
     configData: configData,
-    // 【修改 2.12】 新增的无限滚动相关状态和函数
+    // 混合加载状态和函数
     hasNextPage: hasNextPage,
-    fetchNextPage: fetchNextPage,
+    autoLoadNextPage: autoLoadNextPage,
+    // 供 Intersection Observer 调用
+    manualLoadNextPage: manualLoadNextPage,
+    // 供按钮调用
     isFetchingNextPage: isFetchingNextPage,
+    canAutoLoad: canAutoLoad,
+    // 控制 Intersection Observer 的开关
+    // 剩余数量信息
+    remainingCount: remainingCount,
+    remainingPages: remainingPages,
     // Handlers
     handleFilterChange: handleFilterChange,
     handleColorSelect: handleColorSelect,
     handlePeriodChange: handlePeriodChange,
-    handleSearchTrigger: handleSearchTrigger // 移除 handlePageChange
+    handleSearchTrigger: handleSearchTrigger // handlePageChange 已移除
 
   };
 };
