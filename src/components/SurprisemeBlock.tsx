@@ -43,8 +43,8 @@ const SurprisemeBlock = React.forwardRef<HTMLDivElement, SurpriseArtworkBlockPro
                 sx={{
                     minHeight: { xs: 350, md: 700 },
                     display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    alignItems: 'center',//上下居中
+                    justifyContent: 'center', //左右居中
                     backgroundColor: '#E8E8F5',
                     borderRadius: 5,
                     position: 'relative',

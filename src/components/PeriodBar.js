@@ -32,10 +32,10 @@ const getColorValue = (code) => {
 
 export default function PeriodTimelineFilter({ selectedValue, onSelectionChange }) {
     const theme = useTheme();
-   const handleToggle = (value) => {
+    const handleToggle = (value) => {
         // 如果当前点击的值和已选中的值相同，则取消选中（设为 null），否则设为新值。
-        const newValue = selectedValue === value ? null : value; 
-        
+        const newValue = selectedValue === value ? null : value;
+
         console.log(newValue);
         onSelectionChange(newValue); // <-- 回调函数名称已更改
     };
@@ -47,15 +47,19 @@ export default function PeriodTimelineFilter({ selectedValue, onSelectionChange 
             sx={{
                 display: 'flex',
                 width: '100%',
-                overflow: 'hidden',
+                overflow: {
+                    xs: 'auto', // mobile, 滑动
+                    sm: 'hidden', //desktop
+                },
                 flexWrap: 'nowrap',
                 border: `1px solid ${theme.palette.divider}`,
                 borderRadius: '4px',
                 boxSizing: 'border-box',
+
             }}
         >
             {periodNodes.map((node, index) => {
-                const isSelected = node.value==selectedValue
+                const isSelected = node.value == selectedValue
                 const nodeColor = getColorValue(node.colorCode);
                 const calculatedWidth = `${(node.widthRatio / totalRatio) * 100}%`;
 
@@ -76,8 +80,10 @@ export default function PeriodTimelineFilter({ selectedValue, onSelectionChange 
                             minHeight: '20px',
                             boxSizing: 'border-box',//边框宽度计算在内
                             flex: `0 0 ${calculatedWidth}`, // 不伸展，不收缩，宽度固定为计算值
-                            width: calculatedWidth,
-
+                            width: {
+                                xs: 'auto', // 移动端自动宽
+                                sm: calculatedWidth,
+                            },
                             backgroundColor: isSelected
                                 ? nodeColor
                                 : muiColors.grey[50],
@@ -85,14 +91,16 @@ export default function PeriodTimelineFilter({ selectedValue, onSelectionChange 
                             borderRight: index < periodNodes.length - 1
                                 ? `1px solid ${theme.palette.divider}`
                                 : 'none',
-                            // 悬停放大
+                            // '@media (hover: hover) and (pointer: fine)': {
+
                             '&:hover': {
-                                // transform: 'scale(1.05)',
+                                // transform: 'scale(1.05)', //放大
                                 zIndex: 2,
                                 ...(!isSelected && {
-                                    backgroundColor: `${nodeColor}80`, //大约80%透明
+                                    backgroundColor: `${nodeColor}70`, //大约80%透明
                                 })
                             }
+
                         }}
                     >
                         <Typography
@@ -103,7 +111,9 @@ export default function PeriodTimelineFilter({ selectedValue, onSelectionChange 
                                 //选中时文字为对比色
                                 color: isSelected ? theme.palette.getContrastText(nodeColor) : theme.palette.text.primary,
                                 overflow: 'hidden',
-                                textAlign: 'center'
+                                textAlign: 'center',
+                                whiteSpace: 'nowrap', // ✅ 防止换行
+
                             }}
                         >
                             {node.label}

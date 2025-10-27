@@ -14,19 +14,38 @@ export default function ArtworkImage({ src, isMobile }: ArtworkImageProps) {
   const fullSrc = `https://artworks-1257857866.cos.ap-beijing.myqcloud.com${src}`;
 
   useEffect(() => {
-    setLoaded(false);
-    const img = new Image();
-    img.onload = () => setLoaded(true);
+  // 每次 fullSrc 变化时，重置状态
+  setLoaded(false); 
+
+  let active = true; 
+  const img = new Image();
+  img.src = fullSrc; // 触发加载
+
+  // 1. 检查图片是否已加载完成 (complete)
+  if (img.complete && img.naturalWidth > 0) {
+    // 图片已在缓存中，且已同步完成加载
+    setLoaded(true);
+  } else {
+    // 2. 否则，设置异步监听器
+    img.onload = () => {
+      if (active) { 
+        setLoaded(true);
+      }
+    };
     img.onerror = () => {
       console.error('图片加载失败：', fullSrc);
-      setLoaded(true);
+      if (active) {
+        setLoaded(true); // 即使失败也要更新状态，显示占位图或错误
+      }
     };
-    img.src = fullSrc;
-    return () => {
-      img.onload = null;
-      img.onerror = null;
-    };
-  }, [fullSrc]);
+  }
+  
+  return () => {
+    active = false; 
+    img.onload = null;
+    img.onerror = null;
+  };
+}, [fullSrc]);
 
   const openFancybox = () => {
     if (loaded && imageRef.current) {
@@ -51,11 +70,12 @@ export default function ArtworkImage({ src, isMobile }: ArtworkImageProps) {
         sx={{
           position: 'relative',
           width: '100%',
-          maxWidth: '800px',
-          aspectRatio: isMobile ? '1 / 1' : '4 / 3',
-          height: isMobile ? 300 : 650,
+          // maxWidth: '800px',
+          // aspectRatio: isMobile ? '1 / 1' : '4 / 3',
+          // height: isMobile ? 300 : 650,
+          height: isMobile ? '80vh' : 650,
           overflow: 'hidden',
-          borderRadius: '12px',
+          borderRadius: '10px',
           cursor: loaded ? 'zoom-in' : 'default', // 放大光标
           //图片轻微放大
           // '&:hover img': { transform: loaded ? 'scale(1.03)' : 'scale(1)', transition: 'transform 0.3s' },

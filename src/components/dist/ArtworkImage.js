@@ -10,15 +10,32 @@ function ArtworkImage(_a) {
     var imageRef = react_1.useRef(null);
     var fullSrc = "https://artworks-1257857866.cos.ap-beijing.myqcloud.com" + src;
     react_1.useEffect(function () {
+        // 每次 fullSrc 变化时，重置状态
         setLoaded(false);
+        var active = true;
         var img = new Image();
-        img.onload = function () { return setLoaded(true); };
-        img.onerror = function () {
-            console.error('图片加载失败：', fullSrc);
+        img.src = fullSrc; // 触发加载
+        // 1. 检查图片是否已加载完成 (complete)
+        if (img.complete && img.naturalWidth > 0) {
+            // 图片已在缓存中，且已同步完成加载
             setLoaded(true);
-        };
-        img.src = fullSrc;
+        }
+        else {
+            // 2. 否则，设置异步监听器
+            img.onload = function () {
+                if (active) {
+                    setLoaded(true);
+                }
+            };
+            img.onerror = function () {
+                console.error('图片加载失败：', fullSrc);
+                if (active) {
+                    setLoaded(true); // 即使失败也要更新状态，显示占位图或错误
+                }
+            };
+        }
         return function () {
+            active = false;
             img.onload = null;
             img.onerror = null;
         };
@@ -41,11 +58,12 @@ function ArtworkImage(_a) {
         react_1["default"].createElement(material_1.Box, { sx: {
                 position: 'relative',
                 width: '100%',
-                maxWidth: '800px',
-                aspectRatio: isMobile ? '1 / 1' : '4 / 3',
-                height: isMobile ? 300 : 650,
+                // maxWidth: '800px',
+                // aspectRatio: isMobile ? '1 / 1' : '4 / 3',
+                // height: isMobile ? 300 : 650,
+                height: isMobile ? '80vh' : 650,
                 overflow: 'hidden',
-                borderRadius: '12px',
+                borderRadius: '10px',
                 cursor: loaded ? 'zoom-in' : 'default'
             }, onClick: openFancybox },
             !loaded && (react_1["default"].createElement(material_1.Box, { sx: {

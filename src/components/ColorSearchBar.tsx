@@ -20,7 +20,7 @@ export const VAN_GOGH_PALETTE = [
 ];
 
 interface ColorSearchBarProps {
-    onColorSelect: (colorValue: string) => void;
+    onColorSelect: (colorField: string) => void;
     initialColor?: string;
 }
 

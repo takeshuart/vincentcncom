@@ -39,8 +39,8 @@ exports.__esModule = true;
 exports.getLettersByIds = exports.fetchConfigData = exports.fetchSurpriseArt = exports.fetchArtData = exports.fetchArtworkById = void 0;
 var axios_1 = require("axios");
 //other devices cannot access if use 'localhost'
-// const API_BASE_URL = 'http://192.168.50.156:5001';
-var API_BASE_URL = 'http://localhost:5001';
+var API_BASE_URL = 'http://192.168.50.156:5001';
+// const API_BASE_URL = 'http://localhost:5001';
 var apiClient = axios_1["default"].create({
     baseURL: API_BASE_URL,
     timeout: 10000
@@ -104,7 +104,7 @@ function fetchArtData(page, pageSize, searchKeyword, hasImage, genreSelected, se
                         colorField: colorSelected || undefined
                     };
                     console.log("Query Params:", queryParams);
-                    delay_1 = Math.random() * 1000 + 500;
+                    delay_1 = Math.random() * 500;
                     return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, delay_1); })];
                 case 1:
                     _a.sent();
@@ -144,27 +144,31 @@ function fetchSurpriseArt() {
 exports.fetchSurpriseArt = fetchSurpriseArt;
 function fetchConfigData() {
     return __awaiter(this, void 0, Promise, function () {
-        var _a, genreRes, periodRes, techniques, error_4;
+        var delay_2, _a, genreRes, periodRes, techniques, error_4;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
-                    _b.trys.push([0, 2, , 3]);
+                    _b.trys.push([0, 3, , 4]);
+                    delay_2 = Math.random() * 500;
+                    return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, delay_2); })];
+                case 1:
+                    _b.sent();
                     return [4 /*yield*/, Promise.all([
                             axios_1["default"].get(API_BASE_URL + '/artworks/vincent/config?cond=genre'),
                             axios_1["default"].get(API_BASE_URL + '/artworks/vincent/config?cond=period'),
                             axios_1["default"].get(API_BASE_URL + '/artworks/vincent/config?cond=technique'),
                         ])];
-                case 1:
+                case 2:
                     _a = _b.sent(), genreRes = _a[0], periodRes = _a[1], techniques = _a[2];
                     return [2 /*return*/, {
                             genres: genreRes.data,
                             periods: periodRes.data,
                             techniques: techniques.data
                         }];
-                case 2:
+                case 3:
                     error_4 = _b.sent();
                     throw new Error('Error fetching config data');
-                case 3: return [2 /*return*/];
+                case 4: return [2 /*return*/];
             }
         });
     });

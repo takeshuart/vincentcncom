@@ -33,8 +33,7 @@ function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) ||
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
-var pageSize = 9; // 【关键新增】常量：设置自动加载的页数限制 (N=3)
-
+var pageSize = 9;
 var AUTO_LOAD_THRESHOLD = 2;
 var DEFAULT_QUERY = {
   hasImage: true,
@@ -53,8 +52,7 @@ var useArtSearch = function useArtSearch() {
   var _useState = (0, _react.useState)(''),
       _useState2 = _slicedToArray(_useState, 2),
       keywordInput = _useState2[0],
-      setKeywordInput = _useState2[1]; // --- 混合加载状态 ---
-
+      setKeywordInput = _useState2[1];
 
   var _useState3 = (0, _react.useState)(1),
       _useState4 = _slicedToArray(_useState3, 2),
@@ -69,13 +67,13 @@ var useArtSearch = function useArtSearch() {
   var _useState7 = (0, _react.useState)(''),
       _useState8 = _slicedToArray(_useState7, 2),
       lastQueryParams = _useState8[0],
-      setLastQueryParams = _useState8[1]; // 【关键新增】追踪自从上次点击按钮以来自动加载了多少页
-
+      setLastQueryParams = _useState8[1];
 
   var _useState9 = (0, _react.useState)(0),
       _useState10 = _slicedToArray(_useState9, 2),
-      pagesSinceButton = _useState10[0],
-      setPagesSinceButton = _useState10[1]; // recover filters from querystring (page parameter excluded)
+      pagesSinceMoreButton = _useState10[0],
+      setPagesSinceMoreButton = _useState10[1]; // recover filters from querystring (page parameter excluded)
+  //TODO Config Data使用本地缓存，在一次会话中不再重复加载
 
 
   var query = (0, _react.useMemo)(function () {
@@ -107,27 +105,31 @@ var useArtSearch = function useArtSearch() {
   var _useState15 = (0, _react.useState)(0),
       _useState16 = _slicedToArray(_useState15, 2),
       totalResults = _useState16[0],
-      setTotalResults = _useState16[1]; // isLoading: 用于初始加载和新搜索/筛选
+      setTotalResults = _useState16[1]; //loading first page
 
 
-  var _useState17 = (0, _react.useState)(true),
+  var _useState17 = (0, _react.useState)(false),
       _useState18 = _slicedToArray(_useState17, 2),
-      isLoading = _useState18[0],
-      setIsLoading = _useState18[1];
+      isNewSearch = _useState18[0],
+      setIsNewSearch = _useState18[1];
 
-  var _useState19 = (0, _react.useState)(false),
+  var _useState19 = (0, _react.useState)(true),
       _useState20 = _slicedToArray(_useState19, 2),
-      isConfigLoaded = _useState20[0],
-      setIsConfigLoaded = _useState20[1];
+      isInitialLoading = _useState20[0],
+      setIsInitialLoading = _useState20[1];
 
-  var _useState21 = (0, _react.useState)({
+  var _useState21 = (0, _react.useState)(false),
+      _useState22 = _slicedToArray(_useState21, 2),
+      isConfigLoaded = _useState22[0],
+      setIsConfigLoaded = _useState22[1];
+
+  var _useState23 = (0, _react.useState)({
     genres: [],
     techniques: []
   }),
-      _useState22 = _slicedToArray(_useState21, 2),
-      configData = _useState22[0],
-      setConfigData = _useState22[1]; // --- Configuration Fetch (Run Once) ---
-
+      _useState24 = _slicedToArray(_useState23, 2),
+      configData = _useState24[0],
+      setConfigData = _useState24[1];
 
   (0, _react.useEffect)(function () {
     (0, _ArtworkApi.fetchConfigData)().then(function (data) {
@@ -188,6 +190,7 @@ var useArtSearch = function useArtSearch() {
       keyword: keywordInput
     });
   }; // --- Core Data Fetching Logic ---
+  //append: 是否第一页
 
 
   var executeFetch = (0, _react.useCallback)(function _callee(page) {
@@ -205,7 +208,7 @@ var useArtSearch = function useArtSearch() {
             if (append) {
               setIsFetchingNextPage(true);
             } else {
-              setIsLoading(true);
+              setIsNewSearch(true);
               window.scrollTo({
                 top: 0,
                 behavior: 'smooth'
@@ -254,7 +257,11 @@ var useArtSearch = function useArtSearch() {
             if (append) {
               setIsFetchingNextPage(false);
             } else {
-              setIsLoading(false);
+              if (isInitialLoading) {
+                setIsInitialLoading(false);
+              }
+
+              setIsNewSearch(false);
             }
 
             return _context.finish(17);
@@ -265,46 +272,52 @@ var useArtSearch = function useArtSearch() {
         }
       }
     }, null, null, [[2, 13, 17, 20]]);
-  }, [query.keyword, query.hasImage, query.genre, query.period, query.technique, query.color]); // Effect to reset state on new query
+  }, [query.keyword, query.hasImage, query.genre, query.period, query.technique, query.color, isInitialLoading]); // Effect to reset state on new query
 
   (0, _react.useEffect)(function () {
-    if (query.queryString !== lastQueryParams) {
-      executeFetch(1, false);
-      setLastQueryParams(query.queryString); // 【关键修改】新搜索/筛选时，重置自动加载计数
+    // 首次加载后，isConfigLoaded 变为 true 
+    var isReadyToFetchFirstTime = isConfigLoaded && isInitialLoading; // 新的搜索/筛选：isConfigLoaded=true 且 query.queryString 确实发生了变化
 
-      setPagesSinceButton(0);
+    var isNewQuery = isConfigLoaded && query.queryString !== lastQueryParams && !isInitialLoading; // 确保只在首次加载完成后才检查查询变化
+    // 【修正后的逻辑】
+
+    if (isReadyToFetchFirstTime || isNewQuery) {
+      executeFetch(1, false);
+      setLastQueryParams(query.queryString);
+      setPagesSinceMoreButton(0);
     }
-  }, [query.queryString, lastQueryParams, executeFetch]); // 【新增函数 1】 IntersectionObserver 调用的自动加载函数
+  }, [query.queryString, lastQueryParams, executeFetch, isConfigLoaded, isInitialLoading]); // 新增 isInitialLoading 依赖项
+  // 【新增函数 1】 IntersectionObserver 调用的自动加载函数
 
   var autoLoadNextPage = (0, _react.useCallback)(function () {
     var nextPage = internalPage + 1;
 
-    if (internalPage < totalPages && !isFetchingNextPage && !isLoading) {
+    if (internalPage < totalPages && !isFetchingNextPage && !isNewSearch) {
       // 检查是否达到自动加载阈值
-      if (pagesSinceButton < AUTO_LOAD_THRESHOLD) {
+      if (pagesSinceMoreButton < AUTO_LOAD_THRESHOLD) {
         executeFetch(nextPage, true);
         setInternalPage(nextPage); // 自动加载计数 +1
 
-        setPagesSinceButton(function (prev) {
+        setPagesSinceMoreButton(function (prev) {
           return prev + 1;
         });
       }
     }
-  }, [internalPage, totalPages, isFetchingNextPage, isLoading, executeFetch, pagesSinceButton]); // 【新增函数 2】 按钮点击调用的手动加载函数
+  }, [internalPage, totalPages, isFetchingNextPage, executeFetch, pagesSinceMoreButton, isNewSearch]); // 【新增函数 2】 按钮点击调用的手动加载函数
 
   var manualLoadNextPage = (0, _react.useCallback)(function () {
     var nextPage = internalPage + 1;
 
-    if (internalPage < totalPages && !isFetchingNextPage && !isLoading) {
+    if (internalPage < totalPages && !isFetchingNextPage && !isNewSearch) {
       executeFetch(nextPage, true);
       setInternalPage(nextPage); // 按钮加载后，重置计数为 0，允许下一次自动加载批次从头开始
 
-      setPagesSinceButton(0);
+      setPagesSinceMoreButton(0);
     }
-  }, [internalPage, totalPages, isFetchingNextPage, isLoading, executeFetch]); // --- 导出状态和计算值 ---
+  }, [internalPage, totalPages, isFetchingNextPage, executeFetch, isNewSearch]); // --- 导出状态和计算值 ---
   // 是否允许 IntersectionObserver 触发自动加载
 
-  var canAutoLoad = internalPage < totalPages && pagesSinceButton < AUTO_LOAD_THRESHOLD; // 剩余数量计算
+  var canAutoLoad = internalPage < totalPages && pagesSinceMoreButton < AUTO_LOAD_THRESHOLD; // 剩余数量计算
 
   var hasNextPage = internalPage < totalPages;
   var remainingCount = totalResults - artworks.length; // 确保剩余页数至少为 0
@@ -320,18 +333,18 @@ var useArtSearch = function useArtSearch() {
     artworks: artworks,
     totalPages: totalPages,
     totalResults: totalResults,
-    isLoading: isLoading,
     isConfigLoaded: isConfigLoaded,
     configData: configData,
+    // 【合并后状态】
+    isInitialLoading: isInitialLoading,
+    isNewSearch: isNewSearch && !isInitialLoading,
     // 混合加载状态和函数
     hasNextPage: hasNextPage,
     autoLoadNextPage: autoLoadNextPage,
-    // 供 Intersection Observer 调用
     manualLoadNextPage: manualLoadNextPage,
-    // 供按钮调用
     isFetchingNextPage: isFetchingNextPage,
+    // 分页加载中
     canAutoLoad: canAutoLoad,
-    // 控制 Intersection Observer 的开关
     // 剩余数量信息
     remainingCount: remainingCount,
     remainingPages: remainingPages,
@@ -339,8 +352,7 @@ var useArtSearch = function useArtSearch() {
     handleFilterChange: handleFilterChange,
     handleColorSelect: handleColorSelect,
     handlePeriodChange: handlePeriodChange,
-    handleSearchTrigger: handleSearchTrigger // handlePageChange 已移除
-
+    handleSearchTrigger: handleSearchTrigger
   };
 };
 

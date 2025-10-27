@@ -2,8 +2,8 @@ import axios, { AxiosRequestConfig } from 'axios';
 
 
 //other devices cannot access if use 'localhost'
-// const API_BASE_URL = 'http://192.168.50.156:5001';
-const API_BASE_URL = 'http://localhost:5001';
+const API_BASE_URL = 'http://192.168.50.156:5001';
+// const API_BASE_URL = 'http://localhost:5001';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -56,7 +56,7 @@ export async function fetchArtData(
     console.log(`Query Params:`, queryParams);
 
     //模拟网络延迟，0.5~1.5秒随机延迟
-    const delay = Math.random() * 1000 + 500;  
+    const delay = Math.random() * 500;
     await new Promise(resolve => setTimeout(resolve, delay));
 
     const response = await axios.get(API_BASE_URL + '/artworks/vincent/bypage', { params: queryParams });
@@ -87,6 +87,10 @@ interface ConfigData {
 }
 export async function fetchConfigData(): Promise<ConfigData> {
   try {
+
+   const delay = Math.random() * 500;
+    await new Promise(resolve => setTimeout(resolve, delay));
+
     const [genreRes, periodRes, techniques] = await Promise.all([
       axios.get(API_BASE_URL + '/artworks/vincent/config?cond=genre'),
       axios.get(API_BASE_URL + '/artworks/vincent/config?cond=period'),

@@ -65,12 +65,16 @@ const DetailsPage = () => {
 
 
     return (
-        <Grid container justifyContent="center" sx={{ paddingTop: 5 }}>
+        <Grid container justifyContent="center" sx={{
+            paddingTop: 10, 
+        }}>
             {/* Image Box */}
             <Box
                 sx={{
                     position: 'relative', // <-- 关键：成为绝对定位按钮的参照物
                     width: '100%', display: 'flex', justifyContent: 'center',
+                    // maxWidth: isMobile ? '100%' : '800px', // 移动端允许宽度撑满
+                    height: isMobile ? '80vh' : 650, //
                 }}
             >
                 <ArtworkImage src={artwork.primaryImageMedium} isMobile={isMobile} />
@@ -97,9 +101,9 @@ const DetailsPage = () => {
             {/* Title Box */}
             <Grid container justifyContent="center">
                 <Grid item xs={10} sm={8} md={6}>
-                    <Divider sx={{ my:3}} />
+                    <Divider sx={{ my: 3 }} />
                     <Typography sx={titleStyle}>{artwork.titleZh || artwork.titleEn}</Typography>
-                    <Typography color='#999595ff' fontWeight='600' sx={{ mb: 2 ,fontSize:14}}>{artwork.displayDate}</Typography>
+                    <Typography color='#999595ff' fontWeight='600' sx={{ mb: 2, fontSize: 14 }}>{artwork.displayDate}</Typography>
                 </Grid>
             </Grid>
 
@@ -181,7 +185,7 @@ const NAV_BUTTON_STYLE = {
 
     width: '60px',
     height: '60px', // 强制高度，使其接近圆形
-    backgroundColor: 'rgba(255, 255, 255, 0.8)', // 带透明度的白色背景
+    backgroundColor: 'rgba(255, 255, 255, 0.3)', // 带透明度的白色背景
     borderRadius: '50%', // 确保圆形
     ml: 2,
 
@@ -192,6 +196,15 @@ const NAV_BUTTON_STYLE = {
     '&:hover': {
         backgroundColor: 'rgba(255, 255, 255, 1)',
         boxShadow: 4
+    },
+    '@media (max-width:600px)': {
+        width: '40px',
+        height: '40px',
+        ml: 1,
+        boxShadow: 1,
+        '&:hover': {
+            boxShadow: 2,
+        },
     },
 };
 

@@ -1,6 +1,7 @@
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import HEADER_HEIGHT from '../App';
 
 const AppHeader = () => {
     const navigate = useNavigate();
@@ -14,8 +15,20 @@ const AppHeader = () => {
         navigate(`/vincent/search${location.search}`);//recover search fitlers from querystring
     };
     return (
-        <AppBar position="static" sx={{ bgcolor: '#A7A6C3', boxShadow: 'none'}}>
-            <Toolbar>
+        <AppBar
+            position="absolute" //脱离文档流，固定视口位置
+            color='transparent'
+            sx={{
+                // boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)', //轻微阴影
+                boxShadow: 'none',
+                height: `40px`,
+                zIndex: 999// 确保更高的层级
+            }
+
+            }>
+            <Toolbar sx={{
+                bgcolor: 'transparent'
+            }}>
 
                 {shouldShowBack ? (
                     <Box
@@ -36,22 +49,24 @@ const AppHeader = () => {
                     component={Link}
                     to="/vincent"
                     sx={{
-                        flexGrow: 1,
                         color: 'black',
                         fontWeight: '500',
                         textDecoration: 'none', //remove 'underline'
-                        fontSize: { xs: '1rem', sm: '1rem', md: '1.25rem' } 
+                        fontSize: { xs: '1rem', sm: '1rem', md: '1.25rem' }
                     }}
                 >
                     梵·高档案馆
                 </Typography>
 
-                <Button color="inherit" sx={{ color: 'black' }}>
-                    登录
-                </Button>
+                <Box sx={{ display: 'flex', alignItems: 'center', ml: 'auto' }}>
+
+                    <Button  sx={{ color: 'black' }}>
+                        登录
+                    </Button>
+                </Box>
 
             </Toolbar>
-        </AppBar>
+        </AppBar >
     );
 };
 
