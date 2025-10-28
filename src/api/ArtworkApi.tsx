@@ -2,8 +2,9 @@ import axios, { AxiosRequestConfig } from 'axios';
 
 
 //other devices cannot access if use 'localhost'
-const API_BASE_URL = 'http://192.168.50.156:5001';
-// const API_BASE_URL = 'http://localhost:5001';
+// const API_BASE_URL = 'http://192.168.50.156:5001';
+const API_BASE_URL = 'http://localhost:5001';
+// const API_BASE_URL = 'http://49.235.40.16:5001';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

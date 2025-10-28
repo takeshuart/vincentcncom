@@ -39,8 +39,9 @@ exports.__esModule = true;
 exports.getLettersByIds = exports.fetchConfigData = exports.fetchSurpriseArt = exports.fetchArtData = exports.fetchArtworkById = void 0;
 var axios_1 = require("axios");
 //other devices cannot access if use 'localhost'
-var API_BASE_URL = 'http://192.168.50.156:5001';
-// const API_BASE_URL = 'http://localhost:5001';
+// const API_BASE_URL = 'http://192.168.50.156:5001';
+var API_BASE_URL = 'http://localhost:5001';
+// const API_BASE_URL = 'http://49.235.40.16:5001';
 var apiClient = axios_1["default"].create({
     baseURL: API_BASE_URL,
     timeout: 10000

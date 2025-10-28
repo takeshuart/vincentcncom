@@ -11,26 +11,12 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import './styles/index.css';
 
-// Header 的实际高度
-export const HEADER_HEIGHT = 40;
-// Header 下方与子内容之间的间距
-export const CONTENT_GAP = 40;
-
-// 结合高度和间距，这是 main Box 需要的完整偏移量
-export const TOTAL_HEADER_OFFSET = HEADER_HEIGHT + CONTENT_GAP;
-
 const GlobalLayout = () => {
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <AppHeader />
 
-      <Box component="main" sx={{
-        flexGrow: 1,
-        // 负外边距：让内容的背景向上延伸覆盖顶部空白区
-        marginTop: `-${TOTAL_HEADER_OFFSET}px`,
-        // // 内边距：将 Outlet 内容推到 Header 下边缘 + 20px 的位置
-        paddingTop: `${TOTAL_HEADER_OFFSET}px`,
-      }}>
+      <Box component="main" sx={{flexGrow: 1,}}>
         <Box sx={{
           flexGrow: 1, 
           minHeight: '100%',//全屏显示子页面，

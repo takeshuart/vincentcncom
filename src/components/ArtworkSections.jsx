@@ -32,8 +32,8 @@ export const ArtworkOverview = ({ artwork, extLinks }) => (
 
     {/* 基本信息 */}
     <InfoRow label="原标题" value={artwork.titleEn} />
-    <InfoRow label="创作时间" value={artwork.displayDate} />
-    <InfoRow label="收藏地" value={artwork.collection} />
+    <InfoRow label="创作时间" value={artwork.displayDateZh} />
+    <InfoRow label="收藏地" value={`${artwork.collectionZh} (${artwork.collection})`} />
     <InfoRow label="创作地点" value={artwork.placeOfOrigin} />
     <InfoRow label="尺寸" value={artwork.dimension} />
     <InfoRow label="材料" value={artwork.material} />

@@ -425,11 +425,11 @@ const ArtworkCard = ({ artwork, querystring, saveSearchContext, isNewSearchPendi
                             textAlign: 'left',
                             // display: { xs: 'none', md: 'block' },
                         }} >
-                        {artwork.displayDate}{artwork.placeOfOrigin ? `, ${artwork.placeOfOrigin}` : ''}
+                        {artwork.displayDateZh}{artwork.placeOfOrigin ? `, ${artwork.placeOfOrigin}` : ''}
                     </Typography>
                     {artwork.collection && (
                         <Typography variant="body2" color="text.secondary" textAlign='left'>
-                            {artwork.collection}
+                            {artwork.collectionZh}
                         </Typography>
                     )}
                 </CardContent>
