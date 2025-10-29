@@ -4,7 +4,6 @@ import { FormGroup, FormControlLabel, Checkbox } from '@mui/material';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
-import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
 import { FilterSelect } from '../components/Selector';
 import { GridSearchIcon } from '@mui/x-data-grid';

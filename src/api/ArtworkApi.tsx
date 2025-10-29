@@ -3,8 +3,13 @@ import axios, { AxiosRequestConfig } from 'axios';
 
 //other devices cannot access if use 'localhost'
 // const API_BASE_URL = 'http://192.168.50.156:5001';
-// const API_BASE_URL = 'http://localhost:5001';
-const API_BASE_URL = 'http://49.235.40.16:5001';
+// const API_BASE_URL = '/api/v1'
+// 
+/**
+ * use 'npm start', NODE_ENV='development'.
+ * use 'npm run build' , NODE_ENV='production'
+ */
+const API_BASE_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:5001/api/v1' : '/api/v1';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -24,7 +29,7 @@ async function get(url: string, config?: AxiosRequestConfig, context = 'data'): 
 
 export async function fetchArtworkById(artworkId: any) {
   try {
-    const response = await axios.get(`${API_BASE_URL}/artworks/vincent/id/${artworkId}`);
+    const response = await axios.get(`${API_BASE_URL}/artworks/vincent/${artworkId}`);
     return response.data;
   } catch (error) {
     throw new Error('Error fetching artwork details');
@@ -60,7 +65,7 @@ export async function fetchArtData(
     const delay = Math.random() * 500;
     await new Promise(resolve => setTimeout(resolve, delay));
 
-    const response = await axios.get(API_BASE_URL + '/artworks/vincent/bypage', { params: queryParams });
+    const response = await axios.get(API_BASE_URL + '/artworks/vincent', { params: queryParams });
 
     return response.data;
   } catch (err) {
@@ -71,7 +76,7 @@ export async function fetchArtData(
 
 export async function fetchSurpriseArt() {
   try {
-    const response = await axios.get(`${API_BASE_URL}/artworks/vincent/supriseme`);
+    const response = await apiClient.get(`/artworks/vincent/surprise`);
     return response.data;
   } catch (error) {
     throw new Error('Error fetching artwork details');
@@ -89,7 +94,7 @@ interface ConfigData {
 export async function fetchConfigData(): Promise<ConfigData> {
   try {
 
-   const delay = Math.random() * 500;
+    const delay = Math.random() * 500;
     await new Promise(resolve => setTimeout(resolve, delay));
 
     const [genreRes, periodRes, techniques] = await Promise.all([
@@ -108,5 +113,5 @@ export async function fetchConfigData(): Promise<ConfigData> {
 }
 
 export async function getLettersByIds(ids: string | string[]) {
-  return get(`${API_BASE_URL}/vincent/letter/byletids`, { params: { ids: ids } }, 'letters');
+  return get(`${API_BASE_URL}/letters/vincent`, { params: { ids: ids } }, 'letters');
 }

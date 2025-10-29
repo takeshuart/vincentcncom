@@ -12,6 +12,6 @@
         "webRoot": "${workspaceFolder}/",
         "preLaunchTask": "npm: start",
         "sourceMaps": true
-        }
+        }   
     ]
 }

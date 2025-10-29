@@ -40,8 +40,13 @@ exports.getLettersByIds = exports.fetchConfigData = exports.fetchSurpriseArt = e
 var axios_1 = require("axios");
 //other devices cannot access if use 'localhost'
 // const API_BASE_URL = 'http://192.168.50.156:5001';
-// const API_BASE_URL = 'http://localhost:5001';
-var API_BASE_URL = 'http://49.235.40.16:5001';
+// const API_BASE_URL = '/api/v1'
+// 
+/**
+ * use 'npm start', NODE_ENV='development'.
+ * use 'npm run build' , NODE_ENV='production'
+ */
+var API_BASE_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:5001/api/v1' : '/api/v1';
 var apiClient = axios_1["default"].create({
     baseURL: API_BASE_URL,
     timeout: 10000
@@ -74,7 +79,7 @@ function fetchArtworkById(artworkId) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, axios_1["default"].get(API_BASE_URL + "/artworks/vincent/id/" + artworkId)];
+                    return [4 /*yield*/, axios_1["default"].get(API_BASE_URL + "/artworks/vincent/" + artworkId)];
                 case 1:
                     response = _a.sent();
                     return [2 /*return*/, response.data];
@@ -109,7 +114,7 @@ function fetchArtData(page, pageSize, searchKeyword, hasImage, genreSelected, se
                     return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, delay_1); })];
                 case 1:
                     _a.sent();
-                    return [4 /*yield*/, axios_1["default"].get(API_BASE_URL + '/artworks/vincent/bypage', { params: queryParams })];
+                    return [4 /*yield*/, axios_1["default"].get(API_BASE_URL + '/artworks/vincent', { params: queryParams })];
                 case 2:
                     response = _a.sent();
                     return [2 /*return*/, response.data];
@@ -130,7 +135,7 @@ function fetchSurpriseArt() {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, axios_1["default"].get(API_BASE_URL + "/artworks/vincent/supriseme")];
+                    return [4 /*yield*/, apiClient.get("/artworks/vincent/surprise")];
                 case 1:
                     response = _a.sent();
                     return [2 /*return*/, response.data];
@@ -178,7 +183,7 @@ exports.fetchConfigData = fetchConfigData;
 function getLettersByIds(ids) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
-            return [2 /*return*/, get(API_BASE_URL + "/vincent/letter/byletids", { params: { ids: ids } }, 'letters')];
+            return [2 /*return*/, get(API_BASE_URL + "/letters/vincent", { params: { ids: ids } }, 'letters')];
         });
     });
 }

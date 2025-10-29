@@ -146,7 +146,7 @@ const SurprisemeBlock = React.forwardRef<HTMLDivElement, SurpriseArtworkBlockPro
                                     display: 'flex',
                                     justifyContent: { xs: 'center', md: 'flex-start' }
                                 }}>
-                                    <Link to={`/vincent/id/${surpriseArtwork!.id}`} target="_self" style={{ textDecoration: 'none' }}>
+                                    <Link to={`/vincent/${surpriseArtwork!.id}`} target="_self" style={{ textDecoration: 'none' }}>
                                         <Button variant="contained" size='large' sx={{
                                             borderColor: '#2A5A29', // 边框：深绿色
                                             // color: '#2A5A29',       // 文字：深绿色

@@ -34,7 +34,7 @@ export default function PeriodTimelineFilter({ selectedValue, onSelectionChange 
     const theme = useTheme();
     const handleToggle = (value) => {
         // 如果当前点击的值和已选中的值相同，则取消选中（设为 null），否则设为新值。
-        const newValue = selectedValue === value ? null : value;
+        const newValue = selectedValue == value ? null : value;
 
         console.log(newValue);
         onSelectionChange(newValue); // <-- 回调函数名称已更改

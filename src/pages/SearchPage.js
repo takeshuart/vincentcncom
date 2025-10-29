@@ -1,12 +1,11 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { Container, Typography, Grid, Card, CardMedia, CardContent, Box, CircularProgress, Button, Badge, Skeleton } from '@mui/material';
+import { useRef, useEffect, useState } from 'react';
+import { Container, Typography, Grid, Card, CardMedia, CardContent, Box, CircularProgress, Button} from '@mui/material';
 import { useMediaQuery } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'; // 【在此处添加这行代码】  
 // 导入新的 Hook
 import { useArtSearch } from '../hooks/useArtSearch';
 
-import { FilterAccordion, SearchInput } from './Filters';
+import {  SearchInput } from './Filters';
 import '../styles/ArtTableStyles.css';
 import ColorSearchBar from '../components/ColorSearchBar';
 import PeriodTimelineFilter from '../components/PeriodBar';
@@ -388,7 +387,7 @@ const ArtworkCard = ({ artwork, querystring, saveSearchContext, isNewSearchPendi
                 )}
 
                 <Link target="_self" style={{ textDecoration: 'none' }}
-                    to={`/vincent/id/${artwork.id}${querystring}`}
+                    to={`/vincent/${artwork.id}${querystring}`}
                     onClick={() => saveSearchContext(artwork.id)}
                 // // 当蒙版显示时，指针事件会被上面的 Box 阻止。这里仅作视觉提醒。
                 // style={showCardOverlay ? { pointerEvents: 'none' } : {}} 

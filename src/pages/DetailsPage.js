@@ -210,6 +210,6 @@ const NAV_BUTTON_STYLE = {
 
 const ARROWICON = {
     ml: 0.5,
-    color: 'text.secondary',
+    // color: 'text.secondary',
     color: '#31d847ff'
 }

@@ -79,7 +79,7 @@ var SurprisemeBlock = react_1["default"].forwardRef(function (_a, ref) {
                             display: 'flex',
                             justifyContent: { xs: 'center', md: 'flex-start' }
                         } },
-                        react_1["default"].createElement(react_router_dom_1.Link, { to: "/vincent/id/" + surpriseArtwork.id, target: "_self", style: { textDecoration: 'none' } },
+                        react_1["default"].createElement(react_router_dom_1.Link, { to: "/vincent/" + surpriseArtwork.id, target: "_self", style: { textDecoration: 'none' } },
                             react_1["default"].createElement(material_1.Button, { variant: "contained", size: 'large', sx: {
                                     borderColor: '#2A5A29',
                                     // color: '#2A5A29',       // 文字：深绿色
