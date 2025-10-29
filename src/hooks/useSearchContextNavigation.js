@@ -51,7 +51,7 @@ const useSearchContextNavigation = (currentId) => {
         if (currentIndex < list.length - 1) {
             const nextIndex = currentIndex + 1;
             const nextId = list[nextIndex];
-            navigate(`/vincent/id/${nextId}${querystring}`);
+            navigate(`/vincent/${nextId}${querystring}`);
         }
     }, [currentIndex, list, navigate]);
 
@@ -59,7 +59,7 @@ const useSearchContextNavigation = (currentId) => {
         if (currentIndex > 0) {
             const prevIndex = currentIndex - 1;
             const prevId = list[prevIndex];
-            navigate(`/vincent/id/${prevId}${querystring}`);
+            navigate(`/vincent/${prevId}${querystring}`);
         }
     }, [currentIndex, list, navigate]);
 

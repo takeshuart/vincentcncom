@@ -6,8 +6,8 @@ import axios, { AxiosRequestConfig } from 'axios';
 // const API_BASE_URL = '/api/v1'
 // 
 /**
- * use 'npm start', NODE_ENV='development'.
- * use 'npm run build' , NODE_ENV='production'
+ * use 'npm start' ,  NODE_ENV='development'.
+ * use 'npm run build'  , NODE_ENV='production' , use Nginx Proxy
  */
 const API_BASE_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:5001/api/v1' : '/api/v1';
 
@@ -62,8 +62,8 @@ export async function fetchArtData(
     console.log(`Query Params:`, queryParams);
 
     //模拟网络延迟，0.5~1.5秒随机延迟
-    const delay = Math.random() * 500;
-    await new Promise(resolve => setTimeout(resolve, delay));
+    // const delay = Math.random() * 500;
+    // await new Promise(resolve => setTimeout(resolve, delay));
 
     const response = await axios.get(API_BASE_URL + '/artworks/vincent', { params: queryParams });
 
@@ -94,8 +94,8 @@ interface ConfigData {
 export async function fetchConfigData(): Promise<ConfigData> {
   try {
 
-    const delay = Math.random() * 500;
-    await new Promise(resolve => setTimeout(resolve, delay));
+    // const delay = Math.random() * 500;
+    // await new Promise(resolve => setTimeout(resolve, delay));
 
     const [genreRes, periodRes, techniques] = await Promise.all([
       axios.get(API_BASE_URL + '/artworks/vincent/config?cond=genre'),

@@ -87,14 +87,14 @@ var useSearchContextNavigation = function useSearchContextNavigation(currentId) 
     if (currentIndex < list.length - 1) {
       var nextIndex = currentIndex + 1;
       var nextId = list[nextIndex];
-      navigate("/vincent/id/".concat(nextId).concat(querystring));
+      navigate("/vincent/".concat(nextId).concat(querystring));
     }
   }, [currentIndex, list, navigate]);
   var goToPrev = (0, _react.useCallback)(function () {
     if (currentIndex > 0) {
       var prevIndex = currentIndex - 1;
       var prevId = list[prevIndex];
-      navigate("/vincent/id/".concat(prevId).concat(querystring));
+      navigate("/vincent/".concat(prevId).concat(querystring));
     }
   }, [currentIndex, list, navigate]); // 3. 计算是否可以导航
 

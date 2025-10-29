@@ -43,8 +43,8 @@ var axios_1 = require("axios");
 // const API_BASE_URL = '/api/v1'
 // 
 /**
- * use 'npm start', NODE_ENV='development'.
- * use 'npm run build' , NODE_ENV='production'
+ * use 'npm start' ,  NODE_ENV='development'.
+ * use 'npm run build'  , NODE_ENV='production' , use Nginx Proxy
  */
 var API_BASE_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:5001/api/v1' : '/api/v1';
 var apiClient = axios_1["default"].create({
@@ -94,11 +94,11 @@ function fetchArtworkById(artworkId) {
 exports.fetchArtworkById = fetchArtworkById;
 function fetchArtData(page, pageSize, searchKeyword, hasImage, genreSelected, selectedPeriod, techniqueSelected, colorSelected) {
     return __awaiter(this, void 0, void 0, function () {
-        var queryParams, delay_1, response, err_1;
+        var queryParams, response, err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 3, , 4]);
+                    _a.trys.push([0, 2, , 3]);
                     queryParams = {
                         page: page,
                         pageSize: pageSize,
@@ -110,19 +110,15 @@ function fetchArtData(page, pageSize, searchKeyword, hasImage, genreSelected, se
                         colorField: colorSelected || undefined
                     };
                     console.log("Query Params:", queryParams);
-                    delay_1 = Math.random() * 500;
-                    return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, delay_1); })];
-                case 1:
-                    _a.sent();
                     return [4 /*yield*/, axios_1["default"].get(API_BASE_URL + '/artworks/vincent', { params: queryParams })];
-                case 2:
+                case 1:
                     response = _a.sent();
                     return [2 /*return*/, response.data];
-                case 3:
+                case 2:
                     err_1 = _a.sent();
                     console.error("Error fetching art data: " + err_1);
                     throw new Error('Error fetching art data');
-                case 4: return [2 /*return*/];
+                case 3: return [2 /*return*/];
             }
         });
     });
@@ -150,31 +146,27 @@ function fetchSurpriseArt() {
 exports.fetchSurpriseArt = fetchSurpriseArt;
 function fetchConfigData() {
     return __awaiter(this, void 0, Promise, function () {
-        var delay_2, _a, genreRes, periodRes, techniques, error_4;
+        var _a, genreRes, periodRes, techniques, error_4;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
-                    _b.trys.push([0, 3, , 4]);
-                    delay_2 = Math.random() * 500;
-                    return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, delay_2); })];
-                case 1:
-                    _b.sent();
+                    _b.trys.push([0, 2, , 3]);
                     return [4 /*yield*/, Promise.all([
                             axios_1["default"].get(API_BASE_URL + '/artworks/vincent/config?cond=genre'),
                             axios_1["default"].get(API_BASE_URL + '/artworks/vincent/config?cond=period'),
                             axios_1["default"].get(API_BASE_URL + '/artworks/vincent/config?cond=technique'),
                         ])];
-                case 2:
+                case 1:
                     _a = _b.sent(), genreRes = _a[0], periodRes = _a[1], techniques = _a[2];
                     return [2 /*return*/, {
                             genres: genreRes.data,
                             periods: periodRes.data,
                             techniques: techniques.data
                         }];
-                case 3:
+                case 2:
                     error_4 = _b.sent();
                     throw new Error('Error fetching config data');
-                case 4: return [2 /*return*/];
+                case 3: return [2 /*return*/];
             }
         });
     });
