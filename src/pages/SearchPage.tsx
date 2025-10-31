@@ -19,6 +19,7 @@ import ColorSearchBar from '../components/ColorSearchBar';
 import PeriodTimelineFilter from '../components/PeriodBar';
 import { keyframes, styled } from '@mui/material/styles';
 import '../styles/ArtTableStyles.css';
+import { Artwork } from '@/types/Artwork';
 
 const STORAGE_KEY = 'currentPageContext';
 
@@ -45,7 +46,7 @@ interface TransitioningOverlayProps {
 }
 
 interface ArtworkCardProps {
-    artwork: ArtworkType;
+    artwork: Artwork;
     querystring: string;
     saveSearchContext: (id: number | string) => void;
     isNewSearchPending: boolean;
@@ -121,7 +122,7 @@ export default function ArtSearchPage() {
 
     return (
         <>
-            <ThemedLoadingOverlay isLoading={!isReady} />
+            <ThemedLoadingOverlay isLoading={isInitialLoading} />
             <Container maxWidth={false} disableGutters>
                 <Container
                     maxWidth={false}
@@ -154,7 +155,7 @@ export default function ArtSearchPage() {
                                 <Grid container>
                                     <PeriodTimelineFilter
                                         selectedValue={query.period}
-                                        onSelectionChange={handlePeriodChange}
+                                        onSelectionChange={(v) => handlePeriodChange(v ?? '')}
                                     />
                                 </Grid>
                                 <Grid item xs={12}>
@@ -223,13 +224,18 @@ export default function ArtSearchPage() {
                                             justifyContent: 'center',
                                             alignItems: 'center',
                                             minHeight:
-                                                isFetchingNextPage || (hasNextPage && !isNewSearchPending) ? '150px' : '50px',
+                                                isFetchingNextPage || (hasNextPage && !isNewSearchPending)
+                                                    ? '150px'
+                                                    : '50px',
                                         }}
                                     >
                                         {isFetchingNextPage && (
                                             <>
                                                 <CircularProgress size={40} />
-                                                <Typography variant="body1" sx={{ ml: 2, color: 'text.secondary' }}>
+                                                <Typography
+                                                    variant="body1"
+                                                    sx={{ ml: 2, color: 'text.secondary' }}
+                                                >
                                                     加载中...
                                                 </Typography>
                                             </>
@@ -276,7 +282,7 @@ const fadeOut = keyframes`
   to { opacity: 0; }
 `;
 
-const TransitioningOverlay = styled(Box)<TransitioningOverlayProps>(({ theme, isLeaving }) => ({
+const TransitioningOverlay = styled(Box)<TransitioningOverlayProps>(({ isLeaving }) => ({
     position: 'absolute',
     paddingTop: 10,
     left: 0,
@@ -326,26 +332,46 @@ const ArtworkCard: React.FC<ArtworkCardProps> = ({
     const showCardOverlay = isNewSearchPending;
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
+    const HOVER_OVERLAY_CLASS = 'hover-ripple-overlay';
+    // 1. 定义蒙版的透明度 (Alpha)。0.15 通常比较合适，效果不会太重。
+    const HOVER_ALPHA = 0.15;
+    const hoverOverlayColor = `rgba(${artwork.r}, ${artwork.g}, ${artwork.b}, ${HOVER_ALPHA})`;
     return (
-        <Grid item xs={12} sm={4} md={4}
+        <Grid
+            item
+            xs={12}
+            sm={4}
+            md={4}
             sx={{
                 padding: '10px 40px 20px 10px',
-                position: 'relative', // 允许绝对定位蒙版
-                '@media (max-width: 600px)': {
-                    p: 1
-                },
-
+                position: 'relative',
+                '@media (max-width: 600px)': { p: 1 },
             }}
         >
-            <Card variant="outlined" sx={{
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                border: 'none'
-            }}>
-
-                {/* 新数据加载中时，使用单卡片蒙版 */}
+            <Card
+                variant="outlined"
+                sx={{
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    border: 'none',
+                    position: 'relative',
+                    '&:hover': {
+                        cursor: 'pointer',
+                        // 1. 悬停覆盖层展开并显示
+                        [`& .${HOVER_OVERLAY_CLASS}`]: {
+                            transform: 'scale(1)',
+                            opacity: 1,
+                        },
+                        // 2. 图片和文字透明度降低（如果您需要这个效果）
+                        '& .MuiCardMedia-root, & .MuiCardContent-root': {
+                            opacity: 0.99,
+                            transition: 'opacity 0.5s',
+                        },
+                    },
+                }}
+            >
+                {/** 加载中动画层 */}
                 {showCardOverlay && (
                     <Box
                         sx={{
@@ -354,25 +380,41 @@ const ArtworkCard: React.FC<ArtworkCardProps> = ({
                             left: 0,
                             width: '100%',
                             height: '100%',
-                            backgroundColor: 'rgba(255, 255, 255, 0.1)', // 半透明白色蒙版
-                            zIndex: 10, // 确保在卡片内容之上
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                            zIndex: 10,
                             display: 'flex',
-                            flexDirection: 'column',
                             justifyContent: 'center',
                             alignItems: 'center',
-                            pointerEvents: 'none', // 允许点击穿透
+                            pointerEvents: 'none',
                         }}
-                    >
-                        {/* 可以用一个小的加载指示器代替全局大指示器 */}
-                        {/* <CircularProgress size={30} sx={{ color: '#9694c2ff', mb: 1 }} /> */}
-                    </Box>
+                    />
                 )}
+                {/* 2.悬停动画层 (Hover Overlay) 灵感来自YouTube PC*/}
+                {/* 确保 zIndex 小于 Loading Overlay (10) 并且高于图片/文字 (通常是 0) */}
+                <Box
+                    className={HOVER_OVERLAY_CLASS}
+                    sx={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        backgroundColor: hoverOverlayColor, // 使用作品主色调作为悬停颜色（会加深图片的饱和度)
+                        zIndex: 1, // 确保在图片和文字之上，但在加载蒙版之下
+                        pointerEvents: 'none',
 
-                <Link target="_self" style={{ textDecoration: 'none' }}
+                        //实现扩散蒙版效果
+                        transform: 'scale(0.95)',//悬停蒙版放大初始值,0.9-1
+                        opacity: 0,
+                        // 动画过渡
+                        transition: 'transform 0.3s ease-out, opacity 0.3s ease-out',
+                    }}
+                />
+                <Link
+                    target="_self"
+                    style={{ textDecoration: 'none' }}
                     to={`/vincent/${artwork.id}${querystring}`}
                     onClick={() => saveSearchContext(artwork.id)}
-                // // 当蒙版显示时，指针事件会被上面的 Box 阻止。这里仅作视觉提醒。
-                // style={showCardOverlay ? { pointerEvents: 'none' } : {}} 
                 >
                     <CardMedia
                         component="img"
@@ -384,37 +426,39 @@ const ArtworkCard: React.FC<ArtworkCardProps> = ({
                             objectFit: { xs: 'initial', sm: 'contain' },
                             objectPosition: 'center',
                             backgroundColor: '#fdfbfbff',
-                            '&:hover': {
-                                backgroundColor: '#f0f0f0'
-                            },
-                            // 蒙版显示时，降低卡片内容本身的亮度/透明度
+                            // '&:hover': { backgroundColor: '#f0f0f0' },
                             opacity: showCardOverlay ? 0.6 : 1,
                             transition: 'opacity 0.3s',
                         }}
                     />
-                </Link>
-                <CardContent sx={{
-                    textAlign: 'left',
-                    opacity: showCardOverlay ? 0.6 : 1,
-                    transition: 'opacity 0.3s',
-                    pb: 0
-                }}>
-                    <Typography sx={{ fontWeight: 400, fontSize: { xs: 14, md: 18 }, textAlign: 'left' }}>
-                        {artwork.titleZh || artwork.titleEn}
-                    </Typography>
-                    <Typography color="text.secondary" variant="body2"
+                    <CardContent
                         sx={{
                             textAlign: 'left',
-                            // display: { xs: 'none', md: 'block' },
-                        }} >
-                        {artwork.displayDateZh}{artwork.placeOfOrigin ? `, ${artwork.placeOfOrigin}` : ''}
-                    </Typography>
-                    {artwork.collection && (
-                        <Typography variant="body2" color="text.secondary" textAlign='left'>
-                            {artwork.collectionZh}
+                            opacity: showCardOverlay ? 0.6 : 1,
+                            transition: 'opacity 0.3s',
+                            pb: 0,
+                        }}
+                    >
+                        <Typography sx={{
+                            fontWeight: 400,
+                            fontSize: { xs: 14, md: 18 },
+                            textAlign: 'left',
+                            color: 'black'
+                        }}>
+                            {artwork.titleZh || artwork.titleEn}
                         </Typography>
-                    )}
-                </CardContent>
+                        <Typography color="text.secondary" variant="body2" sx={{ textAlign: 'left' }}>
+                            {artwork.displayDateZh}
+                            {artwork.placeOfOrigin ? `, ${artwork.placeOfOrigin}` : ''}
+                        </Typography>
+                        {artwork.collection && (
+                            <Typography variant="body2" color="text.secondary" textAlign="left">
+                                {artwork.collectionZh}
+                            </Typography>
+                        )}
+                    </CardContent>
+                </Link>
+
             </Card>
         </Grid>
     );

@@ -1,5 +1,4 @@
 "use strict";
-// src/hooks/useArtSearch.tsx (重构)
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
@@ -11,134 +10,194 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
 exports.__esModule = true;
 exports.useArtSearch = void 0;
 var react_1 = require("react");
 var react_router_dom_1 = require("react-router-dom");
 var react_query_1 = require("@tanstack/react-query");
-var ArtworkApi_1 = require("../api/ArtworkApi"); // 导入重构后的 API
+var ArtworkApi_1 = require("../api/ArtworkApi");
+var pageSize = 9;
+var AUTO_LOAD_THRESHOLD = 2;
 var DEFAULT_QUERY = {
     hasImage: true,
     genre: '',
     technique: '',
     keyword: '',
-    color: '',
-    period: ''
+    color: ''
 };
-// -------------------------------------------------------------
-// 核心自定义 Hook：使用 useInfiniteQuery 实现搜索与分页
-// -------------------------------------------------------------
 exports.useArtSearch = function () {
-    var _a, _b, _c;
-    var _d = react_router_dom_1.useSearchParams(), searchParams = _d[0], setSearchParams = _d[1];
-    // 1. 状态管理：从 URL 同步搜索参数
-    var getQueryState = react_1.useCallback(function () {
+    var _a, _b, _c, _d;
+    var _e = react_router_dom_1.useSearchParams(), searchParams = _e[0], setSearchParams = _e[1];
+    var _f = react_1.useState(function () { return searchParams.get('keyword') || ''; }), keywordInput = _f[0], setKeywordInput = _f[1];
+    // ---------------------- 解析 URL 参数 ----------------------
+    var query = react_1.useMemo(function () {
         var newQuery = {
             hasImage: searchParams.get('hasImage') === 'true' || DEFAULT_QUERY.hasImage,
             genre: searchParams.get('genre') || DEFAULT_QUERY.genre,
-            period: searchParams.get('period') || DEFAULT_QUERY.period,
+            period: searchParams.get('period') || '',
             technique: searchParams.get('technique') || DEFAULT_QUERY.technique,
             keyword: searchParams.get('keyword') || DEFAULT_QUERY.keyword,
             color: searchParams.get('color') || DEFAULT_QUERY.color
         };
-        // 生成一个唯一字符串作为 queryKey 的一部分
-        var queryString = new URLSearchParams(newQuery).toString();
+        var queryString = new URLSearchParams({
+            hasImage: String(newQuery.hasImage),
+            genre: newQuery.genre,
+            period: newQuery.period,
+            technique: newQuery.technique,
+            keyword: newQuery.keyword,
+            color: newQuery.color
+        }).toString();
         return __assign(__assign({}, newQuery), { queryString: queryString });
     }, [searchParams]);
-    var query = getQueryState();
-    // 用于输入框的双向绑定，避免每次输入都触发 URL/Query 变更
-    var _e = react_1.useState(query.keyword), keywordInput = _e[0], setKeywordInput = _e[1];
-    useEffect(function () {
-        setKeywordInput(query.keyword);
-    }, [query.keyword]);
-    // 2. 配置数据加载 (使用 useQuery 进行单次缓存)
-    var configResults = react_query_1.useQuery({
-        queryKey: ['artConfig'],
+    // ---------------------- 配置数据 ----------------------
+    var _g = react_query_1.useQuery({
+        queryKey: ['configData'],
         queryFn: ArtworkApi_1.fetchConfigData,
         staleTime: Infinity,
-        placeholderData: { genres: [], techniques: [], periods: [] }
-    });
-    // 3. 艺术作品无限查询 (核心)
-    var artResults = react_query_1.useInfiniteQuery({
-        // 关键：Query Key 必须包含所有用于搜索的参数，变化时自动重置
-        queryKey: ['artSearch', query.queryString],
+        gcTime: Infinity
+    }), _h = _g.data, configData = _h === void 0 ? { genres: [], techniques: [] } : _h, isConfigLoaded = _g.isSuccess;
+    // ---------------------- 无限滚动加载 ----------------------
+    var _j = react_query_1.useInfiniteQuery({
+        queryKey: ['artworks', query.queryString],
         queryFn: function (_a) {
-            var _b = _a.pageParam, pageParam = _b === void 0 ? 1 : _b;
-            return ArtworkApi_1.fetchArtData({
-                page: pageParam,
-                searchKeyword: query.keyword,
-                hasImage: query.hasImage,
-                genreSelected: query.genre,
-                selectedPeriod: query.period,
-                techniqueSelected: query.technique,
-                colorSelected: query.color
+            var pageParam = _a.pageParam;
+            return __awaiter(void 0, void 0, void 0, function () {
+                var page, artData;
+                return __generator(this, function (_b) {
+                    switch (_b.label) {
+                        case 0:
+                            page = pageParam !== null && pageParam !== void 0 ? pageParam : 1;
+                            return [4 /*yield*/, ArtworkApi_1.fetchArtData(page, pageSize, query.keyword, query.hasImage, query.genre, query.period, query.technique, query.color)];
+                        case 1:
+                            artData = _b.sent();
+                            return [2 /*return*/, {
+                                    page: page,
+                                    rows: artData.rows || [],
+                                    totalCount: artData.totalCount || 0,
+                                    totalPages: Math.ceil((artData.totalCount || 0) / pageSize)
+                                }];
+                    }
+                });
             });
         },
         initialPageParam: 1,
-        getNextPageParam: function (lastPage) { return lastPage.nextPage; },
-        enabled: configResults.isSuccess
-    });
-    // 4. 结果合并与计算
-    var artworks = react_1.useMemo(function () {
-        var _a;
-        return ((_a = artResults.data) === null || _a === void 0 ? void 0 : _a.pages.flatMap(function (page) { return page.artworks; })) || [];
-    }, [artResults.data]);
-    var totalResults = (_c = (_b = (_a = artResults.data) === null || _a === void 0 ? void 0 : _a.pages[0]) === null || _b === void 0 ? void 0 : _b.totalResults) !== null && _c !== void 0 ? _c : 0;
-    var remainingCount = totalResults - artworks.length;
-    // 5. 搜索和过滤操作函数 (更新 URL Search Params)
-    var updateSearchParams = react_1.useCallback(function (newValues) {
+        getNextPageParam: function (lastPage) {
+            return lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined;
+        },
+        refetchOnWindowFocus: false
+    }), data = _j.data, isFetching = _j.isFetching, isFetchingNextPage = _j.isFetchingNextPage, fetchNextPage = _j.fetchNextPage, hasNextPage = _j.hasNextPage, isInitialLoading = _j.isLoading;
+    // ---------------------- 数据整合 ----------------------
+    var artworks = react_1.useMemo(function () { return (data ? data.pages.flatMap(function (p) { return p.rows; }) : []); }, [data]);
+    var totalResults = ((_b = (_a = data === null || data === void 0 ? void 0 : data.pages) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.totalCount) || 0;
+    var totalPages = ((_d = (_c = data === null || data === void 0 ? void 0 : data.pages) === null || _c === void 0 ? void 0 : _c[0]) === null || _d === void 0 ? void 0 : _d.totalPages) || 0;
+    // ---------------------- 自动加载逻辑 ----------------------
+    var _k = react_1.useState(0), pagesSinceMoreButton = _k[0], setPagesSinceMoreButton = _k[1];
+    var canAutoLoad = hasNextPage && pagesSinceMoreButton < AUTO_LOAD_THRESHOLD && !isFetchingNextPage;
+    var autoLoadNextPage = react_1.useCallback(function () {
+        if (canAutoLoad) {
+            fetchNextPage();
+            setPagesSinceMoreButton(function (prev) { return prev + 1; });
+        }
+    }, [fetchNextPage, canAutoLoad]);
+    var manualLoadNextPage = react_1.useCallback(function () {
+        if (hasNextPage) {
+            fetchNextPage();
+            setPagesSinceMoreButton(0);
+        }
+    }, [fetchNextPage, hasNextPage]);
+    // ---------------------- UI 辅助逻辑 ----------------------
+    var isNewSearch = isFetching && !isFetchingNextPage; // ✅ 保留搜索时半透明效果
+    var remainingCount = Math.max(0, totalResults - artworks.length);
+    var remainingPages = Math.max(0, Math.ceil(remainingCount / pageSize));
+    // ---------------------- URL 更新函数 ----------------------
+    var updateSearchParams = function (newValues) {
         var currentParams = Object.fromEntries(searchParams.entries());
         var newParams = __assign({}, currentParams);
         for (var key in newValues) {
             var value = newValues[key];
-            var isEmpty = value === null || value === '' || (Array.isArray(value) && value.length === 0);
-            if (isEmpty) {
+            var isEmpty = !value || (Array.isArray(value) && value.length === 0);
+            if (isEmpty)
                 delete newParams[key];
-            }
-            else {
+            else
                 newParams[key] = String(value);
-            }
         }
         setSearchParams(newParams);
-    }, [searchParams, setSearchParams]);
-    var handleColorSelect = react_1.useCallback(function (color) {
+    };
+    // ---------------------- Handlers ----------------------
+    var handleFilterChange = function (key) { return function (event) {
+        var _a;
+        var value = event.target.type === 'checkbox'
+            ? event.target.checked
+            : event.target.value;
+        updateSearchParams((_a = {}, _a[key] = value, _a));
+    }; };
+    var handleColorSelect = function (color) {
         updateSearchParams({ color: color, keyword: keywordInput });
-    }, [updateSearchParams, keywordInput]);
-    var handlePeriodChange = react_1.useCallback(function (value) {
+    };
+    var handlePeriodChange = function (value) {
         updateSearchParams({ period: value });
-    }, [updateSearchParams]);
-    // 注意：原代码中的 handleSearchTrigger 接受一个 event 参数
-    var handleSearchTrigger = react_1.useCallback(function () {
+    };
+    var handleSearchTrigger = function (event) {
+        if (event && event.preventDefault)
+            event.preventDefault();
         updateSearchParams({ keyword: keywordInput });
-    }, [updateSearchParams, keywordInput]);
-    // 6. 状态映射到原有 Hook 接口
-    var isInitialLoading = artResults.isLoading && configResults.isLoading;
-    var isFetchingNextPage = artResults.isFetchingNextPage;
-    var hasNextPage = artResults.hasNextPage;
-    // 新查询状态：如果正在获取数据，且当前已加载作品数为 0，则认为是新的搜索
-    var isNewSearch = artResults.isFetching && artworks.length === 0;
-    // 自动加载条件：有下一页且当前没有在加载
-    var canAutoLoad = hasNextPage && !isFetchingNextPage;
+    };
+    // ---------------------- 导出 ----------------------
     return {
-        // Query/Input States
         query: query,
         keywordInput: keywordInput,
         setKeywordInput: setKeywordInput,
-        // Data States
         artworks: artworks,
         totalResults: totalResults,
-        isConfigLoaded: configResults.isSuccess,
-        // TanStack Query 驱动的状态和方法
+        totalPages: totalPages,
+        isConfigLoaded: isConfigLoaded,
+        configData: configData,
         isInitialLoading: isInitialLoading,
         isNewSearch: isNewSearch,
-        hasNextPage: hasNextPage,
-        // TanStack Query 提供的分页函数
-        autoLoadNextPage: artResults.fetchNextPage,
-        manualLoadNextPage: artResults.fetchNextPage,
         isFetchingNextPage: isFetchingNextPage,
+        hasNextPage: hasNextPage,
+        autoLoadNextPage: autoLoadNextPage,
+        manualLoadNextPage: manualLoadNextPage,
         canAutoLoad: canAutoLoad,
         remainingCount: remainingCount,
-        // Handlers
+        remainingPages: remainingPages,
+        handleFilterChange: handleFilterChange,
         handleColorSelect: handleColorSelect,
         handlePeriodChange: handlePeriodChange,
         handleSearchTrigger: handleSearchTrigger

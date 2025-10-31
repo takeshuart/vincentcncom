@@ -54,7 +54,7 @@ function ArtSearchPage() {
     var isNewSearchPending = isNewSearch && artworks.length > 0;
     var isReady = isConfigLoaded && !isInitialLoading;
     return (React.createElement(React.Fragment, null,
-        React.createElement(ThemedLoadingOverlay, { isLoading: !isReady }),
+        React.createElement(ThemedLoadingOverlay, { isLoading: isInitialLoading }),
         React.createElement(material_1.Container, { maxWidth: false, disableGutters: true },
             React.createElement(material_1.Container, { maxWidth: false, sx: {
                     width: '90%',
@@ -75,7 +75,7 @@ function ArtSearchPage() {
                                             handleSearchTrigger(e);
                                     }, onClick: handleSearchTrigger })),
                             React.createElement(material_1.Grid, { container: true },
-                                React.createElement(PeriodBar_1["default"], { selectedValue: query.period, onSelectionChange: handlePeriodChange })),
+                                React.createElement(PeriodBar_1["default"], { selectedValue: query.period, onSelectionChange: function (v) { return handlePeriodChange(v !== null && v !== void 0 ? v : ''); } })),
                             React.createElement(material_1.Grid, { item: true, xs: 12 },
                                 React.createElement(ColorSearchBar_1["default"], { onColorSelect: handleColorSelect, initialColor: query.color }))),
                         React.createElement(material_1.Grid, { container: true, justifyContent: "center" },
@@ -106,7 +106,9 @@ function ArtSearchPage() {
                                         display: 'flex',
                                         justifyContent: 'center',
                                         alignItems: 'center',
-                                        minHeight: isFetchingNextPage || (hasNextPage && !isNewSearchPending) ? '150px' : '50px'
+                                        minHeight: isFetchingNextPage || (hasNextPage && !isNewSearchPending)
+                                            ? '150px'
+                                            : '50px'
                                     } },
                                     isFetchingNextPage && (React.createElement(React.Fragment, null,
                                         React.createElement(material_1.CircularProgress, { size: 40 }),
@@ -130,7 +132,7 @@ exports["default"] = ArtSearchPage;
 // ----------------------------
 var fadeOut = styles_1.keyframes(templateObject_1 || (templateObject_1 = __makeTemplateObject(["\n  from { opacity: 1; }\n  to { opacity: 0; }\n"], ["\n  from { opacity: 1; }\n  to { opacity: 0; }\n"])));
 var TransitioningOverlay = styles_1.styled(material_1.Box)(function (_a) {
-    var theme = _a.theme, isLeaving = _a.isLeaving;
+    var isLeaving = _a.isLeaving;
     return ({
         position: 'absolute',
         paddingTop: 10,
@@ -168,22 +170,40 @@ var ThemedLoadingOverlay = function (_a) {
 // Artwork Card
 // ----------------------------
 var ArtworkCard = function (_a) {
+    var _b;
     var artwork = _a.artwork, querystring = _a.querystring, saveSearchContext = _a.saveSearchContext, isNewSearchPending = _a.isNewSearchPending;
     var showCardOverlay = isNewSearchPending;
     var theme = material_1.useTheme();
     var isMobile = material_1.useMediaQuery(theme.breakpoints.down('sm'));
+    var HOVER_OVERLAY_CLASS = 'hover-ripple-overlay';
+    // 1. 定义蒙版的透明度 (Alpha)。0.15 通常比较合适，效果不会太重。
+    var HOVER_ALPHA = 0.15;
+    var hoverOverlayColor = "rgba(" + artwork.r + ", " + artwork.g + ", " + artwork.b + ", " + HOVER_ALPHA + ")";
     return (React.createElement(material_1.Grid, { item: true, xs: 12, sm: 4, md: 4, sx: {
             padding: '10px 40px 20px 10px',
             position: 'relative',
-            '@media (max-width: 600px)': {
-                p: 1
-            }
+            '@media (max-width: 600px)': { p: 1 }
         } },
         React.createElement(material_1.Card, { variant: "outlined", sx: {
                 height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
-                border: 'none'
+                border: 'none',
+                position: 'relative',
+                '&:hover': (_b = {
+                        cursor: 'pointer'
+                    },
+                    // 1. 悬停覆盖层展开并显示
+                    _b["& ." + HOVER_OVERLAY_CLASS] = {
+                        transform: 'scale(1)',
+                        opacity: 1
+                    },
+                    // 2. 图片和文字透明度降低（如果您需要这个效果）
+                    _b['& .MuiCardMedia-root, & .MuiCardContent-root'] = {
+                        opacity: 0.99,
+                        transition: 'opacity 0.5s'
+                    },
+                    _b)
             } },
             showCardOverlay && (React.createElement(material_1.Box, { sx: {
                     position: 'absolute',
@@ -194,11 +214,25 @@ var ArtworkCard = function (_a) {
                     backgroundColor: 'rgba(255, 255, 255, 0.1)',
                     zIndex: 10,
                     display: 'flex',
-                    flexDirection: 'column',
                     justifyContent: 'center',
                     alignItems: 'center',
                     pointerEvents: 'none'
                 } })),
+            React.createElement(material_1.Box, { className: HOVER_OVERLAY_CLASS, sx: {
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: hoverOverlayColor,
+                    zIndex: 1,
+                    pointerEvents: 'none',
+                    //实现扩散蒙版效果
+                    transform: 'scale(0.95)',
+                    opacity: 0,
+                    // 动画过渡
+                    transition: 'transform 0.3s ease-out, opacity 0.3s ease-out'
+                } }),
             React.createElement(react_router_dom_1.Link, { target: "_self", style: { textDecoration: 'none' }, to: "/vincent/" + artwork.id + querystring, onClick: function () { return saveSearchContext(artwork.id); } },
                 React.createElement(material_1.CardMedia, { component: "img", image: "https://artworks-1257857866.cos.ap-beijing.myqcloud.com" + artwork.primaryImageSmall, alt: "", sx: {
                         width: '100%',
@@ -206,25 +240,25 @@ var ArtworkCard = function (_a) {
                         objectFit: { xs: 'initial', sm: 'contain' },
                         objectPosition: 'center',
                         backgroundColor: '#fdfbfbff',
-                        '&:hover': {
-                            backgroundColor: '#f0f0f0'
-                        },
-                        // 蒙版显示时，降低卡片内容本身的亮度/透明度
+                        // '&:hover': { backgroundColor: '#f0f0f0' },
                         opacity: showCardOverlay ? 0.6 : 1,
                         transition: 'opacity 0.3s'
-                    } })),
-            React.createElement(material_1.CardContent, { sx: {
-                    textAlign: 'left',
-                    opacity: showCardOverlay ? 0.6 : 1,
-                    transition: 'opacity 0.3s',
-                    pb: 0
-                } },
-                React.createElement(material_1.Typography, { sx: { fontWeight: 400, fontSize: { xs: 14, md: 18 }, textAlign: 'left' } }, artwork.titleZh || artwork.titleEn),
-                React.createElement(material_1.Typography, { color: "text.secondary", variant: "body2", sx: {
-                        textAlign: 'left'
+                    } }),
+                React.createElement(material_1.CardContent, { sx: {
+                        textAlign: 'left',
+                        opacity: showCardOverlay ? 0.6 : 1,
+                        transition: 'opacity 0.3s',
+                        pb: 0
                     } },
-                    artwork.displayDateZh,
-                    artwork.placeOfOrigin ? ", " + artwork.placeOfOrigin : ''),
-                artwork.collection && (React.createElement(material_1.Typography, { variant: "body2", color: "text.secondary", textAlign: 'left' }, artwork.collectionZh))))));
+                    React.createElement(material_1.Typography, { sx: {
+                            fontWeight: 400,
+                            fontSize: { xs: 14, md: 18 },
+                            textAlign: 'left',
+                            color: 'black'
+                        } }, artwork.titleZh || artwork.titleEn),
+                    React.createElement(material_1.Typography, { color: "text.secondary", variant: "body2", sx: { textAlign: 'left' } },
+                        artwork.displayDateZh,
+                        artwork.placeOfOrigin ? ", " + artwork.placeOfOrigin : ''),
+                    artwork.collection && (React.createElement(material_1.Typography, { variant: "body2", color: "text.secondary", textAlign: "left" }, artwork.collectionZh)))))));
 };
 var templateObject_1;

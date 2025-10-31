@@ -62,8 +62,8 @@ export async function fetchArtData(
     console.log(`Query Params:`, queryParams);
 
     //模拟网络延迟，0.5~1.5秒随机延迟
-    // const delay = Math.random() * 500;
-    // await new Promise(resolve => setTimeout(resolve, delay));
+    const delay = Math.random() * 500;
+    await new Promise(resolve => setTimeout(resolve, delay));
 
     const response = await axios.get(API_BASE_URL + '/artworks/vincent', { params: queryParams });
 
