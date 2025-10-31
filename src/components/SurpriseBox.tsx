@@ -2,40 +2,24 @@ import React, { Ref } from 'react';
 import { Box, Grid, Typography, CircularProgress, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { Casino as CasinoIcon } from '@mui/icons-material';
+import { Artwork } from '../types/Artwork';
 
-interface Artwork {
-    id: number;
-    titleZh: string;
-    titleEn: string;
-    displayDate: string;
-    artistName: string;
-    collection: string;
-    primaryImageSmall: string;
-    primaryImageMedium: string;
-}
-
-interface SurpriseArtworkBlockProps {
-    surpriseArtwork: Artwork | null;
+interface SurpriseBoxProps {
+    artwork: Artwork | null;
     isSurpriseLoading: boolean;
     fetchSurpriseArtWork: () => Promise<void>;
 }
 
-const getImageUrl = (primaryImageSmall: string | undefined): string => {
-    if (!primaryImageSmall) return '';
-    const parts = primaryImageSmall.split(';').map(p => p.trim());
-    const valid = parts.find(p => p.startsWith('/works/'));
-    return `https://artworks-1257857866.cos.ap-beijing.myqcloud.com${valid || parts[0] || ''}`;
-};
 
 
-const SurprisemeBlock = React.forwardRef<HTMLDivElement, SurpriseArtworkBlockProps>(
+const SurpriseBox = React.forwardRef<HTMLDivElement, SurpriseBoxProps>(
     ({
-        surpriseArtwork,
+        artwork,
         isSurpriseLoading,
         fetchSurpriseArtWork
-    }, ref: Ref<HTMLDivElement>) => {
+    }, ref) => {
 
-        const isLoading = isSurpriseLoading || !surpriseArtwork;
+        const isLoading = isSurpriseLoading || !artwork;
 
         return (
             <Box
@@ -49,7 +33,7 @@ const SurprisemeBlock = React.forwardRef<HTMLDivElement, SurpriseArtworkBlockPro
                     borderRadius: 5,
                     position: 'relative',
                     bgcolor: '#d8dbf0ff',
-                    
+
                     boxShadow: '0 8px 15px rgba(0, 0, 0, 0.1)', //创造“浮动”的立体感 (bedroom 家具的立体感)
                 }}
             >
@@ -98,8 +82,8 @@ const SurprisemeBlock = React.forwardRef<HTMLDivElement, SurpriseArtworkBlockPro
                                 overflow: 'hidden'
                             }}>
                                 <img
-                                    src={getImageUrl(surpriseArtwork!.primaryImageMedium)}
-                                    alt={surpriseArtwork!.titleZh || surpriseArtwork!.titleEn}
+                                    src={getImageUrl(artwork!.primaryImageMedium)}
+                                    alt={artwork!.titleZh || artwork!.titleEn}
                                     style={{
                                         maxWidth: '100%',
                                         maxHeight: '100%',
@@ -116,11 +100,11 @@ const SurprisemeBlock = React.forwardRef<HTMLDivElement, SurpriseArtworkBlockPro
                                     // variant="h4" 
                                     sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '1.5rem', md: '2.5rem' } }}
                                 >
-                                    {surpriseArtwork!.titleZh || surpriseArtwork!.titleEn}
+                                    {artwork!.titleZh || artwork!.titleEn}
                                 </Typography>
 
                                 <Typography sx={{ fontSize: { xs: '0.875rem', md: '1.25rem' } }}>
-                                    {surpriseArtwork!.titleEn}
+                                    {artwork!.titleEn}
                                 </Typography>
 
                                 <Typography
@@ -128,7 +112,7 @@ const SurprisemeBlock = React.forwardRef<HTMLDivElement, SurpriseArtworkBlockPro
                                     color="text.secondary"
                                     sx={{ mb: 2, fontStyle: 'italic', display: { xs: 'none', md: 'block' } }}
                                 >
-                                    {surpriseArtwork!.displayDate}
+                                    {artwork!.displayDate}
                                 </Typography>
                                 <Typography
                                     variant="subtitle1"
@@ -138,7 +122,7 @@ const SurprisemeBlock = React.forwardRef<HTMLDivElement, SurpriseArtworkBlockPro
                                         display: { xs: 'none', md: 'block' }
                                     }}
                                 >
-                                    {surpriseArtwork!.collection || '收藏地：未知'}
+                                    {artwork!.collection || '收藏地：未知'}
                                 </Typography>
 
                                 {/* Surprise Me 按钮 */}
@@ -146,7 +130,7 @@ const SurprisemeBlock = React.forwardRef<HTMLDivElement, SurpriseArtworkBlockPro
                                     display: 'flex',
                                     justifyContent: { xs: 'center', md: 'flex-start' }
                                 }}>
-                                    <Link to={`/vincent/${surpriseArtwork!.id}`} target="_self" style={{ textDecoration: 'none' }}>
+                                    <Link to={`/vincent/${artwork!.id}`} target="_self" style={{ textDecoration: 'none' }}>
                                         <Button variant="contained" size='large' sx={{
                                             borderColor: '#2A5A29', // 边框：深绿色
                                             // color: '#2A5A29',       // 文字：深绿色
@@ -172,4 +156,12 @@ const SurprisemeBlock = React.forwardRef<HTMLDivElement, SurpriseArtworkBlockPro
         );
     });
 
-export default SurprisemeBlock;
+export default SurpriseBox;
+
+
+const getImageUrl = (primaryImageSmall: string | undefined): string => {
+    if (!primaryImageSmall) return '';
+    const parts = primaryImageSmall.split(';').map(p => p.trim());
+    const valid = parts.find(p => p.startsWith('/works/'));
+    return `https://artworks-1257857866.cos.ap-beijing.myqcloud.com${valid || parts[0] || ''}`;
+};

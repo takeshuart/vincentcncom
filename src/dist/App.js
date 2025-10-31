@@ -1,8 +1,6 @@
 "use strict";
 exports.__esModule = true;
-// src/App.js
 var react_router_dom_1 = require("react-router-dom");
-var VincentAdmin_1 = require("./pages/VincentAdmin");
 var HomePage_1 = require("./pages/HomePage");
 var DetailsPage_1 = require("./pages/DetailsPage");
 var material_1 = require("@mui/material");
@@ -24,12 +22,10 @@ var GlobalLayout = function () {
                 " "))));
 };
 function App() {
-    return (React.createElement(react_router_dom_1.BrowserRouter, null,
-        React.createElement(react_router_dom_1.Routes, null,
-            React.createElement(react_router_dom_1.Route, { path: "/", element: React.createElement(GlobalLayout, null) },
-                React.createElement(react_router_dom_1.Route, { path: "/vincent", element: React.createElement(HomePage_1["default"], null) }),
-                React.createElement(react_router_dom_1.Route, { path: "/vincent/search", element: React.createElement(SearchPage_1["default"], null) }),
-                React.createElement(react_router_dom_1.Route, { path: "/vincent/:id", element: React.createElement(DetailsPage_1["default"], null) })),
-            React.createElement(react_router_dom_1.Route, { path: "/", element: React.createElement(VincentAdmin_1["default"], null) }))));
+    return (React.createElement(react_router_dom_1.Routes, null,
+        React.createElement(react_router_dom_1.Route, { path: "/", element: React.createElement(GlobalLayout, null) },
+            React.createElement(react_router_dom_1.Route, { index: true, element: React.createElement(HomePage_1["default"], null) }),
+            React.createElement(react_router_dom_1.Route, { path: "search", element: React.createElement(SearchPage_1["default"], null) }),
+            React.createElement(react_router_dom_1.Route, { path: "vincent/:id", element: React.createElement(DetailsPage_1["default"], null) }))));
 }
 exports["default"] = App;

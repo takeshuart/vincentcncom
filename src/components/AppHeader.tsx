@@ -6,13 +6,14 @@ import HEADER_HEIGHT from '../App';
 const AppHeader = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const shouldShowBack = !(location.pathname === '/vincent');
+    const shouldShowBack = location.pathname.startsWith('/vincent/');
 
     //go back searchPage
     const goBack = () => {
         //返回上一页 而不是直接到搜索页。
         //navigate(-1)
-        navigate(`/vincent/search${location.search}`);//recover search fitlers from querystring
+        //location.search start with '?'
+        navigate(`/search${location.search}`);//recover search fitlers from querystring
     };
     return (
         <AppBar
@@ -47,7 +48,7 @@ const AppHeader = () => {
 
                 <Typography
                     component={Link}
-                    to="/vincent"
+                    to="/"
                     sx={{
                         color: 'black',
                         fontWeight: '500',

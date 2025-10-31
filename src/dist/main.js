@@ -5,6 +5,7 @@ var client_1 = require("react-dom/client");
 var App_1 = require("./App");
 var react_query_1 = require("@tanstack/react-query");
 var react_router_dom_1 = require("react-router-dom");
+//React Enter File
 /**
  * 全局状态管理器，管理了所有的 查询缓存、失效策略、重试策略 等。
  * useQuery/useMutation会自动使用该管理器

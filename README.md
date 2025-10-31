@@ -9,7 +9,7 @@ api服务位于Artwork-database项目中，是node.js服务。
 2. 启动该项目
 菜单run-> start debugging (在`lunch.json`配置`npm start`命令)
 或直接在terminal中运行：
-> `.\paintings-website> npm start`
+> `> npm run start`
 
 3. router
 该项目包含两部分：

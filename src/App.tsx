@@ -1,8 +1,6 @@
-// src/App.js
 import { BrowserRouter as Router, Route, Routes, Outlet } from 'react-router-dom';
-import VincentAdmin from './pages/VincentAdmin';
-import VincentImages from './pages/HomePage';
-import DetailsPage from './pages/DetailsPage'
+import HomePage from './pages/HomePage';
+import DetailsPage from './pages/DetailsPage';
 import { Box } from '@mui/material';
 import AppHeader from './components/AppHeader';
 import ArtSearchPage from './pages/SearchPage';
@@ -13,9 +11,9 @@ const GlobalLayout = () => {
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <AppHeader />
 
-      <Box component="main" sx={{flexGrow: 1,}}>
+      <Box component="main" sx={{ flexGrow: 1, }}>
         <Box sx={{
-          flexGrow: 1, 
+          flexGrow: 1,
           minHeight: '100%',//全屏显示子页面，
           width: '100%',
           // 默认的背景色仍然留给子组件来设置 (保持透明)
@@ -30,17 +28,14 @@ const GlobalLayout = () => {
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<GlobalLayout />}>
-          <Route path="/vincent" element={<VincentImages />} />
-          <Route path="/vincent/search" element={<ArtSearchPage />} />
-          <Route path="/vincent/:id" element={<DetailsPage />} />
-        </Route>
-        <Route path="/" element={<VincentAdmin />} />
+    <Routes>
+      <Route path="/" element={<GlobalLayout />}>
+        <Route index element={<HomePage />} />
+        <Route path="search" element={<ArtSearchPage />} />
+        <Route path="vincent/:id" element={<DetailsPage />} />
+      </Route>
+    </Routes>
 
-      </Routes>
-    </Router>
   );
 }
 
