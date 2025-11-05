@@ -74,7 +74,7 @@ const SurpriseBox = React.forwardRef<HTMLDivElement, SurpriseBoxProps>(
                             {/** left image box */}
                             <Box sx={{
                                 width: { xs: '100%', md: 700 },
-                                height: { xs: 300, md: 600 },
+                                height: { xs: 250, md: 600 },
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -98,12 +98,12 @@ const SurpriseBox = React.forwardRef<HTMLDivElement, SurpriseBoxProps>(
                             <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
                                 <Typography
                                     // variant="h4" 
-                                    sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '1.5rem', md: '2.5rem' } }}
+                                    sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '0.8rem', md: '2.5rem' } }}
                                 >
                                     {artwork!.titleZh || artwork!.titleEn}
                                 </Typography>
 
-                                <Typography sx={{ fontSize: { xs: '0.875rem', md: '1.25rem' } }}>
+                                <Typography color="text.secondary" sx={{ fontSize: { xs: '0.80rem', md: '1.25rem' } }}>
                                     {artwork!.titleEn}
                                 </Typography>
 
@@ -125,7 +125,7 @@ const SurpriseBox = React.forwardRef<HTMLDivElement, SurpriseBoxProps>(
                                     {artwork!.collection || '收藏地：未知'}
                                 </Typography>
 
-                                {/* Surprise Me 按钮 */}
+                                {/* 详情按钮 */}
                                 <Box sx={{
                                     display: 'flex',
                                     justifyContent: { xs: 'center', md: 'flex-start' }
@@ -141,11 +141,18 @@ const SurpriseBox = React.forwardRef<HTMLDivElement, SurpriseBoxProps>(
                                                 color: '#FFFFFF',           // 悬停文字变白色
                                                 borderColor: '#2A5A29',
                                             },
+                                            padding: {
+                                                xs: '4px 8px',
+                                                md: '8px 22px' 
+                                            },
+                                            fontWeight: {
+                                                xs: 300, 
+                                                md: 700 
+                                            },
                                         }}>
                                             查看详情
                                         </Button>
                                     </Link>
-
 
                                 </Box>
                             </Box>

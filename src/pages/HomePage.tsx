@@ -29,7 +29,12 @@ export default function HomePage() {
 
   return (
     <Container maxWidth={false} disableGutters sx={{ bgcolor: '#d8dbf0ff', pt: 10 }}>
-      <Container maxWidth={false} sx={{ width: '90%', mx: 'auto' }}>
+      <Container maxWidth={false}
+        sx={{
+          width: '100%',
+          px: { xs: 1, sm: 3, md: 30 }
+        }}
+      >
         <SurpriseBox
           artwork={surpriseArtwork ?? null}
           isSurpriseLoading={isSurpriseLoading}
