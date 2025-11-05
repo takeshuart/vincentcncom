@@ -7,6 +7,8 @@ import {
     // 导入 Colors 模块中的具体类型，虽然在这里不严格必要，但有助于类型提示
 } from '@mui/material';
 import * as muiColors from '@mui/material/colors';
+import { UpdateQueryFilterFn } from '@/hooks/useArtSearch';
+import { QueryKeys } from '@/types/enum';
 
 // =================================================================
 // 1. 类型定义
@@ -23,8 +25,8 @@ interface PeriodNode {
 
 // 定义组件 Props 的结构
 interface PeriodTimelineFilterProps {
-    selectedValue: string | null; // 当前选中的值，可能是 string 或 null (未选中)
-    onSelectionChange: (newValue: string | null) => void; // 回调函数，接受新的选中值
+    selectedValue?: string; // 当前选中的值，可能是 string 或 null (未选中)
+    updateQueryFilter: UpdateQueryFilterFn
 }
 
 // -----------------------------------------------------------------
@@ -61,7 +63,7 @@ const getColorValue = (code: keyof typeof muiColors): string => {
         // 使用可选链和逻辑或来安全获取颜色值
         return color[500] || color['A700'] || color[400] || muiColors.grey[500];
     }
-    
+
     return muiColors.grey[500]; // 如果 code 无效，回退到默认灰色
 };
 
@@ -69,16 +71,15 @@ const getColorValue = (code: keyof typeof muiColors): string => {
 // 2. 组件定义
 // =================================================================
 
-export default function PeriodTimelineFilter({ selectedValue, onSelectionChange }: PeriodTimelineFilterProps) {
+export default function PeriodTimelineFilter({ selectedValue, updateQueryFilter }: PeriodTimelineFilterProps) {
     const theme = useTheme();
 
-    // 明确 handleToggle 的参数类型
     const handleToggle = (value: string): void => {
-        // 使用三元表达式更简洁地判断新值
-        const newValue: string | null = selectedValue === value ? null : value;
+        const newValue: string =
+            selectedValue === value ? ''  //cancel select 
+                : value;
 
-        console.log(newValue);
-        onSelectionChange(newValue);
+        updateQueryFilter(QueryKeys.PERIOD, newValue);
     };
 
     return (
@@ -97,10 +98,9 @@ export default function PeriodTimelineFilter({ selectedValue, onSelectionChange 
             }}
         >
             {periodNodes.map((node, index) => {
-                // 确保类型安全比较
                 const isSelected: boolean = node.value === selectedValue;
                 // 明确 getColorValue 的参数类型
-                const nodeColor: string = getColorValue(node.colorCode); 
+                const nodeColor: string = getColorValue(node.colorCode);
                 const calculatedWidth: string = `${(node.widthRatio / totalRatio) * 100}%`;
 
                 return (
@@ -135,7 +135,7 @@ export default function PeriodTimelineFilter({ selectedValue, onSelectionChange 
                             borderRight: index < periodNodes.length - 1
                                 ? `1px solid ${theme.palette.divider}`
                                 : 'none',
-                            
+
                             '&:hover': {
                                 zIndex: 2,
                                 ...(!isSelected && {

@@ -1,6 +1,8 @@
 
 import React, { useState, useCallback } from 'react';
 import { Box } from '@mui/material'; // 移除了 IconButton
+import { UpdateQueryFilterFn } from '@/hooks/useArtSearch';
+import { QueryKeys } from '@/types/enum';
 
 // 梵高调色板（根据非drawing作品RGB分析结果）
 // displayColor: 前端展示亮度和饱和度更高的色彩
@@ -20,28 +22,23 @@ export const VAN_GOGH_PALETTE = [
 ];
 
 interface ColorSearchBarProps {
-    onColorSelect: (colorField: string) => void;
-    initialColor?: string;
+    updateQueryFilter: UpdateQueryFilterFn
+    selectedColor?: string;
 }
 
 export const ColorSearchBar: React.FC<ColorSearchBarProps> = ({
-    onColorSelect,
-    initialColor = '',
+    updateQueryFilter,
+    selectedColor = '',
 }) => {
-    const [selectedColor, setSelectedColor] = useState<string>(initialColor);
 
-    const handleSelect = useCallback(
-        (color: string, scoreField: string) => {
-            if (selectedColor === color) {
-                setSelectedColor('');
-                onColorSelect(''); // 通知父组件：没有颜色
-            } else {
-                setSelectedColor(color);
-                onColorSelect(scoreField);
-            }
-        },
-        [selectedColor, onColorSelect]
-    );
+    const handleSelect = (scoreField: string) => {
+        if (selectedColor === scoreField) { //cancel select
+            updateQueryFilter(QueryKeys.COLOR, ''); // change query
+        } else {
+            updateQueryFilter(QueryKeys.COLOR, scoreField);
+        }
+    };
+
     return (
         <Box sx={{ width: '100%', my: 2 }}>
             <Box
@@ -56,11 +53,11 @@ export const ColorSearchBar: React.FC<ColorSearchBarProps> = ({
             >
 
                 {VAN_GOGH_PALETTE.map((color) => {
-                    const isSelected = selectedColor === color.displayColor;
+                    const isSelected = selectedColor === color.scoreField;
                     return (
                         <Box
                             key={color.displayColor}
-                            onClick={() => handleSelect(color.displayColor, color.scoreField)}
+                            onClick={() => handleSelect(color.scoreField)}
                             title={`${color.name}${isSelected ? ' (已选中)' : ''}`}
                             sx={{
                                 flex: 1,
@@ -74,7 +71,7 @@ export const ColorSearchBar: React.FC<ColorSearchBarProps> = ({
 
                                 // 保持白色描边和阴影
                                 border: isSelected
-                                    ? '2px solid white'
+                                    ? '3px solid white'
                                     : '2px solid transparent',
                                 boxShadow: isSelected
                                     ? '0 0 10px rgba(0,0,0,0.7)' // 略微增强阴影让放大效果更明显
@@ -88,7 +85,7 @@ export const ColorSearchBar: React.FC<ColorSearchBarProps> = ({
                                     transform: 'scale(1.1)',
                                     zIndex: 2,
                                 },
-                                
+
                             }}
                         />
                     );

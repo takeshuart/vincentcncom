@@ -13,15 +13,14 @@ var ColorSearchBar_1 = require("../components/ColorSearchBar");
 var PeriodBar_1 = require("../components/PeriodBar");
 var styles_1 = require("@mui/material/styles");
 require("../styles/ArtTableStyles.css");
+var enum_1 = require("@/types/enum");
 var STORAGE_KEY = 'currentPageContext';
-// ----------------------------
-// ArtSearchPage
-// ----------------------------
 function ArtSearchPage() {
-    var location = react_router_dom_1.useLocation();
-    var querystring = location.search;
+    //这是页面最底部的那个元素，追踪它。一旦它进入用户的视野，加载下一页
     var loadMoreRef = react_1.useRef(null);
-    var _a = useArtSearch_1.useArtSearch(), query = _a.query, keywordInput = _a.keywordInput, setKeywordInput = _a.setKeywordInput, artworks = _a.artworks, totalResults = _a.totalResults, isConfigLoaded = _a.isConfigLoaded, isInitialLoading = _a.isInitialLoading, isNewSearch = _a.isNewSearch, hasNextPage = _a.hasNextPage, autoLoadNextPage = _a.autoLoadNextPage, manualLoadNextPage = _a.manualLoadNextPage, isFetchingNextPage = _a.isFetchingNextPage, canAutoLoad = _a.canAutoLoad, remainingCount = _a.remainingCount, handleColorSelect = _a.handleColorSelect, handlePeriodChange = _a.handlePeriodChange, handleSearchTrigger = _a.handleSearchTrigger;
+    var querystring = react_router_dom_1.useLocation().search; //query string start with '?'
+    var _a = react_1.useState(''), keywordInput = _a[0], setKeywordInput = _a[1];
+    var _b = useArtSearch_1.useArtSearch(), query = _b.query, artworks = _b.artworks, totalResults = _b.totalResults, isConfigLoaded = _b.isConfigLoaded, isFirstLoad = _b.isFirstLoad, isNewSearch = _b.isNewSearch, hasNextPage = _b.hasNextPage, autoLoadNextPage = _b.autoLoadNextPage, manualLoadNextPage = _b.manualLoadNextPage, isFetching = _b.isFetching, canAutoLoad = _b.canAutoLoad, remainingCount = _b.remainingCount, updateFilter = _b.updateFilter;
     var saveSearchContext = function (currentId) {
         var allLoadedIds = artworks.map(function (item) { return String(item.id); });
         var indexInList = allLoadedIds.findIndex(function (id) { return id === String(currentId); });
@@ -31,30 +30,41 @@ function ArtSearchPage() {
         };
         sessionStorage.setItem(STORAGE_KEY, JSON.stringify(context));
     };
-    // ----------------------------
-    // IntersectionObserver 自动加载
-    // ----------------------------
     react_1.useEffect(function () {
-        if (!loadMoreRef.current || !canAutoLoad || isFetchingNextPage)
+        // !loadMoreRef.current: DOM未渲染
+        if (!loadMoreRef.current || !canAutoLoad || isFetching)
             return;
+        //create Observer
         var observer = new IntersectionObserver(function (entries) {
             if (entries[0].isIntersecting) {
-                autoLoadNextPage();
+                autoLoadNextPage(); //execute load
             }
         }, {
+            //锚点元素距离浏览器底部还有 200 像素时，就会触发 isIntersecting，开始提前加载。
             rootMargin: '200px 0px',
             threshold: 0.1
         });
+        //监视自动加载下一页的锚点元素
         observer.observe(loadMoreRef.current);
         return function () {
             if (loadMoreRef.current)
                 observer.unobserve(loadMoreRef.current);
         };
-    }, [canAutoLoad, isFetchingNextPage, autoLoadNextPage]);
-    var isNewSearchPending = isNewSearch && artworks.length > 0;
-    var isReady = isConfigLoaded && !isInitialLoading;
+    }, [canAutoLoad, isFetching, autoLoadNextPage]);
+    var isNewSearchPending = isNewSearch;
+    var handleHasImageChange = function (key) { return function (event) {
+        var value = event.target.type === 'checkbox'
+            ? event.target.checked
+            : event.target.value;
+        updateFilter(enum_1.QueryKeys.HAS_IMAGE, value);
+    }; };
+    var handleSearch = function (event) {
+        //prevent browser default submit action
+        if (event && event.preventDefault)
+            event.preventDefault();
+        updateFilter(enum_1.QueryKeys.SEARCH_TEXT, keywordInput);
+    };
     return (React.createElement(React.Fragment, null,
-        React.createElement(ThemedLoadingOverlay, { isLoading: isInitialLoading }),
         React.createElement(material_1.Container, { maxWidth: false, disableGutters: true },
             React.createElement(material_1.Container, { maxWidth: false, sx: {
                     width: '90%',
@@ -72,12 +82,12 @@ function ArtSearchPage() {
                                         return setKeywordInput(e.target.value);
                                     }, onKeyDown: function (e) {
                                         if (e.key === 'Enter')
-                                            handleSearchTrigger(e);
-                                    }, onClick: handleSearchTrigger })),
+                                            handleSearch(e);
+                                    }, onClick: handleSearch })),
                             React.createElement(material_1.Grid, { container: true },
-                                React.createElement(PeriodBar_1["default"], { selectedValue: query.period, onSelectionChange: function (v) { return handlePeriodChange(v !== null && v !== void 0 ? v : ''); } })),
+                                React.createElement(PeriodBar_1["default"], { selectedValue: query.period, updateQueryFilter: updateFilter })),
                             React.createElement(material_1.Grid, { item: true, xs: 12 },
-                                React.createElement(ColorSearchBar_1["default"], { onColorSelect: handleColorSelect, initialColor: query.color }))),
+                                React.createElement(ColorSearchBar_1["default"], { selectedColor: query.color, updateQueryFilter: updateFilter }))),
                         React.createElement(material_1.Grid, { container: true, justifyContent: "center" },
                             React.createElement(material_1.Box, { sx: {
                                     minHeight: 40,
@@ -106,14 +116,14 @@ function ArtSearchPage() {
                                         display: 'flex',
                                         justifyContent: 'center',
                                         alignItems: 'center',
-                                        minHeight: isFetchingNextPage || (hasNextPage && !isNewSearchPending)
+                                        minHeight: isFetching || (hasNextPage && !isNewSearchPending)
                                             ? '150px'
                                             : '50px'
                                     } },
-                                    isFetchingNextPage && (React.createElement(React.Fragment, null,
+                                    isFetching && (React.createElement(React.Fragment, null,
                                         React.createElement(material_1.CircularProgress, { size: 40 }),
                                         React.createElement(material_1.Typography, { variant: "body1", sx: { ml: 2, color: 'text.secondary' } }, "\u52A0\u8F7D\u4E2D..."))),
-                                    hasNextPage && !isNewSearchPending && !isFetchingNextPage && (React.createElement(material_1.Button, { onClick: manualLoadNextPage, disabled: isFetchingNextPage, variant: "text", size: "large", sx: {
+                                    hasNextPage && !isNewSearchPending && !isFetching && (React.createElement(material_1.Button, { onClick: manualLoadNextPage, disabled: isFetching, variant: "text", size: "large", sx: {
                                             textTransform: 'none',
                                             fontWeight: 500,
                                             fontSize: '1rem',
@@ -124,7 +134,7 @@ function ArtSearchPage() {
                                         "\u52A0\u8F7D\u66F4\u591A... (\u5269\u4F59",
                                         remainingCount,
                                         ")")),
-                                    !hasNextPage && artworks.length > 0 && !isFetchingNextPage && (React.createElement(material_1.Typography, { variant: "subtitle1", color: "text.secondary" }, "\u5DF2\u52A0\u8F7D\u5168\u90E8\u4F5C\u54C1 \uD83D\uDDBC\uFE0F")))))))))));
+                                    !hasNextPage && artworks.length > 0 && !isFetching && (React.createElement(material_1.Typography, { variant: "subtitle1", color: "text.secondary" }, "\u5DF2\u52A0\u8F7D\u5168\u90E8\u4F5C\u54C1 \uD83D\uDDBC\uFE0F")))))))))));
 }
 exports["default"] = ArtSearchPage;
 // ----------------------------
@@ -167,20 +177,21 @@ var ThemedLoadingOverlay = function (_a) {
     return (React.createElement(TransitioningOverlay, { isLeaving: !isLoading }, isLoading && React.createElement(material_1.CircularProgress, { size: 60, sx: { color: '#FFC700' } })));
 };
 // ----------------------------
-// Artwork Card
+// Single Artwork Card
 // ----------------------------
 var ArtworkCard = function (_a) {
     var _b;
-    var artwork = _a.artwork, querystring = _a.querystring, saveSearchContext = _a.saveSearchContext, isNewSearchPending = _a.isNewSearchPending;
+    var artwork = _a.artwork, querystring = _a.querystring, //pass to DetailPage url
+    saveSearchContext = _a.saveSearchContext, isNewSearchPending = _a.isNewSearchPending;
     var showCardOverlay = isNewSearchPending;
     var theme = material_1.useTheme();
     var isMobile = material_1.useMediaQuery(theme.breakpoints.down('sm'));
     var HOVER_OVERLAY_CLASS = 'hover-ripple-overlay';
-    // 1. 定义蒙版的透明度 (Alpha)。0.15 通常比较合适，效果不会太重。
+    // 1. 定义蒙版的透明度 (Alpha)。
     var HOVER_ALPHA = 0.15;
     var hoverOverlayColor = "rgba(" + artwork.r + ", " + artwork.g + ", " + artwork.b + ", " + HOVER_ALPHA + ")";
     return (React.createElement(material_1.Grid, { item: true, xs: 12, sm: 4, md: 4, sx: {
-            padding: '10px 40px 20px 10px',
+            padding: '20px',
             position: 'relative',
             '@media (max-width: 600px)': { p: 1 }
         } },
@@ -236,7 +247,7 @@ var ArtworkCard = function (_a) {
             React.createElement(react_router_dom_1.Link, { target: "_self", style: { textDecoration: 'none' }, to: "/vincent/" + artwork.id + querystring, onClick: function () { return saveSearchContext(artwork.id); } },
                 React.createElement(material_1.CardMedia, { component: "img", image: "https://artworks-1257857866.cos.ap-beijing.myqcloud.com" + artwork.primaryImageSmall, alt: "", sx: {
                         width: '100%',
-                        height: { xs: 'auto', sm: '250px' },
+                        height: { xs: 'auto', sm: '250px', md: '300px' },
                         objectFit: { xs: 'initial', sm: 'contain' },
                         objectPosition: 'center',
                         backgroundColor: '#fdfbfbff',

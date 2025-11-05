@@ -1,18 +1,6 @@
-import { useRef, useEffect, useState } from 'react';
-import {
-    Container,
-    Typography,
-    Grid,
-    Card,
-    CardMedia,
-    CardContent,
-    Box,
-    CircularProgress,
-    Button,
-    useMediaQuery,
-    useTheme,
-} from '@mui/material';
-import { Link, useLocation, Location } from 'react-router-dom';
+import { useRef, useEffect, useState, useMemo } from 'react';
+import { Container, Typography, Grid, Card, CardMedia, CardContent, Box, CircularProgress, Button, useMediaQuery, useTheme, } from '@mui/material';
+import { Link, useLocation, Location, useSearchParams } from 'react-router-dom';
 import { useArtSearch } from '../hooks/useArtSearch';
 import { SearchInput } from './Filters';
 import ColorSearchBar from '../components/ColorSearchBar';
@@ -20,31 +8,16 @@ import PeriodTimelineFilter from '../components/PeriodBar';
 import { keyframes, styled } from '@mui/material/styles';
 import '../styles/ArtTableStyles.css';
 import { Artwork } from '@/types/Artwork';
+import { QueryParams } from '@/api/ArtworkApi';
+import { QueryKeys } from '@/types/enum';
 
 const STORAGE_KEY = 'currentPageContext';
-
-// ----------------------------
-// 类型定义
-// ----------------------------
-interface ArtworkType {
-    id: number;
-    primaryImageSmall: string;
-    titleZh?: string;
-    titleEn?: string;
-    displayDateZh?: string;
-    placeOfOrigin?: string;
-    collection?: string;
-    collectionZh?: string;
-}
-
 interface ThemedLoadingOverlayProps {
     isLoading: boolean;
 }
-
 interface TransitioningOverlayProps {
     isLeaving: boolean;
 }
-
 interface ArtworkCardProps {
     artwork: Artwork;
     querystring: string;
@@ -52,34 +25,31 @@ interface ArtworkCardProps {
     isNewSearchPending: boolean;
 }
 
-// ----------------------------
-// ArtSearchPage
-// ----------------------------
 export default function ArtSearchPage() {
-    const location: Location = useLocation();
-    const querystring = location.search;
-
+    //这是页面最底部的那个元素，追踪它。一旦它进入用户的视野，加载下一页
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+    const querystring = useLocation().search;//query string start with '?'
+
+    const [keywordInput, setKeywordInput] = useState('');
+
 
     const {
         query,
-        keywordInput,
-        setKeywordInput,
         artworks,
         totalResults,
         isConfigLoaded,
-        isInitialLoading,
+        isFirstLoad,
         isNewSearch,
         hasNextPage,
         autoLoadNextPage,
         manualLoadNextPage,
-        isFetchingNextPage,
+        isFetching,
         canAutoLoad,
         remainingCount,
-        handleColorSelect,
-        handlePeriodChange,
-        handleSearchTrigger,
+        updateFilter,
     } = useArtSearch();
+    
 
     const saveSearchContext = (currentId: number | string) => {
         const allLoadedIds = artworks.map((item: any) => String(item.id));
@@ -92,37 +62,51 @@ export default function ArtSearchPage() {
         sessionStorage.setItem(STORAGE_KEY, JSON.stringify(context));
     };
 
-    // ----------------------------
-    // IntersectionObserver 自动加载
-    // ----------------------------
     useEffect(() => {
-        if (!loadMoreRef.current || !canAutoLoad || isFetchingNextPage) return;
+        // !loadMoreRef.current: DOM未渲染
+        if (!loadMoreRef.current || !canAutoLoad || isFetching) return;
 
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting) {
-                    autoLoadNextPage();
-                }
-            },
+        //create Observer
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                autoLoadNextPage();//execute load
+            }
+        },
             {
+                //锚点元素距离浏览器底部还有 200 像素时，就会触发 isIntersecting，开始提前加载。
                 rootMargin: '200px 0px',
                 threshold: 0.1,
             }
         );
-
+        //监视自动加载下一页的锚点元素
         observer.observe(loadMoreRef.current);
 
         return () => {
             if (loadMoreRef.current) observer.unobserve(loadMoreRef.current);
         };
-    }, [canAutoLoad, isFetchingNextPage, autoLoadNextPage]);
+    }, [canAutoLoad, isFetching, autoLoadNextPage]);
 
-    const isNewSearchPending = isNewSearch && artworks.length > 0;
-    const isReady = isConfigLoaded && !isInitialLoading;
+    const isNewSearchPending = isNewSearch;
+
+    const handleHasImageChange = (key: string) => (event: any) => {
+        const value =
+            event.target.type === 'checkbox'
+                ? event.target.checked
+                : event.target.value;
+        updateFilter(QueryKeys.HAS_IMAGE, value);
+    };
+
+
+    const handleSearch = (event?: any) => {
+        //prevent browser default submit action
+        if (event && event.preventDefault) event.preventDefault();
+        updateFilter(QueryKeys.SEARCH_TEXT, keywordInput);
+    };
 
     return (
         <>
-            <ThemedLoadingOverlay isLoading={isInitialLoading} />
+            {/** first load overlay */}
+            {/* <ThemedLoadingOverlay isLoading={isFirstLoad} /> */}
             <Container maxWidth={false} disableGutters>
                 <Container
                     maxWidth={false}
@@ -147,19 +131,21 @@ export default function ArtSearchPage() {
                                             setKeywordInput(e.target.value)
                                         }
                                         onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                                            if (e.key === 'Enter') handleSearchTrigger(e);
+                                            if (e.key === 'Enter') handleSearch(e);
                                         }}
-                                        onClick={handleSearchTrigger}
+                                        onClick={handleSearch}
                                     />
                                 </Grid>
                                 <Grid container>
                                     <PeriodTimelineFilter
                                         selectedValue={query.period}
-                                        onSelectionChange={(v) => handlePeriodChange(v ?? '')}
+                                        updateQueryFilter={updateFilter}
                                     />
                                 </Grid>
                                 <Grid item xs={12}>
-                                    <ColorSearchBar onColorSelect={handleColorSelect} initialColor={query.color} />
+                                    <ColorSearchBar
+                                        selectedColor={query.color}
+                                        updateQueryFilter={updateFilter} />
                                 </Grid>
                             </Box>
 
@@ -215,21 +201,23 @@ export default function ArtSearchPage() {
                                     />
                                 ))}
 
+
+                                {/** Auto load next page when the DOM element enters the  brower viewport. */}
                                 <Grid item xs={12}>
                                     <Box
-                                        ref={loadMoreRef}
+                                        ref={loadMoreRef} //Anchor element at the bottom of the current page.
                                         sx={{
                                             py: 4,
                                             display: 'flex',
                                             justifyContent: 'center',
                                             alignItems: 'center',
                                             minHeight:
-                                                isFetchingNextPage || (hasNextPage && !isNewSearchPending)
+                                                isFetching || (hasNextPage && !isNewSearchPending)
                                                     ? '150px'
                                                     : '50px',
                                         }}
                                     >
-                                        {isFetchingNextPage && (
+                                        {isFetching && (
                                             <>
                                                 <CircularProgress size={40} />
                                                 <Typography
@@ -240,10 +228,10 @@ export default function ArtSearchPage() {
                                                 </Typography>
                                             </>
                                         )}
-                                        {hasNextPage && !isNewSearchPending && !isFetchingNextPage && (
+                                        {hasNextPage && !isNewSearchPending && !isFetching && (
                                             <Button
                                                 onClick={manualLoadNextPage}
-                                                disabled={isFetchingNextPage}
+                                                disabled={isFetching}
                                                 variant="text"
                                                 size="large"
                                                 sx={{
@@ -258,7 +246,7 @@ export default function ArtSearchPage() {
                                                 加载更多... (剩余{remainingCount})
                                             </Button>
                                         )}
-                                        {!hasNextPage && artworks.length > 0 && !isFetchingNextPage && (
+                                        {!hasNextPage && artworks.length > 0 && !isFetching && (
                                             <Typography variant="subtitle1" color="text.secondary">
                                                 已加载全部作品 🖼️
                                             </Typography>
@@ -321,11 +309,11 @@ const ThemedLoadingOverlay: React.FC<ThemedLoadingOverlayProps> = ({ isLoading }
 };
 
 // ----------------------------
-// Artwork Card
+// Single Artwork Card
 // ----------------------------
 const ArtworkCard: React.FC<ArtworkCardProps> = ({
     artwork,
-    querystring,
+    querystring, //pass to DetailPage url
     saveSearchContext,
     isNewSearchPending,
 }) => {
@@ -333,17 +321,14 @@ const ArtworkCard: React.FC<ArtworkCardProps> = ({
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const HOVER_OVERLAY_CLASS = 'hover-ripple-overlay';
-    // 1. 定义蒙版的透明度 (Alpha)。0.15 通常比较合适，效果不会太重。
+    // 1. 定义蒙版的透明度 (Alpha)。
     const HOVER_ALPHA = 0.15;
     const hoverOverlayColor = `rgba(${artwork.r}, ${artwork.g}, ${artwork.b}, ${HOVER_ALPHA})`;
     return (
         <Grid
-            item
-            xs={12}
-            sm={4}
-            md={4}
+            item xs={12} sm={4} md={4}
             sx={{
-                padding: '10px 40px 20px 10px',
+                padding: '20px',
                 position: 'relative',
                 '@media (max-width: 600px)': { p: 1 },
             }}
@@ -422,7 +407,7 @@ const ArtworkCard: React.FC<ArtworkCardProps> = ({
                         alt=""
                         sx={{
                             width: '100%',
-                            height: { xs: 'auto', sm: '250px' },
+                            height: { xs: 'auto', sm: '250px', md: '300px' }, //Image Box size
                             objectFit: { xs: 'initial', sm: 'contain' },
                             objectPosition: 'center',
                             backgroundColor: '#fdfbfbff',

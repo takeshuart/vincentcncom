@@ -1,39 +1,13 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
-import { fetchArtData, fetchConfigData } from '../api/ArtworkApi';
+import { fetchArtData, fetchConfigData, QueryParams } from '../api/ArtworkApi';
+import { QueryKeys } from '@/types/enum';
 
-const pageSize = 9;
 const AUTO_LOAD_THRESHOLD = 2;
-const DEFAULT_QUERY = {
-  hasImage: true,
-  genre: '',
-  technique: '',
-  keyword: '',
-  color: '',
-};
+const PAGE_SIZE = 9;
 
-interface QueryParams {
-  hasImage: boolean;
-  genre: string;
-  period: string;
-  technique: string;
-  keyword: string;
-  color: string;
-  queryString: string;
-}
-
-interface ArtItem {
-  id?: string | number;
-  [key: string]: any;
-}
-
-interface ArtPage {
-  page: number;
-  rows: ArtItem[];
-  totalCount: number;
-  totalPages: number;
-}
+export type UpdateQueryFilterFn = (key: QueryKeys, value: string) => void;
 
 interface ConfigData {
   genres: string[];
@@ -41,32 +15,32 @@ interface ConfigData {
 }
 
 export const useArtSearch = () => {
+
+  // useSearchParams gives you a stateful interface to read and update the URL query parameters.
+  // It automatically syncs with the current location (include url querystring)
+  // This allows restoring filter states when the user navigates back to the SearchPage from DetailPage.
   const [searchParams, setSearchParams] = useSearchParams();
-  const [keywordInput, setKeywordInput] = useState(() => searchParams.get('keyword') || '');
 
-  // ---------------------- 解析 URL 参数 ----------------------
+  // The 'query' object is memoized using useMemo.
+  // Whenever any of the search parameters change, a new query object reference is created.
+  // This is important because useInfiniteQuery depends on 'queryKey'.
+  // When the query object's reference changes, it signals React Query that the queryKey has changed,
+  // causing useInfiniteQuery to automatically re-run its queryFn and fetch new data.
+
   const query: QueryParams = useMemo(() => {
-    const newQuery = {
-      hasImage: searchParams.get('hasImage') === 'true' || DEFAULT_QUERY.hasImage,
-      genre: searchParams.get('genre') || DEFAULT_QUERY.genre,
-      period: searchParams.get('period') || '',
-      technique: searchParams.get('technique') || DEFAULT_QUERY.technique,
-      keyword: searchParams.get('keyword') || DEFAULT_QUERY.keyword,
-      color: searchParams.get('color') || DEFAULT_QUERY.color,
-    };
-    const queryString = new URLSearchParams({
-      hasImage: String(newQuery.hasImage),
-      genre: newQuery.genre,
-      period: newQuery.period,
-      technique: newQuery.technique,
-      keyword: newQuery.keyword,
-      color: newQuery.color,
-    }).toString();
-    return { ...newQuery, queryString };
-  }, [searchParams]);
+    const newQuery: QueryParams = {
+      hasImage: searchParams.get(QueryKeys.HAS_IMAGE) !== 'false', //default is TRUE
+      searchText: searchParams.get(QueryKeys.SEARCH_TEXT) ?? '',
+      genre: searchParams.get(QueryKeys.GENRE) ?? '',
+      period: searchParams.get(QueryKeys.PERIOD) ?? '',
+      technique: searchParams.get(QueryKeys.TECHNIQUE) ?? '',
+      color: searchParams.get(QueryKeys.COLOR) ?? '',
+    }
+    newQuery.queryString = JSON.stringify(newQuery);
 
+    return newQuery
+  }, [searchParams])
 
-  // ---------------------- 配置数据 ----------------------
   const {
     data: configData = { genres: [], techniques: [] },
     isSuccess: isConfigLoaded,
@@ -74,44 +48,51 @@ export const useArtSearch = () => {
     queryKey: ['configData'],
     queryFn: fetchConfigData,
     staleTime: Infinity,
-    gcTime: Infinity,
+    gcTime: Infinity,//only load once
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
-  // ---------------------- 无限滚动加载 ----------------------
+
   const {
     data,
     isFetching,
     isFetchingNextPage,
-    fetchNextPage,
+    fetchNextPage, //queryFn
     hasNextPage,
-    isLoading: isInitialLoading,
+    isLoading,
   } = useInfiniteQuery({
-    queryKey: ['artworks', query.queryString],
+    //The array is a composite key for the cache.
+    //execute queryFn when the array data (cache key) has Chanaged
+    queryKey: [query.queryString],
+
     queryFn: async ({ pageParam }: { pageParam?: number }) => {
-      const page = pageParam ?? 1;
-      const artData = await fetchArtData(
-        page,
-        pageSize,
-        query.keyword,
-        query.hasImage,
-        query.genre,
-        query.period,
-        query.technique,
-        query.color
-      );
+      const page = pageParam ?? 1
+      query.page = page; //default is 1
+      query.pageSize = PAGE_SIZE
+      const artData = await fetchArtData(query);
       return {
         page,
         rows: artData.rows || [],
         totalCount: artData.totalCount || 0,
-        totalPages: Math.ceil((artData.totalCount || 0) / pageSize),
+        totalPages: Math.ceil((artData.totalCount || 0) / PAGE_SIZE),
       };
     },
-    initialPageParam: 1, // ✅ React Query v5 必须显式定义初始页参数
-    getNextPageParam: (lastPage) =>
-      lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
-    refetchOnWindowFocus: false,
+    initialPageParam: 1, // pass to pageParam
+    getNextPageParam: (pagingInfo) =>//from queryFn return value
+      pagingInfo.page < pagingInfo.totalPages ? pagingInfo.page + 1 : undefined,
+    refetchOnWindowFocus: false,//Forbid reload while switch browser TAB
+    refetchOnReconnect: false,   // Forbid reload while network reconnect
+    //The cached data is always used until its gcTime expires, the cache is cleared, and a new request for data is initiated.
+    staleTime: Infinity, 
+    // gcTime: 0, // 
+    // Use previous data as a placeholder to prevent UI flicker(if `data`=undefined) when the queryKey changes.
+    // Data remains visible while `isFetching` is true and the new results load.
+    placeholderData: (previousData) => previousData
   });
 
+  const isFirstLoad = isLoading && !data; // not cache any data
+  // console.log(`isFirstLoad: ${isFirstLoad}`)
   // ---------------------- 数据整合 ----------------------
   const artworks = useMemo(() => (data ? data.pages.flatMap((p) => p.rows) : []), [data]);
   const totalResults = data?.pages?.[0]?.totalCount || 0;
@@ -136,68 +117,42 @@ export const useArtSearch = () => {
     }
   }, [fetchNextPage, hasNextPage]);
 
-  // ---------------------- UI 辅助逻辑 ----------------------
-  const isNewSearch = isFetching && !isFetchingNextPage; // ✅ 保留搜索时半透明效果
+  // ---------------------- UI ----------------------
+  const isNewSearch = isFetching && !isFetchingNextPage;
   const remainingCount = Math.max(0, totalResults - artworks.length);
-  const remainingPages = Math.max(0, Math.ceil(remainingCount / pageSize));
+  const remainingPages = Math.max(0, Math.ceil(remainingCount / PAGE_SIZE));
 
-  // ---------------------- URL 更新函数 ----------------------
-  const updateSearchParams = (newValues: Record<string, any>) => {
+  //Cleans up URL query parameters: if a new value is falsy (e.g., null, '', undefined, or empty array),
+  //the corresponding key is deleted from the URL to prevent empty parameters like '?key='.
+  const updateFilter: UpdateQueryFilterFn = (key, newValue) => {
     const currentParams = Object.fromEntries(searchParams.entries());
-    const newParams = { ...currentParams };
-    for (const key in newValues) {
-      const value = newValues[key];
-      const isEmpty = !value || (Array.isArray(value) && value.length === 0);
-      if (isEmpty) delete newParams[key];
-      else newParams[key] = String(value);
+    const newParams = { ...currentParams }; //copy old entries
+    const isEmpty = !newValue || (Array.isArray(newValue) && newValue.length === 0);
+    if (isEmpty) {
+      delete newParams[key]
+    } else {
+      newParams[key] = newValue;
     }
-    setSearchParams(newParams);
+    console.log(`Change Filter ${key} to ${newValue}`)
+    setSearchParams(newParams);//reset all Params
   };
 
-  // ---------------------- Handlers ----------------------
-  const handleFilterChange = (key: string) => (event: any) => {
-    const value =
-      event.target.type === 'checkbox'
-        ? event.target.checked
-        : event.target.value;
-    updateSearchParams({ [key]: value });
-  };
 
-  const handleColorSelect = (color: string) => {
-    updateSearchParams({ color, keyword: keywordInput });
-  };
-
-  const handlePeriodChange = (value: string) => {
-    updateSearchParams({ period: value });
-  };
-
-  const handleSearchTrigger = (event?: any) => {
-    if (event && event.preventDefault) event.preventDefault();
-    updateSearchParams({ keyword: keywordInput });
-  };
 
   // ---------------------- 导出 ----------------------
   return {
     query,
-    keywordInput,
-    setKeywordInput,
     artworks,
     totalResults,
-    totalPages,
     isConfigLoaded,
-    configData,
-    isInitialLoading,
+    isFirstLoad,
     isNewSearch,
-    isFetchingNextPage,
+    isFetching,
     hasNextPage,
     autoLoadNextPage,
     manualLoadNextPage,
     canAutoLoad,
     remainingCount,
-    remainingPages,
-    handleFilterChange,
-    handleColorSelect,
-    handlePeriodChange,
-    handleSearchTrigger,
+    updateFilter,
   };
 };

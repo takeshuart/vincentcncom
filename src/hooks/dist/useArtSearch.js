@@ -52,49 +52,45 @@ var react_1 = require("react");
 var react_router_dom_1 = require("react-router-dom");
 var react_query_1 = require("@tanstack/react-query");
 var ArtworkApi_1 = require("../api/ArtworkApi");
-var pageSize = 9;
+var enum_1 = require("@/types/enum");
 var AUTO_LOAD_THRESHOLD = 2;
-var DEFAULT_QUERY = {
-    hasImage: true,
-    genre: '',
-    technique: '',
-    keyword: '',
-    color: ''
-};
+var PAGE_SIZE = 9;
 exports.useArtSearch = function () {
     var _a, _b, _c, _d;
+    // useSearchParams gives you a stateful interface to read and update the URL query parameters.
+    // It automatically syncs with the current location (include url querystring)
+    // This allows restoring filter states when the user navigates back to the SearchPage from DetailPage.
     var _e = react_router_dom_1.useSearchParams(), searchParams = _e[0], setSearchParams = _e[1];
-    var _f = react_1.useState(function () { return searchParams.get('keyword') || ''; }), keywordInput = _f[0], setKeywordInput = _f[1];
-    // ---------------------- 解析 URL 参数 ----------------------
+    // The 'query' object is memoized using useMemo.
+    // Whenever any of the search parameters change, a new query object reference is created.
+    // This is important because useInfiniteQuery depends on 'queryKey'.
+    // When the query object's reference changes, it signals React Query that the queryKey has changed,
+    // causing useInfiniteQuery to automatically re-run its queryFn and fetch new data.
     var query = react_1.useMemo(function () {
+        var _a, _b, _c, _d, _e;
         var newQuery = {
-            hasImage: searchParams.get('hasImage') === 'true' || DEFAULT_QUERY.hasImage,
-            genre: searchParams.get('genre') || DEFAULT_QUERY.genre,
-            period: searchParams.get('period') || '',
-            technique: searchParams.get('technique') || DEFAULT_QUERY.technique,
-            keyword: searchParams.get('keyword') || DEFAULT_QUERY.keyword,
-            color: searchParams.get('color') || DEFAULT_QUERY.color
+            hasImage: searchParams.get(enum_1.QueryKeys.HAS_IMAGE) !== 'false',
+            searchText: (_a = searchParams.get(enum_1.QueryKeys.SEARCH_TEXT)) !== null && _a !== void 0 ? _a : '',
+            genre: (_b = searchParams.get(enum_1.QueryKeys.GENRE)) !== null && _b !== void 0 ? _b : '',
+            period: (_c = searchParams.get(enum_1.QueryKeys.PERIOD)) !== null && _c !== void 0 ? _c : '',
+            technique: (_d = searchParams.get(enum_1.QueryKeys.TECHNIQUE)) !== null && _d !== void 0 ? _d : '',
+            color: (_e = searchParams.get(enum_1.QueryKeys.COLOR)) !== null && _e !== void 0 ? _e : ''
         };
-        var queryString = new URLSearchParams({
-            hasImage: String(newQuery.hasImage),
-            genre: newQuery.genre,
-            period: newQuery.period,
-            technique: newQuery.technique,
-            keyword: newQuery.keyword,
-            color: newQuery.color
-        }).toString();
-        return __assign(__assign({}, newQuery), { queryString: queryString });
+        newQuery.queryString = JSON.stringify(newQuery);
+        return newQuery;
     }, [searchParams]);
-    // ---------------------- 配置数据 ----------------------
-    var _g = react_query_1.useQuery({
+    var _f = react_query_1.useQuery({
         queryKey: ['configData'],
         queryFn: ArtworkApi_1.fetchConfigData,
         staleTime: Infinity,
-        gcTime: Infinity
-    }), _h = _g.data, configData = _h === void 0 ? { genres: [], techniques: [] } : _h, isConfigLoaded = _g.isSuccess;
-    // ---------------------- 无限滚动加载 ----------------------
-    var _j = react_query_1.useInfiniteQuery({
-        queryKey: ['artworks', query.queryString],
+        gcTime: Infinity,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false
+    }), _g = _f.data, configData = _g === void 0 ? { genres: [], techniques: [] } : _g, isConfigLoaded = _f.isSuccess;
+    var _h = react_query_1.useInfiniteQuery({
+        //The array is a composite key for the cache.
+        //execute queryFn when the array data (cache key) has Chanaged
+        queryKey: [query.queryString],
         queryFn: function (_a) {
             var pageParam = _a.pageParam;
             return __awaiter(void 0, void 0, void 0, function () {
@@ -103,31 +99,43 @@ exports.useArtSearch = function () {
                     switch (_b.label) {
                         case 0:
                             page = pageParam !== null && pageParam !== void 0 ? pageParam : 1;
-                            return [4 /*yield*/, ArtworkApi_1.fetchArtData(page, pageSize, query.keyword, query.hasImage, query.genre, query.period, query.technique, query.color)];
+                            query.page = page; //default is 1
+                            query.pageSize = PAGE_SIZE;
+                            return [4 /*yield*/, ArtworkApi_1.fetchArtData(query)];
                         case 1:
                             artData = _b.sent();
                             return [2 /*return*/, {
                                     page: page,
                                     rows: artData.rows || [],
                                     totalCount: artData.totalCount || 0,
-                                    totalPages: Math.ceil((artData.totalCount || 0) / pageSize)
+                                    totalPages: Math.ceil((artData.totalCount || 0) / PAGE_SIZE)
                                 }];
                     }
                 });
             });
         },
         initialPageParam: 1,
-        getNextPageParam: function (lastPage) {
-            return lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined;
+        getNextPageParam: function (pagingInfo) {
+            return pagingInfo.page < pagingInfo.totalPages ? pagingInfo.page + 1 : undefined;
         },
-        refetchOnWindowFocus: false
-    }), data = _j.data, isFetching = _j.isFetching, isFetchingNextPage = _j.isFetchingNextPage, fetchNextPage = _j.fetchNextPage, hasNextPage = _j.hasNextPage, isInitialLoading = _j.isLoading;
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+        //The cached data is always used until its gcTime expires, the cache is cleared, and a new request for data is initiated.
+        staleTime: Infinity,
+        // gcTime: 0, // 
+        // Use previous data as a placeholder to prevent UI flicker(if `data`=undefined) when the queryKey changes.
+        // Data remains visible while `isFetching` is true and the new results load.
+        placeholderData: function (previousData) { return previousData; }
+    }), data = _h.data, isFetching = _h.isFetching, isFetchingNextPage = _h.isFetchingNextPage, fetchNextPage = _h.fetchNextPage, //queryFn
+    hasNextPage = _h.hasNextPage, isLoading = _h.isLoading;
+    var isFirstLoad = isLoading && !data; // not cache any data
+    // console.log(`isFirstLoad: ${isFirstLoad}`)
     // ---------------------- 数据整合 ----------------------
     var artworks = react_1.useMemo(function () { return (data ? data.pages.flatMap(function (p) { return p.rows; }) : []); }, [data]);
     var totalResults = ((_b = (_a = data === null || data === void 0 ? void 0 : data.pages) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.totalCount) || 0;
     var totalPages = ((_d = (_c = data === null || data === void 0 ? void 0 : data.pages) === null || _c === void 0 ? void 0 : _c[0]) === null || _d === void 0 ? void 0 : _d.totalPages) || 0;
     // ---------------------- 自动加载逻辑 ----------------------
-    var _k = react_1.useState(0), pagesSinceMoreButton = _k[0], setPagesSinceMoreButton = _k[1];
+    var _j = react_1.useState(0), pagesSinceMoreButton = _j[0], setPagesSinceMoreButton = _j[1];
     var canAutoLoad = hasNextPage && pagesSinceMoreButton < AUTO_LOAD_THRESHOLD && !isFetchingNextPage;
     var autoLoadNextPage = react_1.useCallback(function () {
         if (canAutoLoad) {
@@ -141,65 +149,39 @@ exports.useArtSearch = function () {
             setPagesSinceMoreButton(0);
         }
     }, [fetchNextPage, hasNextPage]);
-    // ---------------------- UI 辅助逻辑 ----------------------
-    var isNewSearch = isFetching && !isFetchingNextPage; // ✅ 保留搜索时半透明效果
+    // ---------------------- UI ----------------------
+    var isNewSearch = isFetching && !isFetchingNextPage;
     var remainingCount = Math.max(0, totalResults - artworks.length);
-    var remainingPages = Math.max(0, Math.ceil(remainingCount / pageSize));
-    // ---------------------- URL 更新函数 ----------------------
-    var updateSearchParams = function (newValues) {
+    var remainingPages = Math.max(0, Math.ceil(remainingCount / PAGE_SIZE));
+    //Cleans up URL query parameters: if a new value is falsy (e.g., null, '', undefined, or empty array),
+    //the corresponding key is deleted from the URL to prevent empty parameters like '?key='.
+    var updateFilter = function (key, newValue) {
         var currentParams = Object.fromEntries(searchParams.entries());
-        var newParams = __assign({}, currentParams);
-        for (var key in newValues) {
-            var value = newValues[key];
-            var isEmpty = !value || (Array.isArray(value) && value.length === 0);
-            if (isEmpty)
-                delete newParams[key];
-            else
-                newParams[key] = String(value);
+        var newParams = __assign({}, currentParams); //copy old entries
+        var isEmpty = !newValue || (Array.isArray(newValue) && newValue.length === 0);
+        if (isEmpty) {
+            delete newParams[key];
         }
-        setSearchParams(newParams);
-    };
-    // ---------------------- Handlers ----------------------
-    var handleFilterChange = function (key) { return function (event) {
-        var _a;
-        var value = event.target.type === 'checkbox'
-            ? event.target.checked
-            : event.target.value;
-        updateSearchParams((_a = {}, _a[key] = value, _a));
-    }; };
-    var handleColorSelect = function (color) {
-        updateSearchParams({ color: color, keyword: keywordInput });
-    };
-    var handlePeriodChange = function (value) {
-        updateSearchParams({ period: value });
-    };
-    var handleSearchTrigger = function (event) {
-        if (event && event.preventDefault)
-            event.preventDefault();
-        updateSearchParams({ keyword: keywordInput });
+        else {
+            newParams[key] = newValue;
+        }
+        console.log("Change Filter " + key + " to " + newValue);
+        setSearchParams(newParams); //reset all Params
     };
     // ---------------------- 导出 ----------------------
     return {
         query: query,
-        keywordInput: keywordInput,
-        setKeywordInput: setKeywordInput,
         artworks: artworks,
         totalResults: totalResults,
-        totalPages: totalPages,
         isConfigLoaded: isConfigLoaded,
-        configData: configData,
-        isInitialLoading: isInitialLoading,
+        isFirstLoad: isFirstLoad,
         isNewSearch: isNewSearch,
-        isFetchingNextPage: isFetchingNextPage,
+        isFetching: isFetching,
         hasNextPage: hasNextPage,
         autoLoadNextPage: autoLoadNextPage,
         manualLoadNextPage: manualLoadNextPage,
         canAutoLoad: canAutoLoad,
         remainingCount: remainingCount,
-        remainingPages: remainingPages,
-        handleFilterChange: handleFilterChange,
-        handleColorSelect: handleColorSelect,
-        handlePeriodChange: handlePeriodChange,
-        handleSearchTrigger: handleSearchTrigger
+        updateFilter: updateFilter
     };
 };

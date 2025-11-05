@@ -16,6 +16,25 @@ const apiClient = axios.create({
   timeout: 10000,
 });
 
+
+export interface QueryParams {
+  page?: number,
+  pageSize?: number,
+  hasImage: boolean; //default true
+  genre?: string;
+  period?: string;
+  technique?: string;
+  searchText?: string; //
+  color?: string;
+
+  // MUST! 
+  // The 'query' object includes a special field 'queryString', which is a JSON stringification of the entire search criteria.
+  // This 'queryString' (a primitive string) is used as the key dependency  for useInfiniteQuery's 'queryKey'. 
+  // This prevents React Query from triggering unnecessary re-fetches caused by non-stable object references 
+  // of the 'query' object across renders, ensuring the API is called only  when the search content truly changes.
+  queryString?: string; //concat all parameters
+}
+
 async function get(url: string, config?: AxiosRequestConfig, context = 'data'): Promise<any> {
   try {
     const res = await apiClient.get(url, config);
@@ -36,34 +55,26 @@ export async function fetchArtworkById(artworkId: any) {
   }
 }
 
-export async function fetchArtData(
-  page: number,
-  pageSize: number,
-  searchKeyword: string,
-  hasImage: boolean,
-  genreSelected: string,
-  selectedPeriod: string,
-  techniqueSelected: string,
-  colorSelected: string | undefined
-) {
+
+export async function fetchArtData(query: QueryParams) {
   try {
-    // 1. 定义 URL 查询参数对象
+
     const queryParams = {
-      page: page,
-      pageSize: pageSize,
-      search: searchKeyword,
-      hasImage: hasImage,
-      genres: genreSelected ? [genreSelected] : [],
-      period: selectedPeriod,
-      techniques: techniqueSelected ? [techniqueSelected] : [],
-      colorField: colorSelected || undefined
+      page: query.page,
+      pageSize: query.pageSize,
+      search: query.searchText,
+      hasImage: query.hasImage,// defult is TRUE
+      genres: query.genre ? [query.genre] : [],
+      period: query.period,
+      techniques: query.technique ? [query.technique] : [],
+      colorField: query.color
     };
 
-    console.log(`Query Params:`, queryParams);
-
-    //模拟网络延迟，0.5~1.5秒随机延迟
-    const delay = Math.random() * 500;
-    await new Promise(resolve => setTimeout(resolve, delay));
+    // console.log(`Query Params:`, queryParams);
+    if (process.env.NODE_ENV === 'development') {
+      const delay = Math.random() * 1000 + 500;//Mock network delay
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
 
     const response = await axios.get(API_BASE_URL + '/artworks/vincent', { params: queryParams });
 
@@ -94,9 +105,12 @@ interface ConfigData {
 export async function fetchConfigData(): Promise<ConfigData> {
   try {
 
-    // const delay = Math.random() * 500;
-    // await new Promise(resolve => setTimeout(resolve, delay));
-
+    // console.log(`Query Params:`, queryParams);
+    if (process.env.NODE_ENV === 'development') {
+      const delay = Math.random() * 1000 + 500;//Mock network delay
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+    
     const [genreRes, periodRes, techniques] = await Promise.all([
       axios.get(API_BASE_URL + '/artworks/vincent/config?cond=genre'),
       axios.get(API_BASE_URL + '/artworks/vincent/config?cond=period'),
