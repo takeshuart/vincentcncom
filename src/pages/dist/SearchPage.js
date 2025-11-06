@@ -20,7 +20,7 @@ function ArtSearchPage() {
     var loadMoreRef = react_1.useRef(null);
     var querystring = react_router_dom_1.useLocation().search; //query string start with '?'
     var _a = react_1.useState(''), keywordInput = _a[0], setKeywordInput = _a[1];
-    var _b = useArtSearch_1.useArtSearch(), query = _b.query, artworks = _b.artworks, totalResults = _b.totalResults, isConfigLoaded = _b.isConfigLoaded, isFirstLoad = _b.isFirstLoad, isNewSearch = _b.isNewSearch, hasNextPage = _b.hasNextPage, autoLoadNextPage = _b.autoLoadNextPage, manualLoadNextPage = _b.manualLoadNextPage, isFetching = _b.isFetching, canAutoLoad = _b.canAutoLoad, remainingCount = _b.remainingCount, updateFilter = _b.updateFilter;
+    var _b = useArtSearch_1.useArtSearch(), query = _b.query, artworks = _b.artworks, totalResults = _b.totalResults, isConfigLoaded = _b.isConfigLoaded, isSearchInitializing = _b.isSearchInitializing, isNewSearch = _b.isNewSearch, hasNextPage = _b.hasNextPage, autoLoadNextPage = _b.autoLoadNextPage, manualLoadNextPage = _b.manualLoadNextPage, isFetching = _b.isFetching, isFetchingNextPage = _b.isFetchingNextPage, canAutoLoad = _b.canAutoLoad, remainingCount = _b.remainingCount, updateFilter = _b.updateFilter;
     var saveSearchContext = function (currentId) {
         var allLoadedIds = artworks.map(function (item) { return String(item.id); });
         var indexInList = allLoadedIds.findIndex(function (id) { return id === String(currentId); });
@@ -51,7 +51,6 @@ function ArtSearchPage() {
                 observer.unobserve(loadMoreRef.current);
         };
     }, [canAutoLoad, isFetching, autoLoadNextPage]);
-    var isNewSearchPending = isNewSearch;
     var handleHasImageChange = function (key) { return function (event) {
         var value = event.target.type === 'checkbox'
             ? event.target.checked
@@ -65,6 +64,7 @@ function ArtSearchPage() {
         updateFilter(enum_1.QueryKeys.SEARCH_TEXT, keywordInput);
     };
     return (React.createElement(React.Fragment, null,
+        React.createElement(ThemedLoadingOverlay, { isLoading: isSearchInitializing }),
         React.createElement(material_1.Container, { maxWidth: false, disableGutters: true },
             React.createElement(material_1.Container, { maxWidth: false, sx: {
                     width: '90%',
@@ -94,7 +94,7 @@ function ArtSearchPage() {
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center'
-                                } }, isNewSearchPending ? (React.createElement(material_1.CircularProgress, { size: 20, sx: { color: '#9694c2ff', m: 0 } })) : (React.createElement(material_1.Typography, { variant: "subtitle1", sx: { color: 'grey' } },
+                                } }, isNewSearch ? (React.createElement(material_1.CircularProgress, { size: 20, sx: { color: '#9694c2ff', m: 0 } })) : (React.createElement(material_1.Typography, { variant: "subtitle1", sx: { color: 'grey' } },
                                 "\u53D1\u73B0",
                                 ' ',
                                 React.createElement("span", { style: { fontWeight: 'bold' } }, totalResults),
@@ -109,21 +109,21 @@ function ArtSearchPage() {
                                     py: 5
                                 } },
                                 React.createElement(material_1.Typography, { variant: "h6", color: "text.secondary" }, "\u672A\u627E\u5230\u7B26\u5408\u6761\u4EF6\u7684\u4F5C\u54C1 \uD83E\uDD14"))), artworks === null || artworks === void 0 ? void 0 :
-                            artworks.map(function (artwork, index) { return (React.createElement(ArtworkCard, { key: index, artwork: artwork, querystring: querystring, saveSearchContext: saveSearchContext, isNewSearchPending: isNewSearchPending })); }),
+                            artworks.map(function (artwork, index) { return (React.createElement(ArtworkCard, { key: index, artwork: artwork, querystring: querystring, saveSearchContext: saveSearchContext, isNewSearchPending: isNewSearch })); }),
                             React.createElement(material_1.Grid, { item: true, xs: 12 },
                                 React.createElement(material_1.Box, { ref: loadMoreRef, sx: {
                                         py: 4,
                                         display: 'flex',
                                         justifyContent: 'center',
                                         alignItems: 'center',
-                                        minHeight: isFetching || (hasNextPage && !isNewSearchPending)
+                                        minHeight: isFetching || (hasNextPage && !isNewSearch)
                                             ? '150px'
                                             : '50px'
                                     } },
-                                    isFetching && (React.createElement(React.Fragment, null,
+                                    isFetchingNextPage && (React.createElement(React.Fragment, null,
                                         React.createElement(material_1.CircularProgress, { size: 40 }),
                                         React.createElement(material_1.Typography, { variant: "body1", sx: { ml: 2, color: 'text.secondary' } }, "\u52A0\u8F7D\u4E2D..."))),
-                                    hasNextPage && !isNewSearchPending && !isFetching && (React.createElement(material_1.Button, { onClick: manualLoadNextPage, disabled: isFetching, variant: "text", size: "large", sx: {
+                                    hasNextPage && !isNewSearch && !isFetching && (React.createElement(material_1.Button, { onClick: manualLoadNextPage, disabled: isFetching, variant: "text", size: "large", sx: {
                                             textTransform: 'none',
                                             fontWeight: 500,
                                             fontSize: '1rem',

@@ -60,7 +60,7 @@ var SurpriseBox = react_1["default"].forwardRef(function (_a, ref) {
                     // variant="h4" 
                     , { 
                         // variant="h4" 
-                        sx: { fontWeight: 'bold', mb: 1, fontSize: { xs: '0.8rem', md: '2.5rem' } } }, artwork.titleZh || artwork.titleEn),
+                        sx: { fontWeight: 'bold', mb: 1, fontSize: { xs: '0.8rem', md: '2.0rem' } } }, artwork.titleZh || artwork.titleEn),
                     react_1["default"].createElement(material_1.Typography, { color: "text.secondary", sx: { fontSize: { xs: '0.80rem', md: '1.25rem' } } }, artwork.titleEn),
                     react_1["default"].createElement(material_1.Typography, { variant: "subtitle1", color: "text.secondary", sx: { mb: 2, fontStyle: 'italic', display: { xs: 'none', md: 'block' } } }, artwork.displayDate),
                     react_1["default"].createElement(material_1.Typography, { variant: "subtitle1", sx: {

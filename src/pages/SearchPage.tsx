@@ -39,12 +39,13 @@ export default function ArtSearchPage() {
         artworks,
         totalResults,
         isConfigLoaded,
-        isFirstLoad,
+        isSearchInitializing,
         isNewSearch,
         hasNextPage,
         autoLoadNextPage,
         manualLoadNextPage,
         isFetching,
+        isFetchingNextPage,
         canAutoLoad,
         remainingCount,
         updateFilter,
@@ -86,8 +87,6 @@ export default function ArtSearchPage() {
         };
     }, [canAutoLoad, isFetching, autoLoadNextPage]);
 
-    const isNewSearchPending = isNewSearch;
-
     const handleHasImageChange = (key: string) => (event: any) => {
         const value =
             event.target.type === 'checkbox'
@@ -106,7 +105,7 @@ export default function ArtSearchPage() {
     return (
         <>
             {/** first load overlay */}
-            {/* <ThemedLoadingOverlay isLoading={isFirstLoad} /> */}
+            <ThemedLoadingOverlay isLoading={isSearchInitializing} />
             <Container maxWidth={false} disableGutters>
                 <Container
                     maxWidth={false}
@@ -158,7 +157,7 @@ export default function ArtSearchPage() {
                                         justifyContent: 'center',
                                     }}
                                 >
-                                    {isNewSearchPending ? (
+                                    {isNewSearch ? (
                                         <CircularProgress size={20} sx={{ color: '#9694c2ff', m: 0 }} />
                                     ) : (
                                         <Typography variant="subtitle1" sx={{ color: 'grey' }}>
@@ -197,7 +196,7 @@ export default function ArtSearchPage() {
                                         artwork={artwork}
                                         querystring={querystring}
                                         saveSearchContext={saveSearchContext}
-                                        isNewSearchPending={isNewSearchPending}
+                                        isNewSearchPending={isNewSearch}
                                     />
                                 ))}
 
@@ -212,12 +211,12 @@ export default function ArtSearchPage() {
                                             justifyContent: 'center',
                                             alignItems: 'center',
                                             minHeight:
-                                                isFetching || (hasNextPage && !isNewSearchPending)
+                                                isFetching || (hasNextPage && !isNewSearch)
                                                     ? '150px'
                                                     : '50px',
                                         }}
                                     >
-                                        {isFetching && (
+                                        {isFetchingNextPage && (
                                             <>
                                                 <CircularProgress size={40} />
                                                 <Typography
@@ -228,7 +227,7 @@ export default function ArtSearchPage() {
                                                 </Typography>
                                             </>
                                         )}
-                                        {hasNextPage && !isNewSearchPending && !isFetching && (
+                                        {hasNextPage && !isNewSearch && !isFetching && (
                                             <Button
                                                 onClick={manualLoadNextPage}
                                                 disabled={isFetching}

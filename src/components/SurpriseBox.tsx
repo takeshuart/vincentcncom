@@ -98,7 +98,7 @@ const SurpriseBox = React.forwardRef<HTMLDivElement, SurpriseBoxProps>(
                             <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
                                 <Typography
                                     // variant="h4" 
-                                    sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '0.8rem', md: '2.5rem' } }}
+                                    sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '0.8rem', md: '2.0rem' } }}
                                 >
                                     {artwork!.titleZh || artwork!.titleEn}
                                 </Typography>

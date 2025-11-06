@@ -86,7 +86,7 @@ exports.useArtSearch = function () {
         gcTime: Infinity,
         refetchOnWindowFocus: false,
         refetchOnReconnect: false
-    }), _g = _f.data, configData = _g === void 0 ? { genres: [], techniques: [] } : _g, isConfigLoaded = _f.isSuccess;
+    }), _g = _f.data, configData = _g === void 0 ? { genres: [], techniques: [] } : _g, isConfigLoading = _f.isLoading, isConfigLoaded = _f.isSuccess;
     var _h = react_query_1.useInfiniteQuery({
         //The array is a composite key for the cache.
         //execute queryFn when the array data (cache key) has Chanaged
@@ -126,9 +126,10 @@ exports.useArtSearch = function () {
         // Use previous data as a placeholder to prevent UI flicker(if `data`=undefined) when the queryKey changes.
         // Data remains visible while `isFetching` is true and the new results load.
         placeholderData: function (previousData) { return previousData; }
-    }), data = _h.data, isFetching = _h.isFetching, isFetchingNextPage = _h.isFetchingNextPage, fetchNextPage = _h.fetchNextPage, //queryFn
-    hasNextPage = _h.hasNextPage, isLoading = _h.isLoading;
-    var isFirstLoad = isLoading && !data; // not cache any data
+    }), data = _h.data, isFetching = _h.isFetching, //
+    isFetchingNextPage = _h.isFetchingNextPage, fetchNextPage = _h.fetchNextPage, //queryFn
+    hasNextPage = _h.hasNextPage, isPageLoading = _h.isLoading;
+    var isSearchInitializing = isConfigLoading && isPageLoading && !data; //first enter search page
     // console.log(`isFirstLoad: ${isFirstLoad}`)
     // ---------------------- 数据整合 ----------------------
     var artworks = react_1.useMemo(function () { return (data ? data.pages.flatMap(function (p) { return p.rows; }) : []); }, [data]);
@@ -174,9 +175,10 @@ exports.useArtSearch = function () {
         artworks: artworks,
         totalResults: totalResults,
         isConfigLoaded: isConfigLoaded,
-        isFirstLoad: isFirstLoad,
+        isSearchInitializing: isSearchInitializing,
         isNewSearch: isNewSearch,
         isFetching: isFetching,
+        isFetchingNextPage: isFetchingNextPage,
         hasNextPage: hasNextPage,
         autoLoadNextPage: autoLoadNextPage,
         manualLoadNextPage: manualLoadNextPage,

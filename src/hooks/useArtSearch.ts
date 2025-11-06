@@ -41,14 +41,16 @@ export const useArtSearch = () => {
     return newQuery
   }, [searchParams])
 
+  
   const {
     data: configData = { genres: [], techniques: [] },
+    isLoading: isConfigLoading,
     isSuccess: isConfigLoaded,
   } = useQuery<ConfigData>({
     queryKey: ['configData'],
     queryFn: fetchConfigData,
     staleTime: Infinity,
-    gcTime: Infinity,//only load once
+    gcTime: Infinity,//Infinity: only load once
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   });
@@ -56,11 +58,11 @@ export const useArtSearch = () => {
 
   const {
     data,
-    isFetching,
+    isFetching,  //
     isFetchingNextPage,
     fetchNextPage, //queryFn
     hasNextPage,
-    isLoading,
+    isLoading:isPageLoading, //Is `true` whenever the first fetch for a query is in-flight.
   } = useInfiniteQuery({
     //The array is a composite key for the cache.
     //execute queryFn when the array data (cache key) has Chanaged
@@ -91,7 +93,7 @@ export const useArtSearch = () => {
     placeholderData: (previousData) => previousData
   });
 
-  const isFirstLoad = isLoading && !data; // not cache any data
+  const isSearchInitializing = isConfigLoading && isPageLoading && !data; //first enter search page
   // console.log(`isFirstLoad: ${isFirstLoad}`)
   // ---------------------- 数据整合 ----------------------
   const artworks = useMemo(() => (data ? data.pages.flatMap((p) => p.rows) : []), [data]);
@@ -145,9 +147,10 @@ export const useArtSearch = () => {
     artworks,
     totalResults,
     isConfigLoaded,
-    isFirstLoad,
+    isSearchInitializing,
     isNewSearch,
     isFetching,
+    isFetchingNextPage,
     hasNextPage,
     autoLoadNextPage,
     manualLoadNextPage,
