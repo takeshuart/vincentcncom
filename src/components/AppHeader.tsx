@@ -1,76 +1,163 @@
-import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import HEADER_HEIGHT from '../App';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Box,
+  IconButton,
+  Avatar,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  CircularProgress,
+} from "@mui/material";
+import { useLocation, useNavigate, Link } from "react-router-dom";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import LoginIcon from "@mui/icons-material/Login";
+import SettingsIcon from "@mui/icons-material/Settings";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import { Logout } from "@mui/icons-material";
+import { useMemo, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+
+const stringToColor = (str: string): string => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return `hsl(${hash % 360}, 60%, 60%)`;
+};
 
 const AppHeader = () => {
-    const navigate = useNavigate();
-    const location = useLocation();
-    const shouldShowBack = location.pathname.startsWith('/vincent/');
+  const navigate = useNavigate();
+  const location = useLocation();
+  const shouldShowBack = location.pathname.startsWith("/vincent/");
+  const { user, logout, isLoading } = useAuth();
+  const isLoggedIn = !!user;
 
-    //go back searchPage
-    const goBack = () => {
-        //返回上一页 而不是直接到搜索页。
-        //navigate(-1)
-        //location.search start with '?'
-        navigate(`/search${location.search}`);//recover search fitlers from querystring
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const open = Boolean(anchorEl);
+
+  const avatarDetails = useMemo(() => {
+    const nickname = user?.nickname ?? "Guest";
+    const letter = nickname.charAt(0)?.toUpperCase() || "G";
+    return {
+      color: stringToColor(nickname),
+      letter,
     };
-    return (
-        <AppBar
-            position="absolute" //脱离文档流，固定视口位置
-            color='transparent'
-            sx={{
-                // boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)', //轻微阴影
-                boxShadow: 'none',
-                height: `40px`,
-                zIndex: 999// 确保更高的层级
-            }
+  }, [user]);
 
-            }>
-            <Toolbar sx={{
-                bgcolor: 'transparent'
-            }}>
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
+  const handleMenuClose = () => setAnchorEl(null);
 
-                {shouldShowBack ? (
-                    <Box
-                        display="flex"
-                        alignItems="center"
-                        onClick={goBack}
-                        style={{ cursor: 'pointer', color: 'black' }}
-                        sx={{ mr: 2 }}
-                    >
-                        <ArrowBackIcon />
-                    </Box>
-                ) : (
-                    // Return Logo Placeholder
-                    <Box sx={{ width: 30, mr: 2 }} />
-                )}
+  const handleLogoutClick = () => {
+    logout();
+    handleMenuClose();
+    navigate("/search");
+  };
 
-                <Typography
-                    component={Link}
-                    to="/"
-                    sx={{
-                        color: 'black',
-                        fontWeight: '500',
-                        textDecoration: 'none', //remove 'underline'
-                        fontSize: { xs: '1rem', sm: '1rem', md: '1.25rem' }
-                    }}
+  const handleLoginClick = () => navigate("/auth");
+
+  const goBack = () => navigate(`/search${location.search}`);
+
+  return (
+    <AppBar position="absolute" color="transparent" sx={{ boxShadow: "none", height: 40, zIndex: 999 }}>
+      <Toolbar sx={{ bgcolor: "transparent" }}>
+        {shouldShowBack ? (
+          <Box display="flex" alignItems="center" onClick={goBack} sx={{ mr: 2, cursor: "pointer", color: "black" }}>
+            <ArrowBackIcon />
+          </Box>
+        ) : (
+          <Box sx={{ width: 30, mr: 2 }} />
+        )}
+
+        <Typography
+          component={Link}
+          to="/"
+          sx={{
+            color: "black",
+            fontWeight: 500,
+            textDecoration: "none",
+            fontSize: { xs: "1rem", sm: "1rem", md: "1.25rem" },
+          }}
+        >
+          梵·高档案馆
+        </Typography>
+
+        <Box sx={{ display: "flex", alignItems: "center", ml: "auto" }}>
+          {isLoading ? (
+            <CircularProgress size={24} sx={{ color: "gray" }} />
+          ) : isLoggedIn ? (
+            <>
+              <IconButton onClick={handleMenuOpen} size="small" sx={{ ml: 2, p: 0 }}>
+                <Avatar
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    bgcolor: avatarDetails.color,
+                    color: "white",
+                    fontWeight: 600,
+                  }}
                 >
-                    梵·高档案馆
-                </Typography>
+                  {avatarDetails.letter}
+                </Avatar>
+              </IconButton>
 
-                <Box sx={{ display: 'flex', alignItems: 'center', ml: 'auto' }}>
-
-                    <Button  sx={{ color: 'black' }}>
-                        登录
-                    </Button>
-                </Box>
-
-            </Toolbar>
-        </AppBar >
-    );
+              <Menu
+                anchorEl={anchorEl}
+                id="account-menu"
+                open={open}
+                onClose={handleMenuClose}
+                transformOrigin={{ horizontal: "right", vertical: "top" }}
+                anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+              >
+                <MenuItem disabled>
+                  <Avatar sx={{ bgcolor: avatarDetails.color, color: "white", mr: 1 }}>
+                    {avatarDetails.letter}
+                  </Avatar>
+                  {user?.nickname || "User"}
+                </MenuItem>
+                <hr style={{ margin: "4px 0", border: "none", borderTop: "1px solid #eee" }} />
+                <MenuItem onClick={handleMenuClose}>
+                  <ListItemIcon>
+                    <AccountCircleIcon fontSize="small" />
+                  </ListItemIcon>
+                  我的主页
+                </MenuItem>
+                <MenuItem onClick={handleMenuClose}>
+                  <ListItemIcon>
+                    <SettingsIcon fontSize="small" />
+                  </ListItemIcon>
+                  设置
+                </MenuItem>
+                <hr style={{ margin: "4px 0", border: "none", borderTop: "1px solid #eee" }} />
+                <MenuItem onClick={handleLogoutClick}>
+                  <ListItemIcon>
+                    <Logout fontSize="small" />
+                  </ListItemIcon>
+                  注销
+                </MenuItem>
+              </Menu>
+            </>
+          ) : (
+            <Button
+              onClick={handleLoginClick}
+              sx={{
+                color: "black",
+                border: "1px solid black",
+                borderRadius: 2,
+                textTransform: "none",
+              }}
+              variant="outlined"
+              startIcon={<LoginIcon />}
+            >
+              登录
+            </Button>
+          )}
+        </Box>
+      </Toolbar>
+    </AppBar>
+  );
 };
 
 export default AppHeader;
-
-

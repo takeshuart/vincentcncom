@@ -4,7 +4,9 @@ import DetailsPage from './pages/DetailsPage';
 import { Box } from '@mui/material';
 import AppHeader from './components/AppHeader';
 import ArtSearchPage from './pages/SearchPage';
+
 import './styles/index.css';
+import AuthPage from './pages/AuthPage';
 
 const GlobalLayout = () => {
   return (
@@ -31,6 +33,7 @@ function App() {
     <Routes>
       <Route path="/" element={<GlobalLayout />}>
         <Route index element={<HomePage />} />
+        <Route path="auth" element={<AuthPage />} />
         <Route path="search" element={<ArtSearchPage />} />
         <Route path="vincent/:id" element={<DetailsPage />} />
       </Route>
