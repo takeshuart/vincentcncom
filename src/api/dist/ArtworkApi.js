@@ -84,19 +84,25 @@ function get(url, config, context) {
 }
 function fetchArtworkById(artworkId) {
     return __awaiter(this, void 0, void 0, function () {
-        var response, error_2;
+        var delay_1, response, error_2;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, exports.apiClient.get(API_BASE_URL + "/artworks/vincent/" + artworkId)];
+                    _a.trys.push([0, 4, , 5]);
+                    if (!(process.env.NODE_ENV === 'development')) return [3 /*break*/, 2];
+                    delay_1 = Math.random() * 500 + 500;
+                    return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, delay_1); })];
                 case 1:
+                    _a.sent();
+                    _a.label = 2;
+                case 2: return [4 /*yield*/, exports.apiClient.get(API_BASE_URL + "/artworks/vincent/" + artworkId)];
+                case 3:
                     response = _a.sent();
                     return [2 /*return*/, response.data];
-                case 2:
+                case 4:
                     error_2 = _a.sent();
                     throw new Error('Error fetching artwork details');
-                case 3: return [2 /*return*/];
+                case 5: return [2 /*return*/];
             }
         });
     });
@@ -104,7 +110,7 @@ function fetchArtworkById(artworkId) {
 exports.fetchArtworkById = fetchArtworkById;
 function fetchArtData(query) {
     return __awaiter(this, void 0, void 0, function () {
-        var queryParams, delay_1, response, err_1;
+        var queryParams, delay_2, response, err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -120,8 +126,8 @@ function fetchArtData(query) {
                         colorField: query.color
                     };
                     if (!(process.env.NODE_ENV === 'development')) return [3 /*break*/, 2];
-                    delay_1 = Math.random() * 500 + 500;
-                    return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, delay_1); })];
+                    delay_2 = Math.random() * 500 + 500;
+                    return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, delay_2); })];
                 case 1:
                     _a.sent();
                     _a.label = 2;
@@ -161,14 +167,14 @@ function fetchSurpriseArt() {
 exports.fetchSurpriseArt = fetchSurpriseArt;
 function fetchConfigData() {
     return __awaiter(this, void 0, Promise, function () {
-        var delay_2, genreRes, periodRes, techniques, error_4;
+        var delay_3, genreRes, periodRes, techniques, error_4;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 3, , 4]);
                     if (!(process.env.NODE_ENV === 'development')) return [3 /*break*/, 2];
-                    delay_2 = Math.random() * 1000 + 500;
-                    return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, delay_2); })];
+                    delay_3 = Math.random() * 1000 + 500;
+                    return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, delay_3); })];
                 case 1:
                     _a.sent();
                     _a.label = 2;

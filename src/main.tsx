@@ -4,6 +4,8 @@ import App from './App';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from '@emotion/react';
+import customTheme from './styles/theme';
 
 //React Enter File
 /**
@@ -18,7 +20,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BrowserRouter>
-          <App />
+          <ThemeProvider theme={customTheme}>
+            <App />
+          </ThemeProvider>
         </BrowserRouter>
       </AuthProvider>
     </QueryClientProvider>

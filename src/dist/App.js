@@ -8,6 +8,7 @@ var AppHeader_1 = require("./components/AppHeader");
 var SearchPage_1 = require("./pages/SearchPage");
 require("./styles/index.css");
 var AuthPage_1 = require("./pages/AuthPage");
+var ScrollToTop_1 = require("./components/ScrollToTop");
 var GlobalLayout = function () {
     return (React.createElement(material_1.Box, { sx: { minHeight: '100vh', display: 'flex', flexDirection: 'column' } },
         React.createElement(AppHeader_1["default"], null),
@@ -23,11 +24,13 @@ var GlobalLayout = function () {
                 " "))));
 };
 function App() {
-    return (React.createElement(react_router_dom_1.Routes, null,
-        React.createElement(react_router_dom_1.Route, { path: "/", element: React.createElement(GlobalLayout, null) },
-            React.createElement(react_router_dom_1.Route, { index: true, element: React.createElement(HomePage_1["default"], null) }),
-            React.createElement(react_router_dom_1.Route, { path: "auth", element: React.createElement(AuthPage_1["default"], null) }),
-            React.createElement(react_router_dom_1.Route, { path: "search", element: React.createElement(SearchPage_1["default"], null) }),
-            React.createElement(react_router_dom_1.Route, { path: "vincent/:id", element: React.createElement(DetailsPage_1["default"], null) }))));
+    return (React.createElement(React.Fragment, null,
+        React.createElement(ScrollToTop_1["default"], null),
+        React.createElement(react_router_dom_1.Routes, null,
+            React.createElement(react_router_dom_1.Route, { path: "/", element: React.createElement(GlobalLayout, null) },
+                React.createElement(react_router_dom_1.Route, { index: true, element: React.createElement(HomePage_1["default"], null) }),
+                React.createElement(react_router_dom_1.Route, { path: "auth", element: React.createElement(AuthPage_1["default"], null) }),
+                React.createElement(react_router_dom_1.Route, { path: "search", element: React.createElement(SearchPage_1["default"], null) }),
+                React.createElement(react_router_dom_1.Route, { path: "vincent/:id", element: React.createElement(DetailsPage_1["default"], null) })))));
 }
 exports["default"] = App;

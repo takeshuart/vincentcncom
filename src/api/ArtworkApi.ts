@@ -24,7 +24,7 @@ export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 5000,
   //Ensure that HTTP Only cookies are carried while cross-domain request
-  withCredentials: true, 
+  withCredentials: true,
 });
 
 
@@ -59,6 +59,10 @@ async function get(url: string, config?: AxiosRequestConfig, context = 'data'): 
 
 export async function fetchArtworkById(artworkId: any) {
   try {
+    if (process.env.NODE_ENV === 'development') {
+      const delay = Math.random() * 500 + 500;//Mock network delay
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
     const response = await apiClient.get(`${API_BASE_URL}/artworks/vincent/${artworkId}`);
     return response.data;
   } catch (error) {

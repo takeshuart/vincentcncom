@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Route, Routes, Outlet } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, Outlet } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import DetailsPage from './pages/DetailsPage';
 import { Box } from '@mui/material';
@@ -7,6 +7,7 @@ import ArtSearchPage from './pages/SearchPage';
 
 import './styles/index.css';
 import AuthPage from './pages/AuthPage';
+import ScrollToTop from './components/ScrollToTop';
 
 const GlobalLayout = () => {
   return (
@@ -30,15 +31,17 @@ const GlobalLayout = () => {
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<GlobalLayout />}>
-        <Route index element={<HomePage />} />
-        <Route path="auth" element={<AuthPage />} />
-        <Route path="search" element={<ArtSearchPage />} />
-        <Route path="vincent/:id" element={<DetailsPage />} />
-      </Route>
-    </Routes>
-
+    <>
+      <ScrollToTop />
+      <Routes>
+        <Route path="/" element={<GlobalLayout />}>
+          <Route index element={<HomePage />} />
+          <Route path="auth" element={<AuthPage />} />
+          <Route path="search" element={<ArtSearchPage />} />
+          <Route path="vincent/:id" element={<DetailsPage />} />
+        </Route>
+      </Routes>
+    </>
   );
 }
 

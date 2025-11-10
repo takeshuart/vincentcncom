@@ -3,7 +3,6 @@ exports.__esModule = true;
 var material_1 = require("@mui/material");
 var react_router_dom_1 = require("react-router-dom");
 var ArrowBack_1 = require("@mui/icons-material/ArrowBack");
-var Login_1 = require("@mui/icons-material/Login");
 var Settings_1 = require("@mui/icons-material/Settings");
 var AccountCircle_1 = require("@mui/icons-material/AccountCircle");
 var icons_material_1 = require("@mui/icons-material");
@@ -17,6 +16,7 @@ var stringToColor = function (str) {
     return "hsl(" + hash % 360 + ", 60%, 60%)";
 };
 var AppHeader = function () {
+    var theme = material_1.useTheme();
     var navigate = react_router_dom_1.useNavigate();
     var location = react_router_dom_1.useLocation();
     var shouldShowBack = location.pathname.startsWith("/vincent/");
@@ -55,8 +55,8 @@ var AppHeader = function () {
             React.createElement(material_1.Box, { sx: { display: "flex", alignItems: "center", ml: "auto" } }, isLoading ? (React.createElement(material_1.CircularProgress, { size: 24, sx: { color: "gray" } })) : isLoggedIn ? (React.createElement(React.Fragment, null,
                 React.createElement(material_1.IconButton, { onClick: handleMenuOpen, size: "small", sx: { ml: 2, p: 0 } },
                     React.createElement(material_1.Avatar, { sx: {
-                            width: 36,
-                            height: 36,
+                            width: 40,
+                            height: 40,
                             bgcolor: avatarDetails.color,
                             color: "white",
                             fontWeight: 600
@@ -78,11 +78,19 @@ var AppHeader = function () {
                     React.createElement(material_1.MenuItem, { onClick: handleLogoutClick },
                         React.createElement(material_1.ListItemIcon, null,
                             React.createElement(icons_material_1.Logout, { fontSize: "small" })),
-                        "\u6CE8\u9500")))) : (React.createElement(material_1.Button, { onClick: handleLoginClick, sx: {
-                    color: "black",
-                    border: "1px solid black",
-                    borderRadius: 2,
-                    textTransform: "none"
-                }, variant: "outlined", startIcon: React.createElement(Login_1["default"], null) }, "\u767B\u5F55"))))));
+                        "\u6CE8\u9500")))) : (React.createElement(material_1.Button, { onClick: handleLoginClick, variant: "contained", disableElevation: true, sx: {
+                    textTransform: 'none',
+                    borderRadius: 1,
+                    padding: '5px 25px',
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    backgroundColor: '#2e74b6ff',
+                    color: 'white',
+                    transition: 'background-color 0.2s ease-out',
+                    '&:hover': {
+                        backgroundColor: '#2a6ba8ff',
+                        boxShadow: '0 0 10px 3px rgba(39, 101, 160, 0.2)'
+                    }
+                } }, "\u767B\u5F55"))))));
 };
 exports["default"] = AppHeader;

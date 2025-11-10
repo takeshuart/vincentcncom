@@ -59,7 +59,6 @@ var AuthPage = function () {
     var _c = react_1.useState({ credential: "", password: "", confirmPassword: "", phone: "" }), formData = _c[0], setFormData = _c[1];
     var _d = react_1.useState({}), formErrors = _d[0], setFormErrors = _d[1];
     var _e = react_1.useState(false), loading = _e[0], setLoading = _e[1];
-    // 如果已经登录，直接跳转首页
     react_1.useEffect(function () {
         if (user)
             navigate("/");
@@ -138,40 +137,59 @@ var AuthPage = function () {
         setFormData({ credential: "", password: "", confirmPassword: "", phone: "" });
         setFormErrors({});
     };
-    return (react_1["default"].createElement(material_1.Container, { component: "main", maxWidth: "sm", sx: {
+    var ART_BLUE = "#215A8F"; // 深普鲁士蓝 (主色)
+    var HOVER_BLUE = "#17436B"; // 悬停加深色
+    var ACTIVE_BLUE = "#0E2C48"; // 按下色
+    var LIGHT_BACKGROUND = "#d8dbf0ff"; // 纯色背景
+    return (react_1["default"].createElement(material_1.Container, { component: "main", maxWidth: false, sx: {
+            backgroundColor: LIGHT_BACKGROUND,
             display: "flex",
             justifyContent: "center",
-            alignItems: "center",
-            minHeight: "80vh",
-            mt: 8
+            alignItems: "flex-start",
+            minHeight: "100vh",
+            paddingTop: { xs: 4, sm: 8, md: 25 },
+            paddingBottom: { xs: 4, sm: 8, md: 8 }
         } },
         react_1["default"].createElement(material_1.Box, { sx: {
                 width: "100%",
                 maxWidth: 400,
-                p: 4,
+                p: { xs: 3, sm: 5 },
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 backgroundColor: "white",
-                borderRadius: 3,
-                boxShadow: 3,
-                borderTop: "5px solid #2a62ff"
+                borderRadius: 4,
+                boxShadow: "0 10px 30px rgba(0, 0, 0, 0.1)"
             } },
-            react_1["default"].createElement(material_1.Typography, { component: "h1", variant: "h5", fontWeight: "bold", sx: { mb: 1, color: "#333" } }, isLogin ? "登录到您的账户" : "创建新账户"),
-            react_1["default"].createElement(material_1.Typography, { variant: "body2", color: "text.secondary", sx: { mb: 3 } }, isLogin ? "使用您的邮箱或手机号登录。" : "加入我们，探索数字档案馆。"),
-            formErrors.apiError && (react_1["default"].createElement(material_1.Alert, { severity: "error", sx: { width: "100%", mb: 2 } }, formErrors.apiError)),
+            react_1["default"].createElement(material_1.Typography, { component: "h1", variant: "h5", fontWeight: 700, sx: { mb: 1, color: ART_BLUE } }, isLogin ? "欢迎回来" : "创建新账户"),
+            react_1["default"].createElement(material_1.Typography, { variant: "body2", color: "text.secondary", sx: { mb: 4 } }, isLogin ? "登录后探索更多艺术品。" : "加入我们，体验梵高数字档案。"),
+            formErrors.apiError && (react_1["default"].createElement(material_1.Alert, { severity: "error", sx: { width: "100%", mb: 3 } }, formErrors.apiError)),
             react_1["default"].createElement(material_1.Box, { component: "form", onSubmit: handleSubmit, sx: { mt: 1, width: "100%" } },
-                react_1["default"].createElement(material_1.TextField, { margin: "normal", required: true, fullWidth: true, id: "credential", label: isLogin ? "邮箱或手机号" : "电子邮箱", name: "credential", autoComplete: "username", autoFocus: true, value: formData.credential, onChange: handleChange, error: !!formErrors.credential, helperText: formErrors.credential, disabled: loading, size: "small", sx: { mb: 2 } }),
+                react_1["default"].createElement(material_1.TextField, { variant: "outlined", margin: "normal", required: true, fullWidth: true, id: "credential", label: isLogin ? "邮箱" : "电子邮箱", name: "credential", autoComplete: "username", autoFocus: true, value: formData.credential, onChange: handleChange, error: !!formErrors.credential, helperText: formErrors.credential, disabled: loading, size: "medium", sx: { mb: 3 } }),
                 react_1["default"].createElement(material_1.TextField, { margin: "normal", required: true, fullWidth: true, name: "password", label: "\u5BC6\u7801", type: "password", id: "password", autoComplete: isLogin ? "current-password" : "new-password", value: formData.password, onChange: handleChange, error: !!formErrors.password, helperText: formErrors.password, disabled: loading, size: "small", sx: { mb: 2 } }),
                 !isLogin && (react_1["default"].createElement(material_1.TextField, { margin: "normal", required: true, fullWidth: true, name: "confirmPassword", label: "\u786E\u8BA4\u5BC6\u7801", type: "password", id: "confirmPassword", autoComplete: "new-password", value: formData.confirmPassword, onChange: handleChange, error: !!formErrors.confirmPassword, helperText: formErrors.confirmPassword, disabled: loading, size: "small", sx: { mb: 2 } })),
-                react_1["default"].createElement(material_1.Button, { type: "submit", fullWidth: true, variant: "contained", sx: {
-                        mt: 3,
-                        mb: 2,
+                react_1["default"].createElement(material_1.Button, { type: "submit", fullWidth: true, variant: "contained", disableElevation // 保持扁平化设计
+                    : true, sx: {
+                        mt: 2,
+                        mb: 3,
                         py: 1.5,
-                        backgroundColor: "#2a62ff",
-                        "&:hover": { backgroundColor: "#1e4ad8" },
+                        backgroundColor: ART_BLUE,
+                        color: 'white',
                         textTransform: "none",
-                        fontWeight: "bold"
+                        fontWeight: 700,
+                        boxShadow: 'none',
+                        transition: 'background-color 0.2s ease-out, box-shadow 0.2s ease-out, transform 0.2s ease-out',
+                        '&:hover': {
+                            backgroundColor: HOVER_BLUE,
+                            // 微妙发光效果：抬升阴影 + 蓝色光晕
+                            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2), 0 0 15px 3px " + ART_BLUE + "99",
+                            transform: 'translateY(-2px)'
+                        },
+                        '&:active': {
+                            backgroundColor: ACTIVE_BLUE,
+                            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2) inset',
+                            transform: 'translateY(0)'
+                        }
                     }, disabled: loading }, loading ? react_1["default"].createElement(material_1.CircularProgress, { size: 24, color: "inherit" }) : isLogin ? "登录" : "注册")),
             react_1["default"].createElement(material_1.Stack, { direction: "row", justifyContent: "center", alignItems: "center", sx: { mt: 1 } },
                 react_1["default"].createElement(material_1.Typography, { variant: "body2", color: "text.secondary" }, isLogin ? "没有账户？" : "已有账户？"),
@@ -179,7 +197,7 @@ var AuthPage = function () {
                         textTransform: "none",
                         ml: 0.5,
                         fontWeight: "bold",
-                        color: "#2a62ff",
+                        color: ART_BLUE,
                         "&:hover": { textDecoration: "underline" }
                     } }, isLogin ? "立即注册" : "返回登录")))));
 };
