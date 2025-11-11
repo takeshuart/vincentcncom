@@ -39,15 +39,16 @@ exports.__esModule = true;
 exports.itsmeApi = exports.logoutApi = exports.loginApi = exports.registerApi = void 0;
 var ArtworkApi_1 = require("./ArtworkApi");
 function registerApi(params) {
+    var _a;
     return __awaiter(this, void 0, Promise, function () {
         var res;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
+        return __generator(this, function (_b) {
+            switch (_b.label) {
                 case 0: return [4 /*yield*/, ArtworkApi_1.apiClient.post("/user/register", params)];
                 case 1:
-                    res = _a.sent();
+                    res = _b.sent();
                     if (!res.data.success || !res.data.user) {
-                        throw new Error(res.data.error || "Registration failed");
+                        throw new Error(((_a = res.data.error) === null || _a === void 0 ? void 0 : _a.message) || "Registration failed");
                     }
                     return [2 /*return*/, res.data.user];
             }
@@ -63,7 +64,7 @@ function loginApi(params) {
                 case 0: return [4 /*yield*/, ArtworkApi_1.apiClient.post("/user/login", params)];
                 case 1:
                     res = _a.sent();
-                    if (!res.data.success || !res.data.user) {
+                    if (!res.data.success) {
                         throw new Error(res.data.error || "Login failed");
                     }
                     return [2 /*return*/, res.data];

@@ -58,6 +58,7 @@ function HomePage() {
     return (React.createElement(material_1.Container, { maxWidth: false, disableGutters: true, sx: { bgcolor: '#d8dbf0ff', pt: 10 } },
         React.createElement(material_1.Container, { maxWidth: false, sx: {
                 width: '100%',
+                height: '100vh',
                 px: { xs: 1, sm: 3, md: 30 }
             } },
             React.createElement(SurpriseBox_1["default"], { artwork: surpriseArtwork !== null && surpriseArtwork !== void 0 ? surpriseArtwork : null, isSurpriseLoading: isSurpriseLoading, fetchSurpriseArtWork: function () { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {

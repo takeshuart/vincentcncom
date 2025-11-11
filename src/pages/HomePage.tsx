@@ -32,6 +32,7 @@ export default function HomePage() {
       <Container maxWidth={false}
         sx={{
           width: '100%',
+          height: '100vh',
           px: { xs: 1, sm: 3, md: 30 }
         }}
       >

@@ -58,7 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // ------------------ Mutation 定义 ------------------
 
-    const loginMutation = useMutation({
+    const loginMutation = useMutation<AuthResponse, any, LoginParams>({
         mutationFn: async (params: LoginParams): Promise<AuthResponse> => loginApi(params),
         onSuccess: (res) => {
             if (res?.user) {
@@ -91,7 +91,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             user,
             token,
             isLoading: loginMutation.isPending || registerMutation.isPending,
-            login: async (params: LoginParams) => loginMutation.mutateAsync(params),
+            login: async (params: LoginParams) => await loginMutation.mutateAsync(params)
+            //  Promise<AuthResponse> => {
+            //     try {
+            //         return await loginMutation.mutateAsync(params)
+
+            //     } catch (err) {
+            //         throw err
+            //     }
+            // },
+            ,
             register: async (params: RegisterParams) => registerMutation.mutateAsync(params),
             logout: () => logoutMutation.mutateAsync(),
         }),

@@ -126,8 +126,35 @@ exports.AuthProvider = function (_a) {
         token: token,
         isLoading: loginMutation.isPending || registerMutation.isPending,
         login: function (params) { return __awaiter(void 0, void 0, void 0, function () { return __generator(this, function (_a) {
-            return [2 /*return*/, loginMutation.mutateAsync(params)];
-        }); }); },
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, loginMutation.mutateAsync(params)
+                    //  Promise<AuthResponse> => {
+                    //     try {
+                    //         return await loginMutation.mutateAsync(params)
+                    //     } catch (err) {
+                    //         throw err
+                    //     }
+                    // },
+                ];
+                case 1: return [2 /*return*/, _a.sent()
+                    //  Promise<AuthResponse> => {
+                    //     try {
+                    //         return await loginMutation.mutateAsync(params)
+                    //     } catch (err) {
+                    //         throw err
+                    //     }
+                    // },
+                ];
+            }
+        }); }); }
+        //  Promise<AuthResponse> => {
+        //     try {
+        //         return await loginMutation.mutateAsync(params)
+        //     } catch (err) {
+        //         throw err
+        //     }
+        // },
+        ,
         register: function (params) { return __awaiter(void 0, void 0, void 0, function () { return __generator(this, function (_a) {
             return [2 /*return*/, registerMutation.mutateAsync(params)];
         }); }); },

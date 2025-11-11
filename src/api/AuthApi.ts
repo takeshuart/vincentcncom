@@ -23,26 +23,26 @@ export interface LoginParams {
 export interface ApiResponse<T> {
     success: boolean;
     user?: T;
-    error?: string;
+    error?: any;
 }
 
 export interface AuthResponse {
     user?: User;
     success: boolean;
-    error?: string;
+    error?: any;
 }
 
 export async function registerApi(params: RegisterParams): Promise<AuthResponse> {
     const res = await apiClient.post<ApiResponse<AuthResponse>>("/user/register", params);
     if (!res.data.success || !res.data.user) {
-        throw new Error(res.data.error || "Registration failed");
+        throw new Error(res.data.error?.message || "Registration failed");
     }
     return res.data.user;
 }
 
 export async function loginApi(params: LoginParams) {
     const res = await apiClient.post<AuthResponse>("/user/login", params);
-    if (!res.data.success || !res.data.user) {
+    if (!res.data.success) {
         throw new Error(res.data.error || "Login failed");
     }
     return res.data;

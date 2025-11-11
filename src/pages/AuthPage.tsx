@@ -1,4 +1,3 @@
-// src/pages/AuthPage.tsx
 import React, { useState, useEffect } from "react";
 import {
     Container,
@@ -13,6 +12,10 @@ import {
 } from "@mui/material";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import validator from "validator";
+
+import { useForm, Controller, SubmitHandler } from "react-hook-form";
+import { ERROR_MESSAGES } from "@/utils/errors";
 
 interface FormData {
     credential: string;
@@ -21,76 +24,53 @@ interface FormData {
     phone?: string;
 }
 
-interface FormErrors {
-    credential?: string;
-    password?: string;
-    confirmPassword?: string;
-    phone?: string;
-    apiError?: string;
-}
+const ART_BLUE = "#215A8F"; // 深普鲁士蓝 (主色)
+const HOVER_BLUE = "#17436B"; // 悬停加深色
+const ACTIVE_BLUE = "#0E2C48"; // 按下色
+const LIGHT_BACKGROUND = "#d8dbf0ff"; // 纯色背景
 
 const AuthPage: React.FC = () => {
     const { login, register, user } = useAuth();
     const navigate = useNavigate();
 
     const [isLogin, setIsLogin] = useState(true);
-    const [formData, setFormData] = useState<FormData>({ credential: "", password: "", confirmPassword: "", phone: "" });
-    const [formErrors, setFormErrors] = useState<FormErrors>({});
     const [loading, setLoading] = useState(false);
+    const [apiError, setApiError] = useState<string | undefined>(undefined);
+
+    const {
+        control,
+        handleSubmit,
+        formState: { errors },
+        reset,
+        watch
+    } = useForm<FormData>({
+        mode: "onBlur", // 推荐在输入失去焦点时验证，提供更好的用户体验
+        defaultValues: {
+            credential: "", password: "", confirmPassword: "", phone: ""
+        }
+    });
+
+    const watchedPassword = watch("password");
 
     useEffect(() => {
         if (user) navigate("/");
     }, [user, navigate]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
-        setFormErrors((prev) => ({ ...prev, [name]: undefined, apiError: undefined }));
-    };
-
-    const validateForm = (): boolean => {
-        const errors: FormErrors = {};
-        let isValid = true;
-
-        if (!formData.credential) {
-            errors.credential = isLogin ? "邮箱或手机号必填" : "邮箱必填";
-            isValid = false;
-        } else if (!isLogin && !/\S+@\S+\.\S+/.test(formData.credential)) {
-            errors.credential = "请输入有效邮箱";
-            isValid = false;
-        }
-
-        if (!formData.password) {
-            errors.password = "密码必填";
-            isValid = false;
-        }
-
-        if (!isLogin && formData.password !== formData.confirmPassword) {
-            errors.confirmPassword = "两次密码不一致";
-            isValid = false;
-        }
-
-
-        setFormErrors(errors);
-        return isValid;
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setFormErrors({});
-
-        if (!validateForm()) return;
-
+    const onSubmit: SubmitHandler<FormData> = async (data) => {
+        setApiError(undefined);
         setLoading(true);
+
         try {
             if (isLogin) {
-                await login({ id: formData.credential, password: formData.password });
+                await login({ id: data.credential, password: data.password });
             } else {
-                await register({ password: formData.password, email: formData.credential, phone: formData.phone });
+                await register({ password: data.password, email: data.credential, phone: data.phone });
             }
             navigate("/");
         } catch (err: any) {
-            setFormErrors({ apiError: err.message || "操作失败" });
+            const code = err.response?.data?.error.code;
+            const msg = ERROR_MESSAGES[code as keyof typeof ERROR_MESSAGES];
+            setApiError(msg);
         } finally {
             setLoading(false);
         }
@@ -98,13 +78,11 @@ const AuthPage: React.FC = () => {
 
     const toggleMode = () => {
         setIsLogin((prev) => !prev);
-        setFormData({ credential: "", password: "", confirmPassword: "", phone: "" });
-        setFormErrors({});
+        setApiError(undefined);
+        reset();
     };
-    const ART_BLUE = "#215A8F"; // 深普鲁士蓝 (主色)
-    const HOVER_BLUE = "#17436B"; // 悬停加深色
-    const ACTIVE_BLUE = "#0E2C48"; // 按下色
-    const LIGHT_BACKGROUND = "#d8dbf0ff"; // 纯色背景
+
+
     return (
         <Container
             component="main"
@@ -115,7 +93,7 @@ const AuthPage: React.FC = () => {
                 justifyContent: "center",
                 alignItems: "flex-start",
                 minHeight: "100vh",
-                paddingTop: { xs: 4, sm: 8,md:25 },
+                paddingTop: { xs: 4, sm: 8, md: 25 },
                 paddingBottom: { xs: 4, sm: 8, md: 8 },
             }}
         >
@@ -139,70 +117,97 @@ const AuthPage: React.FC = () => {
                     {isLogin ? "登录后探索更多艺术品。" : "加入我们，体验梵高数字档案。"}
                 </Typography>
 
-                {formErrors.apiError && (
+                {apiError && (
                     <Alert severity="error" sx={{ width: "100%", mb: 3 }}>
-                        {formErrors.apiError}
+                        {apiError}
                     </Alert>
                 )}
 
-                <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: "100%" }}>
-                    {/* Credential Field */}
-                    <TextField
-                        variant="outlined"
-                        margin="normal"
-                        required
-                        fullWidth
-                        id="credential"
-                        label={isLogin ? "邮箱" : "电子邮箱"}
+                {/**----- form Box --------- */}
+                <Box
+                    component="form"
+                    onSubmit={handleSubmit(onSubmit)}
+                    noValidate
+                    sx={{ mt: 1, width: "100%" }}
+                >
+                    <Controller
                         name="credential"
-                        autoComplete="username"
-                        autoFocus
-                        value={formData.credential}
-                        onChange={handleChange}
-                        error={!!formErrors.credential}
-                        helperText={formErrors.credential}
-                        disabled={loading}
-                        size="medium"
-                        sx={{ mb: 3 }}
+                        control={control}
+                        rules={{
+                            required: isLogin ? "邮箱或手机号必填" : "电子邮箱必填",
+                            validate: {
+                                isEmailValid: (value) =>
+                                    isLogin || validator.isEmail(value) || "请输入有效的电子邮箱格式",
+                            }
+                        }}
+                        render={({ field }) => (
+                            <TextField
+                                {...field}
+                                variant="outlined"
+                                margin="normal"
+                                fullWidth
+                                id="credential"
+                                label={isLogin ? "邮箱/手机号" : "电子邮箱"}
+                                autoComplete="username"
+                                autoFocus
+                                error={!!errors.credential}
+                                helperText={errors.credential ? errors.credential.message : undefined}
+                                disabled={loading}
+                                size="medium"
+                                sx={{ mb: 3 }}
+                            />
+                        )}
                     />
 
-                    {/* Password */}
-                    <TextField
-                        margin="normal"
-                        required
-                        fullWidth
+                    {/* 2. Password */}
+                    <Controller
                         name="password"
-                        label="密码"
-                        type="password"
-                        id="password"
-                        autoComplete={isLogin ? "current-password" : "new-password"}
-                        value={formData.password}
-                        onChange={handleChange}
-                        error={!!formErrors.password}
-                        helperText={formErrors.password}
-                        disabled={loading}
-                        size="small"
-                        sx={{ mb: 2 }}
+                        control={control}
+                        rules={{ required: "密码必填" }}
+                        render={({ field }) => (
+                            <TextField
+                                {...field}
+                                margin="normal"
+                                fullWidth
+                                label="密码"
+                                type="password"
+                                id="password"
+                                autoComplete={isLogin ? "current-password" : "new-password"}
+                                error={!!errors.password}
+                                helperText={errors.password ? errors.password.message : undefined}
+                                disabled={loading}
+                                size="small"
+                                sx={{ mb: 2 }}
+                            />
+                        )}
                     />
 
-                    {/* Confirm Password (signup only) */}
+                    {/* 3. Confirm Password (signup only) */}
                     {!isLogin && (
-                        <TextField
-                            margin="normal"
-                            required
-                            fullWidth
+                        <Controller
                             name="confirmPassword"
-                            label="确认密码"
-                            type="password"
-                            id="confirmPassword"
-                            autoComplete="new-password"
-                            value={formData.confirmPassword}
-                            onChange={handleChange}
-                            error={!!formErrors.confirmPassword}
-                            helperText={formErrors.confirmPassword}
-                            disabled={loading}
-                            size="small"
-                            sx={{ mb: 2 }}
+                            control={control}
+                            rules={{
+                                required: "请确认密码",
+                                validate: (value) =>
+                                    value === watchedPassword || "两次密码不一致",
+                            }}
+                            render={({ field }) => (
+                                <TextField
+                                    {...field}
+                                    margin="normal"
+                                    fullWidth
+                                    label="确认密码"
+                                    type="password"
+                                    id="confirmPassword"
+                                    autoComplete="new-password"
+                                    error={!!errors.confirmPassword}
+                                    helperText={errors.confirmPassword ? errors.confirmPassword.message : undefined}
+                                    disabled={loading}
+                                    size="small"
+                                    sx={{ mb: 2 }}
+                                />
+                            )}
                         />
                     )}
 
@@ -210,7 +215,7 @@ const AuthPage: React.FC = () => {
                         type="submit"
                         fullWidth
                         variant="contained"
-                        disableElevation // 保持扁平化设计
+                        disableElevation
                         sx={{
                             mt: 2,
                             mb: 3,
@@ -224,7 +229,6 @@ const AuthPage: React.FC = () => {
 
                             '&:hover': {
                                 backgroundColor: HOVER_BLUE,
-                                // 微妙发光效果：抬升阴影 + 蓝色光晕
                                 boxShadow: `0 4px 8px rgba(0, 0, 0, 0.2), 0 0 15px 3px ${ART_BLUE}99`,
                                 transform: 'translateY(-2px)',
                             },
