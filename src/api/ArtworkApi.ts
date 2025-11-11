@@ -5,6 +5,7 @@ import axios, { AxiosRequestConfig } from 'axios';
 // const API_BASE_URL = 'http://192.168.50.156:5001';
 // const API_BASE_URL = '/api/v1'
 // 
+
 /**
  * use 'npm start' ,  NODE_ENV='development'.
  * use 'npm run build'  , NODE_ENV='production' , use Nginx Proxy
@@ -63,7 +64,7 @@ export async function fetchArtworkById(artworkId: any) {
       const delay = Math.random() * 500 + 500;//Mock network delay
       await new Promise(resolve => setTimeout(resolve, delay));
     }
-    const response = await apiClient.get(`${API_BASE_URL}/artworks/vincent/${artworkId}`);
+    const response = await apiClient.get(`/artworks/vincent/${artworkId}`);
     return response.data;
   } catch (error) {
     throw new Error('Error fetching artwork details');
@@ -91,7 +92,7 @@ export async function fetchArtData(query: QueryParams) {
       await new Promise(resolve => setTimeout(resolve, delay));
     }
 
-    const response = await apiClient.get(API_BASE_URL + '/artworks/vincent', { params: queryParams });
+    const response = await apiClient.get('/artworks/vincent', { params: queryParams });
 
     return response.data;
   } catch (err) {
@@ -146,5 +147,5 @@ export async function fetchConfigData(): Promise<ConfigData> {
 }
 
 export async function getLettersByIds(ids: string | string[]) {
-  return get(`${API_BASE_URL}/letters/vincent`, { params: { ids: ids } }, 'letters');
+  return get(`$/letters/vincent`, { params: { ids: ids } }, 'letters');
 }

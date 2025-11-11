@@ -95,7 +95,7 @@ function fetchArtworkById(artworkId) {
                 case 1:
                     _a.sent();
                     _a.label = 2;
-                case 2: return [4 /*yield*/, exports.apiClient.get(API_BASE_URL + "/artworks/vincent/" + artworkId)];
+                case 2: return [4 /*yield*/, exports.apiClient.get("/artworks/vincent/" + artworkId)];
                 case 3:
                     response = _a.sent();
                     return [2 /*return*/, response.data];
@@ -131,7 +131,7 @@ function fetchArtData(query) {
                 case 1:
                     _a.sent();
                     _a.label = 2;
-                case 2: return [4 /*yield*/, exports.apiClient.get(API_BASE_URL + '/artworks/vincent', { params: queryParams })];
+                case 2: return [4 /*yield*/, exports.apiClient.get('/artworks/vincent', { params: queryParams })];
                 case 3:
                     response = _a.sent();
                     return [2 /*return*/, response.data];
@@ -204,7 +204,7 @@ exports.fetchConfigData = fetchConfigData;
 function getLettersByIds(ids) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
-            return [2 /*return*/, get(API_BASE_URL + "/letters/vincent", { params: { ids: ids } }, 'letters')];
+            return [2 /*return*/, get("$/letters/vincent", { params: { ids: ids } }, 'letters')];
         });
     });
 }
