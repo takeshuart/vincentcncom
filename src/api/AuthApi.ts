@@ -1,12 +1,13 @@
-import { apiClient } from "./ArtworkApi";
+import { SuccessResponse } from '@/types/api';
+import apiV1 from './requests';
 
 export interface User {
-    id: string;
+    userId: string;
     email?: string;
     phone?: string;
-    nickname?: string;
-    createdAt?: string;
-    updatedAt?: string;
+    nickName?: string;
+    registeredAt?: string;
+    updateAt?: string;
 }
 
 export interface RegisterParams {
@@ -32,35 +33,26 @@ export interface AuthResponse {
     error?: any;
 }
 
-export async function registerApi(params: RegisterParams): Promise<AuthResponse> {
-    const res = await apiClient.post<ApiResponse<AuthResponse>>("/user/register", params);
-    if (!res.data.success || !res.data.user) {
-        throw new Error(res.data.error?.message || "Registration failed");
-    }
-    return res.data.user;
+export async function registerApi(params: RegisterParams): Promise<User> {
+    const res = await apiV1.post<SuccessResponse<User>>("/users/register", params);
+    return res.data.data;
 }
 
-export async function loginApi(params: LoginParams) {
-    const res = await apiClient.post<AuthResponse>("/user/login", params);
-    if (!res.data.success) {
-        throw new Error(res.data.error || "Login failed");
-    }
-    return res.data;
+
+export async function loginApi(params: LoginParams):Promise<User> {
+    const res = await apiV1.post<SuccessResponse<User>>("/users/login", params);
+    return res.data.data;
 }
 
 export async function logoutApi() {
-    const res = await apiClient.post<AuthResponse>("/user/logout");
-    if (!res.data.success) {
-        throw new Error(res.data.error || "Logout failed");
-    }
-    return res.data;
+    const res = await apiV1.post<SuccessResponse<any>>("/users/logout");
+
+    return res.data.data;
 }
 
 //It's me
-export async function itsmeApi(){
-    const res = await apiClient.post<AuthResponse>("/user/me");
-    if (!res.data.success || !res.data.user) {
-        throw new Error(res.data.error || "Login failed");
-    }
-    return res.data;
+export async function itsmeApi() :Promise<User>{
+    const res = await apiV1.get<SuccessResponse<User>>("/users/me");
+
+    return res.data.data;
 }

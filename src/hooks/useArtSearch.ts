@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import { fetchArtData, fetchConfigData, QueryParams } from '../api/ArtworkApi';
 import { QueryKeys } from '@/types/enum';
+import { SuccessResponse } from '@/types/api';
 
 const AUTO_LOAD_THRESHOLD = 2;
 const PAGE_SIZE = 9;
@@ -72,12 +73,12 @@ export const useArtSearch = () => {
       const page = pageParam ?? 1
       query.page = page; //default is 1
       query.pageSize = PAGE_SIZE
-      const artData = await fetchArtData(query);
+      const artData:SuccessResponse<any> = await fetchArtData(query);
       return {
         page,
-        rows: artData.rows || [],
-        totalCount: artData.totalCount || 0,
-        totalPages: Math.ceil((artData.totalCount || 0) / PAGE_SIZE),
+        rows: artData.data || [],
+        totalCount: artData.meta?.totalCount || 0,
+        totalPages: Math.ceil((artData.meta?.totalCount || 0) / PAGE_SIZE),
       };
     },
     initialPageParam: 1, // pass to pageParam

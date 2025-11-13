@@ -1,5 +1,4 @@
 "use strict";
-// src/hooks/useArtworkDetails.ts
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
@@ -49,24 +48,16 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 exports.__esModule = true;
 var react_1 = require("react");
-// 假设这些 API 函数存在且已导出
 var ArtworkApi_1 = require("../api/ArtworkApi");
-// =================================================================
-// 2. 辅助函数
-// =================================================================
 /**
  * 辅助函数：清洗和预处理艺术品数据中的 JSON 字段和图片路径
  * @param fetchedArtwork - 原始 API 返回的作品数据
- * @returns 包含解析后字段的艺术品数据和外部链接对象
  */
 var cleanArtworkData = function (fetchedArtwork) {
-    // 确保使用 RawArtwork 接口的属性
     var processedArtwork = __assign(__assign({}, fetchedArtwork), { exhibitionHistory: [] });
     var extLinks = {};
-    // 3. 解析 exhibitions
     try {
         if (processedArtwork.exhibitions) {
-            // 尝试解析 JSON 字符串
             processedArtwork.exhibitionHistory = JSON.parse(processedArtwork.exhibitions);
         }
         else {
@@ -77,19 +68,14 @@ var cleanArtworkData = function (fetchedArtwork) {
         console.error('Error parsing exhibitionHistory JSON:', e);
         processedArtwork.exhibitionHistory = [];
     }
-    // 4. 图片路径处理
     if (processedArtwork.primaryImageLarge) {
         processedArtwork.primaryImageLarge = "/all-collections/" + processedArtwork.primaryImageLarge;
     }
     else if (processedArtwork.primaryImageSmall) {
         processedArtwork.primaryImageLarge = "https://www.pubhist.com" + processedArtwork.primaryImageSmall;
     }
-    // 注意：如果原图 small 和 large 都不存在，primaryImageLarge 可能会保留原值或为 null
     return { processedArtwork: processedArtwork, extLinks: extLinks };
 };
-// =================================================================
-// 3. 自定义 Hook
-// =================================================================
 /**
  * 封装作品详情页的数据获取、清洗和状态管理。
  * @param id - 作品 ID (通常是字符串)

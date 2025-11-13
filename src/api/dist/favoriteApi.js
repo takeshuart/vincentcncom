@@ -36,14 +36,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.itsmeApi = exports.logoutApi = exports.loginApi = exports.registerApi = void 0;
+exports.getFavoritesApi = exports.removeFavoriteApi = exports.addFavoriteApi = void 0;
 var requests_1 = require("./requests");
-function registerApi(params) {
+var API_PREFIX = '/users';
+function addFavoriteApi(userId, artworkId) {
     return __awaiter(this, void 0, Promise, function () {
-        var res;
+        var url, res;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, requests_1["default"].post("/users/register", params)];
+                case 0:
+                    url = API_PREFIX + "/" + userId + "/favorites";
+                    return [4 /*yield*/, requests_1["default"].post(url, { artworkId: artworkId })];
                 case 1:
                     res = _a.sent();
                     return [2 /*return*/, res.data.data];
@@ -51,42 +54,31 @@ function registerApi(params) {
         });
     });
 }
-exports.registerApi = registerApi;
-function loginApi(params) {
+exports.addFavoriteApi = addFavoriteApi;
+function removeFavoriteApi(userId, artworkId) {
     return __awaiter(this, void 0, Promise, function () {
-        var res;
+        var url;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, requests_1["default"].post("/users/login", params)];
+                case 0:
+                    url = API_PREFIX + "/" + userId + "/favorites/" + artworkId;
+                    return [4 /*yield*/, requests_1["default"]["delete"](url)];
                 case 1:
-                    res = _a.sent();
-                    return [2 /*return*/, res.data.data];
+                    _a.sent();
+                    return [2 /*return*/];
             }
         });
     });
 }
-exports.loginApi = loginApi;
-function logoutApi() {
-    return __awaiter(this, void 0, void 0, function () {
-        var res;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, requests_1["default"].post("/users/logout")];
-                case 1:
-                    res = _a.sent();
-                    return [2 /*return*/, res.data.data];
-            }
-        });
-    });
-}
-exports.logoutApi = logoutApi;
-//It's me
-function itsmeApi() {
+exports.removeFavoriteApi = removeFavoriteApi;
+function getFavoritesApi(userId) {
     return __awaiter(this, void 0, Promise, function () {
-        var res;
+        var url, res;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, requests_1["default"].get("/users/me")];
+                case 0:
+                    url = API_PREFIX + "/" + userId + "/favorites";
+                    return [4 /*yield*/, requests_1["default"].get(url)];
                 case 1:
                     res = _a.sent();
                     return [2 /*return*/, res.data.data];
@@ -94,4 +86,4 @@ function itsmeApi() {
         });
     });
 }
-exports.itsmeApi = itsmeApi;
+exports.getFavoritesApi = getFavoritesApi;

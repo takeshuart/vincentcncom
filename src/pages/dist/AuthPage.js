@@ -49,26 +49,28 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 exports.__esModule = true;
 var react_1 = require("react");
 var material_1 = require("@mui/material");
-var AuthContext_1 = require("@/context/AuthContext");
+var useAuth_1 = require("@/hooks/useAuth");
 var react_router_dom_1 = require("react-router-dom");
 var react_hook_form_1 = require("react-hook-form");
 var errors_1 = require("@/utils/errors");
+var icons_material_1 = require("@mui/icons-material");
 var ART_BLUE = "#215A8F"; // 深普鲁士蓝 (主色)
 var HOVER_BLUE = "#17436B"; // 悬停加深色
 var ACTIVE_BLUE = "#0E2C48"; // 按下色
 var LIGHT_BACKGROUND = "#d8dbf0ff"; // 纯色背景
 var AuthPage = function () {
-    var _a = AuthContext_1.useAuth(), login = _a.login, register = _a.register, user = _a.user;
+    var _a = useAuth_1.useAuth(), login = _a.login, register = _a.register, user = _a.user;
     var navigate = react_router_dom_1.useNavigate();
     var _b = react_1.useState(true), isLogin = _b[0], setIsLogin = _b[1];
     var _c = react_1.useState(false), loading = _c[0], setLoading = _c[1];
     var _d = react_1.useState(undefined), apiError = _d[0], setApiError = _d[1];
-    var _e = react_hook_form_1.useForm({
+    var _e = react_1.useState(false), showPassword = _e[0], setShowPassword = _e[1];
+    var _f = react_hook_form_1.useForm({
         mode: "onBlur",
         defaultValues: {
             credential: "", password: "", confirmPassword: "", phone: ""
         }
-    }), control = _e.control, handleSubmit = _e.handleSubmit, errors = _e.formState.errors, reset = _e.reset, watch = _e.watch;
+    }), control = _f.control, handleSubmit = _f.handleSubmit, errors = _f.formState.errors, reset = _f.reset, watch = _f.watch;
     var watchedPassword = watch("password");
     react_1.useEffect(function () {
         if (user)
@@ -115,6 +117,12 @@ var AuthPage = function () {
         setApiError(undefined);
         reset();
     };
+    var handleClickShowPassword = function () {
+        setShowPassword(function (show) { return !show; });
+    };
+    var handleMouseDownPassword = function (event) {
+        event.preventDefault();
+    };
     return (react_1["default"].createElement(material_1.Container, { component: "main", maxWidth: false, sx: {
             backgroundColor: LIGHT_BACKGROUND,
             display: "flex",
@@ -151,18 +159,12 @@ var AuthPage = function () {
                         return (react_1["default"].createElement(material_1.TextField, __assign({}, field, { variant: "outlined", margin: "normal", fullWidth: true, id: "credential", label: isLogin ? "邮箱/手机号" : "电子邮箱", autoComplete: "username", autoFocus: true, error: !!errors.credential, helperText: errors.credential ? errors.credential.message : undefined, disabled: loading, size: "medium", sx: { mb: 3 } })));
                     } }),
                 react_1["default"].createElement(react_hook_form_1.Controller, { name: "password", control: control, rules: { required: "密码必填" }, render: function (_a) {
-                        var field = _a.field;
-                        return (react_1["default"].createElement(material_1.TextField, __assign({}, field, { margin: "normal", fullWidth: true, label: "\u5BC6\u7801", type: "password", id: "password", autoComplete: isLogin ? "current-password" : "new-password", error: !!errors.password, helperText: errors.password ? errors.password.message : undefined, disabled: loading, size: "small", sx: { mb: 2 } })));
+                        var field = _a.field, error = _a.fieldState.error;
+                        return (react_1["default"].createElement(material_1.TextField, __assign({}, field, { margin: "normal", fullWidth: true, label: "\u5BC6\u7801", type: showPassword ? 'text' : 'password', id: "password", autoComplete: isLogin ? "current-password" : "new-password", error: !!error, helperText: error ? error.message : undefined, disabled: loading, size: "small", sx: { mb: 2 }, InputProps: {
+                                endAdornment: (react_1["default"].createElement(material_1.InputAdornment, { position: "end" },
+                                    react_1["default"].createElement(material_1.IconButton, { "aria-label": "toggle password visibility", onClick: handleClickShowPassword, onMouseDown: handleMouseDownPassword, edge: "end" }, showPassword ? react_1["default"].createElement(icons_material_1.VisibilityOff, null) : react_1["default"].createElement(icons_material_1.Visibility, null))))
+                            } })));
                     } }),
-                !isLogin && (react_1["default"].createElement(react_hook_form_1.Controller, { name: "confirmPassword", control: control, rules: {
-                        required: "请确认密码",
-                        validate: function (value) {
-                            return value === watchedPassword || "两次密码不一致";
-                        }
-                    }, render: function (_a) {
-                        var field = _a.field;
-                        return (react_1["default"].createElement(material_1.TextField, __assign({}, field, { margin: "normal", fullWidth: true, label: "\u786E\u8BA4\u5BC6\u7801", type: "password", id: "confirmPassword", autoComplete: "new-password", error: !!errors.confirmPassword, helperText: errors.confirmPassword ? errors.confirmPassword.message : undefined, disabled: loading, size: "small", sx: { mb: 2 } })));
-                    } })),
                 react_1["default"].createElement(material_1.Button, { type: "submit", fullWidth: true, variant: "contained", disableElevation: true, sx: {
                         mt: 2,
                         mb: 3,

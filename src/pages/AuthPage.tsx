@@ -1,21 +1,12 @@
 import React, { useState, useEffect } from "react";
-import {
-    Container,
-    Box,
-    Typography,
-    TextField,
-    Button,
-    Alert,
-    CircularProgress,
-    Stack,
-    Link as MuiLink,
-} from "@mui/material";
-import { useAuth } from "@/context/AuthContext";
+import { Container, Box, Typography, TextField, Button, Alert, CircularProgress, Stack, Link as MuiLink, InputAdornment,IconButton } from "@mui/material";
+import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import validator from "validator";
 
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { ERROR_MESSAGES } from "@/utils/errors";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 interface FormData {
     credential: string;
@@ -36,6 +27,8 @@ const AuthPage: React.FC = () => {
     const [isLogin, setIsLogin] = useState(true);
     const [loading, setLoading] = useState(false);
     const [apiError, setApiError] = useState<string | undefined>(undefined);
+    const [showPassword, setShowPassword] = useState(false);
+
 
     const {
         control,
@@ -44,7 +37,7 @@ const AuthPage: React.FC = () => {
         reset,
         watch
     } = useForm<FormData>({
-        mode: "onBlur", // 推荐在输入失去焦点时验证，提供更好的用户体验
+        mode: "onBlur",
         defaultValues: {
             credential: "", password: "", confirmPassword: "", phone: ""
         }
@@ -81,7 +74,13 @@ const AuthPage: React.FC = () => {
         setApiError(undefined);
         reset();
     };
+    const handleClickShowPassword = () => {
+        setShowPassword((show) => !show);
+    };
 
+    const handleMouseDownPassword = (event:any) => {
+        event.preventDefault();
+    };
 
     return (
         <Container
@@ -164,26 +163,43 @@ const AuthPage: React.FC = () => {
                         name="password"
                         control={control}
                         rules={{ required: "密码必填" }}
-                        render={({ field }) => (
+                        render={({ field, fieldState: { error } }) => (
                             <TextField
                                 {...field}
                                 margin="normal"
                                 fullWidth
                                 label="密码"
-                                type="password"
+                                type={showPassword ? 'text' : 'password'}
                                 id="password"
                                 autoComplete={isLogin ? "current-password" : "new-password"}
-                                error={!!errors.password}
-                                helperText={errors.password ? errors.password.message : undefined}
+
+                                error={!!error}
+                                helperText={error ? error.message : undefined}
                                 disabled={loading}
                                 size="small"
                                 sx={{ mb: 2 }}
+
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                aria-label="toggle password visibility"
+                                                onClick={handleClickShowPassword}
+                                                onMouseDown={handleMouseDownPassword}
+                                                edge="end"
+                                            >
+                                                {/* 根据状态切换图标 */}
+                                                {showPassword ? <VisibilityOff /> : <Visibility />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }}
                             />
                         )}
                     />
 
                     {/* 3. Confirm Password (signup only) */}
-                    {!isLogin && (
+                    {/* {!isLogin && (
                         <Controller
                             name="confirmPassword"
                             control={control}
@@ -209,7 +225,7 @@ const AuthPage: React.FC = () => {
                                 />
                             )}
                         />
-                    )}
+                    )} */}
 
                     <Button
                         type="submit"

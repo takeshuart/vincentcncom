@@ -1,24 +1,18 @@
-import React from 'react';
-import { useParams } from 'react-router-dom';
-import {
-  Box,
-  Divider,
-  Grid,
-  Typography,
-  useMediaQuery,
-  List,
-  ListItem,
-  ListItemButton,
-  CircularProgress,
-  Skeleton
-} from '@mui/material';
+import React, { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Box, Divider, Grid, Typography, useMediaQuery, List, ListItem, ListItemButton, Skeleton, IconButton } from '@mui/material';
 import 'react-photo-view/dist/react-photo-view.css';
 import useArtworkDetails from '../hooks/useArtworkDetails';
 import ArtworkImage from '../components/ArtworkImage';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import { ArtworkExhibition, ArtworkLetters, ArtworkOverview } from '../components/ArtworkSections';
 import { ArrowForwardIos } from '@mui/icons-material';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import useSearchContextNavigation from '../hooks/useSearchContextNavigation';
+import { useAuth } from '@/hooks/useAuth';
+import toast from 'react-hot-toast';
+import { useAddFavoriteMutation, useRemoveFavoriteMutation } from '@/hooks/useFavorites';
 
 interface Section {
   id: string;
@@ -35,7 +29,12 @@ const titleStyle = {
 
 const DetailsPage: React.FC = () => {
   const isMobile = useMediaQuery('(max-width:600px)');
+  const addFavoriteMutation = useAddFavoriteMutation();
+  const removeFavoriteMutation = useRemoveFavoriteMutation();
+
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const artworkId: string = id!;
   const {
     artwork,
@@ -48,7 +47,38 @@ const DetailsPage: React.FC = () => {
     setActiveSection
   } = useArtworkDetails(artworkId);
 
+  const [isFavorited, setIsFavorited] = useState<boolean | undefined>(artwork?.isFavorited);
+
+
   const { canGoNext, canGoPrev, goToNext, goToPrev } = useSearchContextNavigation(id);
+
+
+  const handleToggleFavorite = async () => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+
+
+    //optimistic UI: Update the local status first and do not wait for the server's result
+    setIsFavorited((prev) => !prev);
+
+    try {
+      const variables = { userId: user.userId as string, artworkId: artworkId as string };
+      if (isFavorited) {
+        await removeFavoriteMutation.mutateAsync(variables);
+      } else {
+        await addFavoriteMutation.mutateAsync(variables);
+      }
+
+    } catch (error) {
+      //rollback 
+      setIsFavorited((prev) => !prev);
+      const errorMessage = isFavorited ? '取消收藏失败' : '收藏失败';
+      console.error(errorMessage, error);
+      toast.error(errorMessage);
+    }
+  };
 
   const renderContent = () => {
     if (!artwork) return null;
@@ -68,15 +98,33 @@ const DetailsPage: React.FC = () => {
     }
   };
 
-  // 如果加载完成但 artwork 为空，说明加载失败
   if (!isLoadingArtwork && !artwork) {
     return <Box sx={{ p: 5, textAlign: 'center' }}>未能加载作品详情。</Box>;
   }
 
-  // 页面结构始终存在，只根据加载状态切换内容
+  const renderFavoriteButton = () => {
+    // const isMutating = addFavoriteMutation.isPending || removeFavoriteMutation.isPending;
+
+    if (isLoadingArtwork) {
+      return <Skeleton variant="circular" width={40} height={40} sx={{ ml: 1 }} />;
+    }
+
+    const IconComponent = isFavorited ? FavoriteIcon : FavoriteBorderIcon;
+    const tooltipText = isFavorited ? '取消收藏' : (user ? '收藏' : '登录后收藏');
+
+    return (
+      <IconButton
+        onClick={handleToggleFavorite}
+        // disabled={isMutating}
+        aria-label={tooltipText}
+        sx={{ color: '#C93636', ml: 1 }}
+      >
+        <IconComponent sx={{ fontSize: 30 }} />
+      </IconButton>
+    );
+  };
   return (
     <Grid container justifyContent="center" sx={{ paddingTop: 10 }}>
-      {/* 图片区域 */}
       <Box
         sx={{
           position: 'relative',
@@ -114,19 +162,25 @@ const DetailsPage: React.FC = () => {
       <Grid container justifyContent="center">
         <Grid item xs={10} sm={8} md={6}>
           <Divider sx={{ my: 3 }} />
-          {isLoadingArtwork ? (
-            <>
-              <Skeleton width="60%" height={30} />
-              <Skeleton width="40%" height={20} />
-            </>
-          ) : (
-            <>
-              <Typography sx={titleStyle}>{artwork?.titleZh || artwork?.titleEn}</Typography>
-              <Typography color="#999595ff" fontWeight={600} sx={{ mb: 2, fontSize: 14 }}>
-                {artwork?.displayDate}
-              </Typography>
-            </>
-          )}
+          <Box display="flex" alignItems="center" justifyContent="space-between">
+            <Box flexGrow={1}>
+              {isLoadingArtwork ? (
+                <>
+                  <Skeleton width="60%" height={30} />
+                  <Skeleton width="40%" height={20} />
+                </>
+              ) : (
+                <>
+                  <Typography sx={titleStyle}>{artwork?.titleZh || artwork?.titleEn}</Typography>
+                  <Typography color="#999595ff" fontWeight={600} sx={{ mb: 2, fontSize: 14 }}>
+                    {artwork?.displayDate}
+                  </Typography>
+                </>
+              )}
+            </Box>
+
+            {!isLoadingArtwork && renderFavoriteButton()}
+          </Box>
         </Grid>
       </Grid>
 

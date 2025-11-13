@@ -1,25 +1,15 @@
 import {
-    AppBar,
-    Toolbar,
-    Typography,
-    Button,
-    Box,
-    IconButton,
-    Avatar,
-    Menu,
-    MenuItem,
-    ListItemIcon,
-    CircularProgress,
-    useTheme,
+    AppBar, Toolbar, Typography, Button, Box, IconButton, Avatar,
+    Menu, MenuItem, ListItemIcon, CircularProgress, useTheme,
 } from "@mui/material";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import LoginIcon from "@mui/icons-material/Login";
 import SettingsIcon from "@mui/icons-material/Settings";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { Logout } from "@mui/icons-material";
 import { useMemo, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
 const stringToColor = (str: string): string => {
     let hash = 0;
@@ -30,7 +20,6 @@ const stringToColor = (str: string): string => {
 };
 
 const AppHeader = () => {
-    const theme = useTheme();
     const navigate = useNavigate();
     const location = useLocation();
     const shouldShowBack = location.pathname.startsWith("/vincent/");
@@ -41,7 +30,7 @@ const AppHeader = () => {
     const open = Boolean(anchorEl);
 
     const avatarDetails = useMemo(() => {
-        const nickname = user?.nickname ?? "Guest";
+        const nickname = user?.nickName ?? "Guest";
         const letter = nickname.charAt(0)?.toUpperCase() || "G";
         return {
             color: stringToColor(nickname),
@@ -56,6 +45,14 @@ const AppHeader = () => {
         logout();
         handleMenuClose();
         navigate("/search");
+    };
+
+    const goToFavorites = () => {
+        if (!isLoggedIn) {
+            navigate("/auth");
+        } else {
+            navigate("/favorites");
+        }
     };
 
     const handleLoginClick = () => navigate("/auth");
@@ -87,6 +84,20 @@ const AppHeader = () => {
                 </Typography>
 
                 <Box sx={{ display: "flex", alignItems: "center", ml: "auto" }}>
+                    <Button
+                        onClick={goToFavorites}
+                        sx={{
+                            textTransform: 'none',
+                            color: 'black',
+                            fontWeight: 600,
+                            fontSize: '0.95rem',
+                            mr: 20,
+                            '&:hover': { color: '#c93636' },
+                        }}
+                    >
+                        我的收藏
+                    </Button>
+
                     {isLoading ? (
                         <CircularProgress size={24} sx={{ color: "gray" }} />
                     ) : isLoggedIn ? (
@@ -117,21 +128,9 @@ const AppHeader = () => {
                                     <Avatar sx={{ bgcolor: avatarDetails.color, color: "white", mr: 1 }}>
                                         {avatarDetails.letter}
                                     </Avatar>
-                                    {user?.nickname || "User"}
+                                    {user?.nickName || "User"}
                                 </MenuItem>
                                 <hr style={{ margin: "4px 0", border: "none", borderTop: "1px solid #eee" }} />
-                                <MenuItem onClick={handleMenuClose}>
-                                    <ListItemIcon>
-                                        <AccountCircleIcon fontSize="small" />
-                                    </ListItemIcon>
-                                    我的主页
-                                </MenuItem>
-                                <MenuItem onClick={handleMenuClose}>
-                                    <ListItemIcon>
-                                        <SettingsIcon fontSize="small" />
-                                    </ListItemIcon>
-                                    设置
-                                </MenuItem>
                                 <hr style={{ margin: "4px 0", border: "none", borderTop: "1px solid #eee" }} />
                                 <MenuItem onClick={handleLogoutClick}>
                                     <ListItemIcon>
@@ -145,16 +144,16 @@ const AppHeader = () => {
                         <Button
                             onClick={handleLoginClick}
                             variant="contained"
-                            disableElevation 
+                            disableElevation
                             sx={{
                                 textTransform: 'none',
-                                borderRadius: 1,    
-                                padding: '5px 25px',   
+                                borderRadius: 1,
+                                padding: '5px 25px',
                                 fontSize: '1rem',
                                 fontWeight: 600,
 
                                 backgroundColor: '#2e74b6ff', // 普鲁士蓝
-                                color: 'white',        
+                                color: 'white',
                                 transition: 'background-color 0.2s ease-out', // 只对背景色做过渡
 
                                 '&:hover': {

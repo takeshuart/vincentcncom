@@ -95,20 +95,21 @@ exports.useArtSearch = function () {
             var pageParam = _a.pageParam;
             return __awaiter(void 0, void 0, void 0, function () {
                 var page, artData;
-                return __generator(this, function (_b) {
-                    switch (_b.label) {
+                var _b, _c;
+                return __generator(this, function (_d) {
+                    switch (_d.label) {
                         case 0:
                             page = pageParam !== null && pageParam !== void 0 ? pageParam : 1;
                             query.page = page; //default is 1
                             query.pageSize = PAGE_SIZE;
                             return [4 /*yield*/, ArtworkApi_1.fetchArtData(query)];
                         case 1:
-                            artData = _b.sent();
+                            artData = _d.sent();
                             return [2 /*return*/, {
                                     page: page,
-                                    rows: artData.rows || [],
-                                    totalCount: artData.totalCount || 0,
-                                    totalPages: Math.ceil((artData.totalCount || 0) / PAGE_SIZE)
+                                    rows: artData.data || [],
+                                    totalCount: ((_b = artData.meta) === null || _b === void 0 ? void 0 : _b.totalCount) || 0,
+                                    totalPages: Math.ceil((((_c = artData.meta) === null || _c === void 0 ? void 0 : _c.totalCount) || 0) / PAGE_SIZE)
                                 }];
                     }
                 });

@@ -42,11 +42,9 @@ var react_query_1 = require("@tanstack/react-query");
 var AuthApi_1 = require("@/api/AuthApi");
 // ------------------ Context 初始化 ------------------
 var AuthContext = react_1.createContext(undefined);
-// ------------------ Provider 实现 ------------------
 exports.AuthProvider = function (_a) {
     var children = _a.children;
     var _b = react_1.useState(null), user = _b[0], setUser = _b[1];
-    var _c = react_1.useState(null), token = _c[0], setToken = _c[1];
     /**
      * Fetch the current authenticated user's profile on component mount.
      *
@@ -56,19 +54,18 @@ exports.AuthProvider = function (_a) {
      */
     react_1.useEffect(function () {
         var fetchUser = function () { return __awaiter(void 0, void 0, void 0, function () {
-            var res, _a;
-            var _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var user_1, _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
-                        _c.trys.push([0, 2, , 3]);
+                        _b.trys.push([0, 2, , 3]);
                         return [4 /*yield*/, AuthApi_1.itsmeApi()];
                     case 1:
-                        res = _c.sent();
-                        setUser((_b = res.user) !== null && _b !== void 0 ? _b : null);
+                        user_1 = _b.sent();
+                        setUser(user_1);
                         return [3 /*break*/, 3];
                     case 2:
-                        _a = _c.sent();
+                        _a = _b.sent();
                         setUser(null);
                         return [3 /*break*/, 3];
                     case 3: return [2 /*return*/];
@@ -77,37 +74,24 @@ exports.AuthProvider = function (_a) {
         }); };
         fetchUser();
     }, []);
-    react_1.useEffect(function () {
-        var storedToken = localStorage.getItem("auth_token");
-        var storedUser = localStorage.getItem("auth_user");
-        if (storedToken && storedUser) {
-            try {
-                setToken(storedToken);
-                setUser(JSON.parse(storedUser));
-            }
-            catch (_a) {
-                localStorage.removeItem("auth_user");
-            }
-        }
-    }, []);
     // ------------------ Mutation 定义 ------------------
     var loginMutation = react_query_1.useMutation({
-        mutationFn: function (params) { return __awaiter(void 0, void 0, Promise, function () { return __generator(this, function (_a) {
+        mutationFn: function (params) { return __awaiter(void 0, void 0, void 0, function () { return __generator(this, function (_a) {
             return [2 /*return*/, AuthApi_1.loginApi(params)];
         }); }); },
-        onSuccess: function (res) {
-            if (res === null || res === void 0 ? void 0 : res.user) {
-                setUser(res.user);
+        onSuccess: function (user) {
+            if (user) {
+                setUser(user);
             }
         }
     });
     var registerMutation = react_query_1.useMutation({
-        mutationFn: function (params) { return __awaiter(void 0, void 0, Promise, function () { return __generator(this, function (_a) {
+        mutationFn: function (params) { return __awaiter(void 0, void 0, void 0, function () { return __generator(this, function (_a) {
             return [2 /*return*/, AuthApi_1.registerApi(params)];
         }); }); },
-        onSuccess: function (res) {
-            if (res === null || res === void 0 ? void 0 : res.user) {
-                setUser(res.user);
+        onSuccess: function (user) {
+            if (user) {
+                setUser(user);
             }
         }
     });
@@ -123,43 +107,18 @@ exports.AuthProvider = function (_a) {
     // ------------------ Context Value ------------------
     var value = react_1.useMemo(function () { return ({
         user: user,
-        token: token,
         isLoading: loginMutation.isPending || registerMutation.isPending,
         login: function (params) { return __awaiter(void 0, void 0, void 0, function () { return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, loginMutation.mutateAsync(params)
-                    //  Promise<AuthResponse> => {
-                    //     try {
-                    //         return await loginMutation.mutateAsync(params)
-                    //     } catch (err) {
-                    //         throw err
-                    //     }
-                    // },
-                ];
-                case 1: return [2 /*return*/, _a.sent()
-                    //  Promise<AuthResponse> => {
-                    //     try {
-                    //         return await loginMutation.mutateAsync(params)
-                    //     } catch (err) {
-                    //         throw err
-                    //     }
-                    // },
-                ];
+                case 0: return [4 /*yield*/, loginMutation.mutateAsync(params)];
+                case 1: return [2 /*return*/, _a.sent()];
             }
-        }); }); }
-        //  Promise<AuthResponse> => {
-        //     try {
-        //         return await loginMutation.mutateAsync(params)
-        //     } catch (err) {
-        //         throw err
-        //     }
-        // },
-        ,
+        }); }); },
         register: function (params) { return __awaiter(void 0, void 0, void 0, function () { return __generator(this, function (_a) {
             return [2 /*return*/, registerMutation.mutateAsync(params)];
         }); }); },
         logout: function () { return logoutMutation.mutateAsync(); }
-    }); }, [user, token, loginMutation.isPending, registerMutation.isPending]);
+    }); }, [user, loginMutation.isPending, registerMutation.isPending]);
     return react_1["default"].createElement(AuthContext.Provider, { value: value }, children);
 };
 // ------------------ Hook 导出 ------------------

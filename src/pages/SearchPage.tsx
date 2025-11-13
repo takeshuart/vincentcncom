@@ -10,6 +10,7 @@ import '../styles/ArtTableStyles.css';
 import { Artwork } from '@/types/Artwork';
 import { QueryParams } from '@/api/ArtworkApi';
 import { QueryKeys } from '@/types/enum';
+import { IMAGE_DOMAIN } from '@/utils/constants';
 
 const STORAGE_KEY = 'currentPageContext';
 interface ThemedLoadingOverlayProps {
@@ -50,7 +51,7 @@ export default function ArtSearchPage() {
         remainingCount,
         updateFilter,
     } = useArtSearch();
-    
+
 
     const saveSearchContext = (currentId: number | string) => {
         const allLoadedIds = artworks.map((item: any) => String(item.id));
@@ -170,6 +171,7 @@ export default function ArtSearchPage() {
 
                             <Grid
                                 container
+                                spacing={10} //=n x 8px
                                 justifyContent="center"
                                 sx={{ mt: 4, minHeight: 600, '@media (max-width: 600px)': { mt: 0 } }}
                             >
@@ -327,9 +329,21 @@ const ArtworkCard: React.FC<ArtworkCardProps> = ({
         <Grid
             item xs={12} sm={4} md={4}
             sx={{
-                padding: '20px',
                 position: 'relative',
                 '@media (max-width: 600px)': { p: 1 },
+                '&:hover': {
+                    cursor: 'pointer',
+                    // 1. 悬停覆盖层展开
+                    [`& .${HOVER_OVERLAY_CLASS}`]: {
+                        transform: 'scale(1)',//ToDo，让悬停色彩扩散到Card之外的四周。
+                        opacity: 1,
+                    },
+                    // 2. 图片和文字透明度降低
+                    '& .MuiCardMedia-root, & .MuiCardContent-root': {
+                        opacity: 0.99,
+                        transition: 'opacity 0.5s',
+                    },
+                },
             }}
         >
             <Card
@@ -337,22 +351,12 @@ const ArtworkCard: React.FC<ArtworkCardProps> = ({
                 sx={{
                     height: '100%',
                     display: 'flex',
+                    // boxShadow: theme.shadows[1],
+                    // boxShadow:'0px 8px 24px rgba(0, 0, 0, 0.08)',
+                    // transition: 'box-shadow 0.2s, transform 0.2s',
                     flexDirection: 'column',
                     border: 'none',
                     position: 'relative',
-                    '&:hover': {
-                        cursor: 'pointer',
-                        // 1. 悬停覆盖层展开并显示
-                        [`& .${HOVER_OVERLAY_CLASS}`]: {
-                            transform: 'scale(1)',
-                            opacity: 1,
-                        },
-                        // 2. 图片和文字透明度降低（如果您需要这个效果）
-                        '& .MuiCardMedia-root, & .MuiCardContent-root': {
-                            opacity: 0.99,
-                            transition: 'opacity 0.5s',
-                        },
-                    },
                 }}
             >
                 {/** 加载中动画层 */}
@@ -402,12 +406,13 @@ const ArtworkCard: React.FC<ArtworkCardProps> = ({
                 >
                     <CardMedia
                         component="img"
-                        image={`https://artworks-1257857866.cos.ap-beijing.myqcloud.com${artwork.primaryImageSmall}`}
+                        image={`${IMAGE_DOMAIN}${artwork.primaryImageSmall}`}
                         alt=""
                         sx={{
                             width: '100%',
                             height: { xs: 'auto', sm: '250px', md: '300px' }, //Image Box size
-                            objectFit: { xs: 'initial', sm: 'contain' },
+                            // fill | contain | cover | none | scale-down
+                            objectFit: { xs: 'initial', sm: 'contain', md: 'scale-down' },
                             objectPosition: 'center',
                             backgroundColor: '#fdfbfbff',
                             // '&:hover': { backgroundColor: '#f0f0f0' },
@@ -444,6 +449,6 @@ const ArtworkCard: React.FC<ArtworkCardProps> = ({
                 </Link>
 
             </Card>
-        </Grid>
+        </Grid >
     );
 };

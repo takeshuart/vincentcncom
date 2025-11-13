@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Box, CircularProgress } from '@mui/material';
 import { Fancybox } from '@fancyapps/ui';
 import '@fancyapps/ui/dist/fancybox/fancybox.css';
+import { IMAGE_DOMAIN } from '@/utils/constants';
 
 interface ArtworkImageProps {
   src: string;
@@ -11,7 +12,7 @@ interface ArtworkImageProps {
 export default function ArtworkImage({ src, isMobile }: ArtworkImageProps) {
   const [loaded, setLoaded] = useState(false);
   const imageRef = useRef<HTMLImageElement>(null);
-  const fullSrc = `https://artworks-1257857866.cos.ap-beijing.myqcloud.com${src}`;
+  const fullSrc = `${IMAGE_DOMAIN}${src}`;
 
   const handleImageLoad = () => {
     setLoaded(true);

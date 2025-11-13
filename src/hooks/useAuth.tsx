@@ -7,10 +7,9 @@ import type { User, AuthResponse } from "@/api/AuthApi";
 
 export interface AuthContextType {
     user: User | null;
-    token: string | null;
     isLoading: boolean;
-    login: (params: LoginParams) => Promise<AuthResponse>;
-    register: (params: RegisterParams) => Promise<AuthResponse>;
+    login: (params: LoginParams) => Promise<User>;
+    register: (params: RegisterParams) => Promise<User>;
     logout: () => void;
 }
 
@@ -18,12 +17,9 @@ export interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// ------------------ Provider 实现 ------------------
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
-    const [token, setToken] = useState<string | null>(null);
-
     /**
      * Fetch the current authenticated user's profile on component mount.
      *
@@ -34,8 +30,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const res = await itsmeApi()
-                setUser(res.user ?? null);
+                const user = await itsmeApi()
+                setUser(user);
             } catch {
                 setUser(null)
             }
@@ -43,35 +39,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         fetchUser();
     }, []);
 
-    useEffect(() => {
-        const storedToken = localStorage.getItem("auth_token");
-        const storedUser = localStorage.getItem("auth_user");
-        if (storedToken && storedUser) {
-            try {
-                setToken(storedToken);
-                setUser(JSON.parse(storedUser));
-            } catch {
-                localStorage.removeItem("auth_user");
-            }
-        }
-    }, []);
-
     // ------------------ Mutation 定义 ------------------
 
-    const loginMutation = useMutation<AuthResponse, any, LoginParams>({
-        mutationFn: async (params: LoginParams): Promise<AuthResponse> => loginApi(params),
-        onSuccess: (res) => {
-            if (res?.user) {
-                setUser(res.user);
+    const loginMutation = useMutation<User, any, LoginParams>({
+        mutationFn: async (params)=> loginApi(params),
+        onSuccess: (user) => {
+            if (user) {
+                setUser(user);
             }
         },
     });
 
-    const registerMutation = useMutation({
-        mutationFn: async (params: RegisterParams): Promise<AuthResponse> => registerApi(params),
-        onSuccess: (res) => {
-            if (res?.user) {
-                setUser(res.user);
+    const registerMutation = useMutation<User,any,RegisterParams>({
+        mutationFn: async (params) => registerApi(params),
+        onSuccess: (user) => {
+            if (user) {
+                setUser(user);
             }
         },
     });
@@ -89,22 +72,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const value = useMemo<AuthContextType>(
         () => ({
             user,
-            token,
             isLoading: loginMutation.isPending || registerMutation.isPending,
-            login: async (params: LoginParams) => await loginMutation.mutateAsync(params)
-            //  Promise<AuthResponse> => {
-            //     try {
-            //         return await loginMutation.mutateAsync(params)
-
-            //     } catch (err) {
-            //         throw err
-            //     }
-            // },
-            ,
+            login: async (params: LoginParams) => await loginMutation.mutateAsync(params),
             register: async (params: RegisterParams) => registerMutation.mutateAsync(params),
             logout: () => logoutMutation.mutateAsync(),
         }),
-        [user, token, loginMutation.isPending, registerMutation.isPending]
+        [user, loginMutation.isPending, registerMutation.isPending]
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

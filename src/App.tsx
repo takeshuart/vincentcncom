@@ -8,6 +8,7 @@ import ArtSearchPage from './pages/SearchPage';
 import './styles/index.css';
 import AuthPage from './pages/AuthPage';
 import ScrollToTop from './components/ScrollToTop';
+import FavoritesPage from './pages/FavoritesPage';
 
 const GlobalLayout = () => {
   return (
@@ -31,18 +32,19 @@ const GlobalLayout = () => {
 
 function App() {
   return (
-    <>
-      <ScrollToTop />
-      <Routes>
-        <Route path="/" element={<GlobalLayout />}>
-          <Route index element={<HomePage />} />
-          <Route path="auth" element={<AuthPage />} />
-          <Route path="search" element={<ArtSearchPage />} />
-          <Route path="vincent/:id" element={<DetailsPage />} />
-        </Route>
-      </Routes>
-    </>
-  );
+      <>
+        <ScrollToTop />
+        <Routes>
+          <Route path="/" element={<GlobalLayout />}>
+            <Route index element={<HomePage />} />
+            <Route path="auth" element={<AuthPage />} />
+            <Route path="search" element={<ArtSearchPage />} />
+            <Route path="vincent/:id" element={<DetailsPage />} />
+            <Route path="favorites" element={<FavoritesPage />} />
+          </Route>
+        </Routes>
+      </>
+    );
 }
 
 export default App;

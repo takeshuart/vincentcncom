@@ -14,6 +14,7 @@ var PeriodBar_1 = require("../components/PeriodBar");
 var styles_1 = require("@mui/material/styles");
 require("../styles/ArtTableStyles.css");
 var enum_1 = require("@/types/enum");
+var constants_1 = require("@/utils/constants");
 var STORAGE_KEY = 'currentPageContext';
 function ArtSearchPage() {
     //这是页面最底部的那个元素，追踪它。一旦它进入用户的视野，加载下一页
@@ -99,7 +100,7 @@ function ArtSearchPage() {
                                 ' ',
                                 React.createElement("span", { style: { fontWeight: 'bold' } }, totalResults),
                                 " \u4E2A\u4F5C\u54C1")))),
-                        React.createElement(material_1.Grid, { container: true, justifyContent: "center", sx: { mt: 4, minHeight: 600, '@media (max-width: 600px)': { mt: 0 } } },
+                        React.createElement(material_1.Grid, { container: true, spacing: 10, justifyContent: "center", sx: { mt: 4, minHeight: 600, '@media (max-width: 600px)': { mt: 0 } } },
                             artworks.length === 0 && !isNewSearch && (React.createElement(material_1.Box, { sx: {
                                     width: '100%',
                                     minHeight: 300,
@@ -191,30 +192,32 @@ var ArtworkCard = function (_a) {
     var HOVER_ALPHA = 0.15;
     var hoverOverlayColor = "rgba(" + artwork.r + ", " + artwork.g + ", " + artwork.b + ", " + HOVER_ALPHA + ")";
     return (React.createElement(material_1.Grid, { item: true, xs: 12, sm: 4, md: 4, sx: {
-            padding: '20px',
             position: 'relative',
-            '@media (max-width: 600px)': { p: 1 }
+            '@media (max-width: 600px)': { p: 1 },
+            '&:hover': (_b = {
+                    cursor: 'pointer'
+                },
+                // 1. 悬停覆盖层展开
+                _b["& ." + HOVER_OVERLAY_CLASS] = {
+                    transform: 'scale(1)',
+                    opacity: 1
+                },
+                // 2. 图片和文字透明度降低
+                _b['& .MuiCardMedia-root, & .MuiCardContent-root'] = {
+                    opacity: 0.99,
+                    transition: 'opacity 0.5s'
+                },
+                _b)
         } },
         React.createElement(material_1.Card, { variant: "outlined", sx: {
                 height: '100%',
                 display: 'flex',
+                // boxShadow: theme.shadows[1],
+                // boxShadow:'0px 8px 24px rgba(0, 0, 0, 0.08)',
+                // transition: 'box-shadow 0.2s, transform 0.2s',
                 flexDirection: 'column',
                 border: 'none',
-                position: 'relative',
-                '&:hover': (_b = {
-                        cursor: 'pointer'
-                    },
-                    // 1. 悬停覆盖层展开并显示
-                    _b["& ." + HOVER_OVERLAY_CLASS] = {
-                        transform: 'scale(1)',
-                        opacity: 1
-                    },
-                    // 2. 图片和文字透明度降低（如果您需要这个效果）
-                    _b['& .MuiCardMedia-root, & .MuiCardContent-root'] = {
-                        opacity: 0.99,
-                        transition: 'opacity 0.5s'
-                    },
-                    _b)
+                position: 'relative'
             } },
             showCardOverlay && (React.createElement(material_1.Box, { sx: {
                     position: 'absolute',
@@ -245,10 +248,11 @@ var ArtworkCard = function (_a) {
                     transition: 'transform 0.3s ease-out, opacity 0.3s ease-out'
                 } }),
             React.createElement(react_router_dom_1.Link, { target: "_self", style: { textDecoration: 'none' }, to: "/vincent/" + artwork.id + querystring, onClick: function () { return saveSearchContext(artwork.id); } },
-                React.createElement(material_1.CardMedia, { component: "img", image: "https://artworks-1257857866.cos.ap-beijing.myqcloud.com" + artwork.primaryImageSmall, alt: "", sx: {
+                React.createElement(material_1.CardMedia, { component: "img", image: "" + constants_1.IMAGE_DOMAIN + artwork.primaryImageSmall, alt: "", sx: {
                         width: '100%',
                         height: { xs: 'auto', sm: '250px', md: '300px' },
-                        objectFit: { xs: 'initial', sm: 'contain' },
+                        // fill | contain | cover | none | scale-down
+                        objectFit: { xs: 'initial', sm: 'contain', md: 'scale-down' },
                         objectPosition: 'center',
                         backgroundColor: '#fdfbfbff',
                         // '&:hover': { backgroundColor: '#f0f0f0' },

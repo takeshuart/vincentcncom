@@ -4,11 +4,12 @@ var react_1 = require("react");
 var material_1 = require("@mui/material");
 var ui_1 = require("@fancyapps/ui");
 require("@fancyapps/ui/dist/fancybox/fancybox.css");
+var constants_1 = require("@/utils/constants");
 function ArtworkImage(_a) {
     var src = _a.src, isMobile = _a.isMobile;
     var _b = react_1.useState(false), loaded = _b[0], setLoaded = _b[1];
     var imageRef = react_1.useRef(null);
-    var fullSrc = "https://artworks-1257857866.cos.ap-beijing.myqcloud.com" + src;
+    var fullSrc = "" + constants_1.IMAGE_DOMAIN + src;
     var handleImageLoad = function () {
         setLoaded(true);
     };
