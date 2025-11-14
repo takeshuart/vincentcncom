@@ -42,10 +42,6 @@ async function get(url: string, config?: AxiosRequestConfig, context = 'data'): 
 
 export async function fetchArtworkById(artworkId: any) {
   try {
-    if (process.env.NODE_ENV === 'development') {
-      const delay = Math.random() * 500 + 500;//Mock network delay
-      await new Promise(resolve => setTimeout(resolve, delay));
-    }
     const response = await apiV1.get(`/artworks/vincent/${artworkId}`);
     return response.data.data;
   } catch (error) {
@@ -67,12 +63,6 @@ export async function fetchArtData(query: QueryParams) {
       techniques: query.technique ? [query.technique] : [],
       colorField: query.color
     };
-
-    // console.log(`Query Params:`, queryParams);
-    if (process.env.NODE_ENV === 'development') {
-      const delay = Math.random() * 500 + 500;//Mock network delay
-      await new Promise(resolve => setTimeout(resolve, delay));
-    }
 
     const response = await apiV1.get('/artworks/vincent', { params: queryParams });
 
@@ -102,13 +92,6 @@ interface ConfigData {
 }
 export async function fetchConfigData(): Promise<ConfigData> {
   try {
-
-    // console.log(`Query Params:`, queryParams);
-    if (process.env.NODE_ENV === 'development') {
-      const delay = Math.random() * 1000 + 500;//Mock network delay
-      await new Promise(resolve => setTimeout(resolve, delay));
-    }
-
     const genreRes: any = []
     const periodRes: any = []
     const techniques: any = []

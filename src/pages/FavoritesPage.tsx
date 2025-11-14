@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography, Skeleton, ImageList, ImageListItem, Container } from "@mui/material";
+import { Box, Typography, Skeleton, ImageList, ImageListItem, Container, useMediaQuery, useTheme } from "@mui/material";
 import { useFavoritesQuery } from "@/hooks/useFavorites";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -26,6 +26,8 @@ const FavoriteSkeleton: React.FC = () => {
 const FavoritesPage: React.FC = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
     const userId = user?.userId;
 
@@ -33,7 +35,7 @@ const FavoritesPage: React.FC = () => {
         navigate("/auth")
     }
 
-    const { data, isLoading, isFetching,isFetched } = useFavoritesQuery(userId ?? '');
+    const { data, isLoading, isFetching, isFetched } = useFavoritesQuery(userId ?? '');
 
     if (isLoading || isFetching || !isFetched) {
         return (
@@ -58,7 +60,7 @@ const FavoritesPage: React.FC = () => {
     const favorites = data;
 
     return (
-        <Container sx={{ display: 'flex', paddingTop: 15 }}>
+        <Container sx={{ display: 'flex', paddingTop:{xs:10,md:15} }}>
 
             <Box sx={{ p: { xs: 2, md: 4 }, justifyContent: 'center' }}>
                 <Typography
@@ -67,7 +69,8 @@ const FavoritesPage: React.FC = () => {
                 >
                     我的收藏（{favorites.length}）
                 </Typography>
-                <ImageList variant="masonry" cols={4} gap={8}>
+
+                <ImageList variant="masonry" cols={isMobile ? 2 : 4} gap={8}>
                     {favorites.map((fav: any) => {
                         const artwork = fav.artwork;
                         const transparency = 0.8
@@ -79,7 +82,7 @@ const FavoritesPage: React.FC = () => {
                                 sx={{
                                     position: "relative",
                                     cursor: "pointer",
-                                    borderRadius: 2,
+                                    borderRadius: 0.5,
                                     overflow: "hidden",
                                     transition: "transform 0.3s ease",
                                     "&:hover .overlay": {

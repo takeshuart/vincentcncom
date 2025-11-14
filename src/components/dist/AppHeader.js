@@ -17,6 +17,7 @@ var ArrowBack_1 = require("@mui/icons-material/ArrowBack");
 var icons_material_1 = require("@mui/icons-material");
 var react_1 = require("react");
 var useAuth_1 = require("@/hooks/useAuth");
+/**  */
 var stringToColor = function (str) {
     var hash = 0;
     for (var i = 0; i < str.length; i++) {

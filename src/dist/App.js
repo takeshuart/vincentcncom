@@ -4,7 +4,8 @@ var react_router_dom_1 = require("react-router-dom");
 var HomePage_1 = require("./pages/HomePage");
 var DetailsPage_1 = require("./pages/DetailsPage");
 var material_1 = require("@mui/material");
-var AppHeader_1 = require("./components/AppHeader");
+// import AppHeader from './components/AppHeader';
+var Header_1 = require("./components/header/Header");
 var SearchPage_1 = require("./pages/SearchPage");
 require("./styles/index.css");
 var AuthPage_1 = require("./pages/AuthPage");
@@ -12,7 +13,7 @@ var ScrollToTop_1 = require("./components/ScrollToTop");
 var FavoritesPage_1 = require("./pages/FavoritesPage");
 var GlobalLayout = function () {
     return (React.createElement(material_1.Box, { sx: { minHeight: '100vh', display: 'flex', flexDirection: 'column' } },
-        React.createElement(AppHeader_1["default"], null),
+        React.createElement(Header_1["default"], null),
         React.createElement(material_1.Box, { component: "main", sx: { flexGrow: 1 } },
             React.createElement(material_1.Box, { sx: {
                     flexGrow: 1,

@@ -17,6 +17,8 @@ import { Logout } from "@mui/icons-material";
 import { useMemo, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 
+
+/**  */
 const stringToColor = (str: string): string => {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {

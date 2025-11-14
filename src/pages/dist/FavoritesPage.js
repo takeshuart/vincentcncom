@@ -24,6 +24,8 @@ var FavoriteSkeleton = function () {
 var FavoritesPage = function () {
     var user = useAuth_1.useAuth().user;
     var navigate = react_router_dom_1.useNavigate();
+    var theme = material_1.useTheme();
+    var isMobile = material_1.useMediaQuery(theme.breakpoints.down("sm"));
     var userId = user === null || user === void 0 ? void 0 : user.userId;
     if (!userId) {
         navigate("/auth");
@@ -41,20 +43,20 @@ var FavoritesPage = function () {
             react_1["default"].createElement(material_1.Typography, { variant: "h6", color: "text.secondary" }, "\u6682\u65E0\u6536\u85CF\u4F5C\u54C1")));
     }
     var favorites = data;
-    return (react_1["default"].createElement(material_1.Container, { sx: { display: 'flex', paddingTop: 15 } },
+    return (react_1["default"].createElement(material_1.Container, { sx: { display: 'flex', paddingTop: { xs: 10, md: 15 } } },
         react_1["default"].createElement(material_1.Box, { sx: { p: { xs: 2, md: 4 }, justifyContent: 'center' } },
             react_1["default"].createElement(material_1.Typography, { variant: "subtitle1", sx: { fontWeight: 600, color: "black" } },
                 "\u6211\u7684\u6536\u85CF\uFF08",
                 favorites.length,
                 "\uFF09"),
-            react_1["default"].createElement(material_1.ImageList, { variant: "masonry", cols: 4, gap: 8 }, favorites.map(function (fav) {
+            react_1["default"].createElement(material_1.ImageList, { variant: "masonry", cols: isMobile ? 2 : 4, gap: 8 }, favorites.map(function (fav) {
                 var artwork = fav.artwork;
                 var transparency = 0.8;
                 var hoverOverlayColor = "rgba(" + (artwork.r || 0) + ", " + (artwork.g || 0) + ", " + (artwork.b || 0) + ", " + transparency + ")";
                 return (react_1["default"].createElement(material_1.ImageListItem, { key: artwork.id, sx: {
                         position: "relative",
                         cursor: "pointer",
-                        borderRadius: 2,
+                        borderRadius: 0.5,
                         overflow: "hidden",
                         transition: "transform 0.3s ease",
                         "&:hover .overlay": {

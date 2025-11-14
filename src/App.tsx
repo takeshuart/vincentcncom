@@ -2,7 +2,8 @@ import { BrowserRouter, Route, Routes, Outlet } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import DetailsPage from './pages/DetailsPage';
 import { Box } from '@mui/material';
-import AppHeader from './components/AppHeader';
+// import AppHeader from './components/AppHeader';
+import AppHeader from './components/header/Header';
 import ArtSearchPage from './pages/SearchPage';
 
 import './styles/index.css';
