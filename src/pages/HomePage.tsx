@@ -14,6 +14,7 @@ export default function HomePage() {
   const {
     data: surpriseArtwork,
     isLoading: isSurpriseLoading,
+    isFetching,
     isError,
     refetch: refetchSurpriseArt
   } = useQuery<Artwork>({
@@ -38,7 +39,7 @@ export default function HomePage() {
       >
         <SurpriseBox
           artwork={surpriseArtwork ?? null}
-          isSurpriseLoading={isSurpriseLoading}
+          isSurpriseLoading={isFetching}
           fetchSurpriseArtWork={async () => { await refetchSurpriseArt(); }}
 
         />

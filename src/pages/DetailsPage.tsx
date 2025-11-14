@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Box, Divider, Grid, Typography, useMediaQuery, List, ListItem, ListItemButton, Skeleton, IconButton } from '@mui/material';
 import 'react-photo-view/dist/react-photo-view.css';
@@ -47,9 +47,17 @@ const DetailsPage: React.FC = () => {
     setActiveSection
   } = useArtworkDetails(artworkId);
 
-  const [isFavorited, setIsFavorited] = useState<boolean | undefined>(artwork?.isFavorited);
+  const [isFavorited, setIsFavorited] = useState<boolean>(false);
 
+  useEffect(() => {
+    const apiFavoritedStatus = artwork?.isFavorited ?? false;
 
+    if (!isLoadingArtwork && artworkId) {
+      setIsFavorited(apiFavoritedStatus);
+    }
+
+  }, [artwork, artworkId, isLoadingArtwork]);
+  
   const { canGoNext, canGoPrev, goToNext, goToPrev } = useSearchContextNavigation(id);
 
 
@@ -146,6 +154,7 @@ const DetailsPage: React.FC = () => {
           <ArtworkImage src={artwork?.primaryImageMedium} isMobile={isMobile} />
         )}
 
+        {/** pre/next Button */}
         {!isLoadingArtwork && canGoPrev && (
           <Box onClick={goToPrev} sx={{ ...NAV_BUTTON_STYLE, left: '5%' }}>
             <ArrowBackIosIcon fontSize="small" sx={{ ...ARROWICON }} />

@@ -51,7 +51,7 @@ function HomePage() {
         queryFn: ArtworkApi_1.fetchSurpriseArt,
         staleTime: 1000 * 60 * 5,
         retry: 1
-    }), surpriseArtwork = _a.data, isSurpriseLoading = _a.isLoading, isError = _a.isError, refetchSurpriseArt = _a.refetch;
+    }), surpriseArtwork = _a.data, isSurpriseLoading = _a.isLoading, isFetching = _a.isFetching, isError = _a.isError, refetchSurpriseArt = _a.refetch;
     var handleStartExplore = function () {
         navigate('/search');
     };
@@ -61,7 +61,7 @@ function HomePage() {
                 height: '100vh',
                 px: { xs: 1, sm: 3, md: 30 }
             } },
-            React.createElement(SurpriseBox_1["default"], { artwork: surpriseArtwork !== null && surpriseArtwork !== void 0 ? surpriseArtwork : null, isSurpriseLoading: isSurpriseLoading, fetchSurpriseArtWork: function () { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
+            React.createElement(SurpriseBox_1["default"], { artwork: surpriseArtwork !== null && surpriseArtwork !== void 0 ? surpriseArtwork : null, isSurpriseLoading: isFetching, fetchSurpriseArtWork: function () { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0: return [4 /*yield*/, refetchSurpriseArt()];
                         case 1:

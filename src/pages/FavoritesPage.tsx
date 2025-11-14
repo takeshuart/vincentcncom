@@ -5,6 +5,24 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { IMAGE_DOMAIN } from "@/utils/constants";
 
+// define a skeleton component to show while loading favorites
+const FavoriteSkeleton: React.FC = () => {
+    const skeletonItems = [...Array(8).keys()];
+    return (
+        <ImageList variant="masonry" cols={4} gap={8}>
+            {skeletonItems.map((i) => (
+                <ImageListItem key={i}>
+                    <Skeleton
+                        variant="rectangular"
+                        // height={Math.random() * 100 + 150}
+                        sx={{ borderRadius: 2 }}
+                    />
+                </ImageListItem>
+            ))}
+        </ImageList>
+    );
+};
+
 const FavoritesPage: React.FC = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -15,40 +33,40 @@ const FavoritesPage: React.FC = () => {
         navigate("/auth")
     }
 
-    const { data, isLoading } = useFavoritesQuery(userId??'');
+    const { data, isLoading, isFetching,isFetched } = useFavoritesQuery(userId ?? '');
 
-    const favorites = data ?? [];
-    
-    if (isLoading) {
+    if (isLoading || isFetching || !isFetched) {
         return (
-            <Box sx={{ p: 4 }}>
-                <Typography variant="h6" gutterBottom>
-                    正在加载收藏作品...
-                </Typography>
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-                    {[...Array(8)].map((_, i) => (
-                        <Skeleton key={i} variant="rectangular" width={200} height={180} />
-                    ))}
+            <Container sx={{ display: 'flex', paddingTop: 15, justifyContent: 'center' }}>
+                <Box sx={{ p: { xs: 2, md: 4 } }}>
+                    <Skeleton width={200} height={30} sx={{ mb: 2 }} /> {/* 标题骨架 */}
+                    <FavoriteSkeleton />
                 </Box>
-            </Box>
+            </Container>
         );
     }
 
-    if (!favorites.length) {
+    if (!data || data.length === 0) {
         return (
-            <Box sx={{ p: 4, textAlign: "center" }}>
+            <Box sx={{ p: 20, textAlign: "center", paddingTop: 15 }}>
                 <Typography variant="h6" color="text.secondary">
                     暂无收藏作品
                 </Typography>
             </Box>
         );
     }
+    const favorites = data;
 
     return (
-        <Container sx={{ display: 'flex', paddingTop: 20 }}>
+        <Container sx={{ display: 'flex', paddingTop: 15 }}>
 
             <Box sx={{ p: { xs: 2, md: 4 }, justifyContent: 'center' }}>
-
+                <Typography
+                    variant="subtitle1"
+                    sx={{ fontWeight: 600, color: "black" }}
+                >
+                    我的收藏（{favorites.length}）
+                </Typography>
                 <ImageList variant="masonry" cols={4} gap={8}>
                     {favorites.map((fav: any) => {
                         const artwork = fav.artwork;

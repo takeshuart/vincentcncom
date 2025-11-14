@@ -19,3 +19,9 @@ api服务位于Artwork-database项目中，是node.js服务。
 4. 解决问题的方法
 - > npm cache clean --force  清理本地缓存
 - 删除node_modules\package-lock.json，重新安装 npm install
+
+
+## 自动化生成git commit message
+> git diff >.git_diff.txt
+> open file with Copilot Chat "Generate a commit message for this diff."
+plugin: gptcommit

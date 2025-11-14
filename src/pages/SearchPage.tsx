@@ -114,7 +114,7 @@ export default function ArtSearchPage() {
                         width: '90%',
                         mx: 'auto',
                         '@media (max-width: 600px)': { width: '100%', px: '1px' },
-                        pt: '60px',
+                        pt: '100px',
                     }}
                 >
                     <Grid container justifyContent="center">
@@ -171,7 +171,7 @@ export default function ArtSearchPage() {
 
                             <Grid
                                 container
-                                spacing={10} //=n x 8px
+                                spacing={8} //=n x 8px
                                 justifyContent="center"
                                 sx={{ mt: 4, minHeight: 600, '@media (max-width: 600px)': { mt: 0 } }}
                             >

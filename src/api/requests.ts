@@ -1,5 +1,5 @@
 // src/api/request.ts
-import axios, { AxiosResponse, HttpStatusCode } from 'axios'
+import axios, { AxiosResponse, HttpStatusCode, InternalAxiosRequestConfig } from 'axios'
 import { toast } from 'react-hot-toast'
 
 /**
@@ -46,5 +46,28 @@ apiV1.interceptors.response.use(
         return Promise.reject(error)
     }
 )
+
+// mock network delay for development environment
+async function mockNetworkDelay() {
+    if (process.env.NODE_ENV === 'development') { 
+
+        const delay = Math.random() * 500 + 500; 
+        
+        console.log(`[Mock Delay] 正在等待 ${delay.toFixed(0)}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+    }
+}
+
+apiV1.interceptors.request.use(
+    async (config: InternalAxiosRequestConfig) => {
+        
+        await mockNetworkDelay();
+        
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
 
 export default apiV1

@@ -5,6 +5,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Always reserve space for the ScrollBar to prevent page layout shifting */
+  overflow-y: scroll !important;
 }
 
 code {

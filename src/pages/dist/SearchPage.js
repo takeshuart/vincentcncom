@@ -71,7 +71,7 @@ function ArtSearchPage() {
                     width: '90%',
                     mx: 'auto',
                     '@media (max-width: 600px)': { width: '100%', px: '1px' },
-                    pt: '60px'
+                    pt: '100px'
                 } },
                 React.createElement(material_1.Grid, { container: true, justifyContent: "center" },
                     React.createElement(material_1.Grid, { item: true, xs: 12, md: 10 },
@@ -100,7 +100,7 @@ function ArtSearchPage() {
                                 ' ',
                                 React.createElement("span", { style: { fontWeight: 'bold' } }, totalResults),
                                 " \u4E2A\u4F5C\u54C1")))),
-                        React.createElement(material_1.Grid, { container: true, spacing: 10, justifyContent: "center", sx: { mt: 4, minHeight: 600, '@media (max-width: 600px)': { mt: 0 } } },
+                        React.createElement(material_1.Grid, { container: true, spacing: 8, justifyContent: "center", sx: { mt: 4, minHeight: 600, '@media (max-width: 600px)': { mt: 0 } } },
                             artworks.length === 0 && !isNewSearch && (React.createElement(material_1.Box, { sx: {
                                     width: '100%',
                                     minHeight: 300,

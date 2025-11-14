@@ -85,7 +85,14 @@ var DetailsPage = function () {
     var navigate = react_router_dom_1.useNavigate();
     var artworkId = id;
     var _a = useArtworkDetails_1["default"](artworkId), artwork = _a.artwork, extLinks = _a.extLinks, activeSection = _a.activeSection, lettersData = _a.lettersData, isLoadingLetters = _a.isLoadingLetters, isLoadingArtwork = _a.isLoadingArtwork, sections = _a.sections, setActiveSection = _a.setActiveSection;
-    var _b = react_1.useState(artwork === null || artwork === void 0 ? void 0 : artwork.isFavorited), isFavorited = _b[0], setIsFavorited = _b[1];
+    var _b = react_1.useState(false), isFavorited = _b[0], setIsFavorited = _b[1];
+    react_1.useEffect(function () {
+        var _a;
+        var apiFavoritedStatus = (_a = artwork === null || artwork === void 0 ? void 0 : artwork.isFavorited) !== null && _a !== void 0 ? _a : false;
+        if (!isLoadingArtwork && artworkId) {
+            setIsFavorited(apiFavoritedStatus);
+        }
+    }, [artwork, artworkId, isLoadingArtwork]);
     var _c = useSearchContextNavigation_1["default"](id), canGoNext = _c.canGoNext, canGoPrev = _c.canGoPrev, goToNext = _c.goToNext, goToPrev = _c.goToPrev;
     var handleToggleFavorite = function () { return __awaiter(void 0, void 0, void 0, function () {
         var variables, error_1, errorMessage;
