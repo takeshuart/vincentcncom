@@ -8,6 +8,7 @@ import ArtSearchPage from './pages/SearchPage';
 
 import './styles/index.css';
 import AuthPage from './pages/AuthPage';
+import ProfilePage from './pages/ProfilePage';
 import ScrollToTop from './components/ScrollToTop';
 import FavoritesPage from './pages/FavoritesPage';
 
@@ -39,6 +40,7 @@ function App() {
           <Route path="/" element={<GlobalLayout />}>
             <Route index element={<HomePage />} />
             <Route path="auth" element={<AuthPage />} />
+            <Route path="profile" element={<ProfilePage />} />
             <Route path="search" element={<ArtSearchPage />} />
             <Route path="vincent/:id" element={<DetailsPage />} />
             <Route path="favorites" element={<FavoritesPage />} />

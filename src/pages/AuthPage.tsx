@@ -7,6 +7,7 @@ import validator from "validator";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { ERROR_MESSAGES } from "@/utils/errors";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import PasswordField, { validatePassword } from "@/components/PasswordField";
 
 interface FormData {
     credential: string;
@@ -28,6 +29,7 @@ const AuthPage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [apiError, setApiError] = useState<string | undefined>(undefined);
     const [showPassword, setShowPassword] = useState(false);
+    const [passwordError, setPasswordError] = useState<string>("");
 
 
     const {
@@ -61,7 +63,7 @@ const AuthPage: React.FC = () => {
             }
             navigate("/");
         } catch (err: any) {
-            const code = err.response?.data?.error.code;
+            const code = err.response?.data?.errorCode;
             const msg = ERROR_MESSAGES[code as keyof typeof ERROR_MESSAGES];
             setApiError(msg);
         } finally {
@@ -72,6 +74,7 @@ const AuthPage: React.FC = () => {
     const toggleMode = () => {
         setIsLogin((prev) => !prev);
         setApiError(undefined);
+        setPasswordError("");
         reset();
     };
     const handleClickShowPassword = () => {
@@ -146,7 +149,7 @@ const AuthPage: React.FC = () => {
                                 margin="normal"
                                 fullWidth
                                 id="credential"
-                                label={isLogin ? "邮箱/手机号" : "电子邮箱"}
+                                label={isLogin ? "邮箱" : "电子邮箱"}
                                 autoComplete="username"
                                 autoFocus
                                 error={!!errors.credential}
@@ -162,70 +165,67 @@ const AuthPage: React.FC = () => {
                     <Controller
                         name="password"
                         control={control}
-                        rules={{ required: "密码必填" }}
+                        rules={{
+                            required: "密码必填",
+                            validate: !isLogin ? (value) => {
+                                const validation = validatePassword(value);
+                                if (!validation.valid) {
+                                    setPasswordError(validation.error || "密码格式不正确");
+                                    return validation.error || "密码格式不正确";
+                                }
+                                setPasswordError("");
+                                return true;
+                            } : undefined,
+                        }}
                         render={({ field, fieldState: { error } }) => (
-                            <TextField
-                                {...field}
-                                margin="normal"
-                                fullWidth
-                                label="密码"
-                                type={showPassword ? 'text' : 'password'}
-                                id="password"
-                                autoComplete={isLogin ? "current-password" : "new-password"}
-
-                                error={!!error}
-                                helperText={error ? error.message : undefined}
-                                disabled={loading}
-                                size="small"
-                                sx={{ mb: 2 }}
-
-                                InputProps={{
-                                    endAdornment: (
-                                        <InputAdornment position="end">
-                                            <IconButton
-                                                aria-label="toggle password visibility"
-                                                onClick={handleClickShowPassword}
-                                                onMouseDown={handleMouseDownPassword}
-                                                edge="end"
-                                            >
-                                                {/* 根据状态切换图标 */}
-                                                {showPassword ? <VisibilityOff /> : <Visibility />}
-                                            </IconButton>
-                                        </InputAdornment>
-                                    ),
-                                }}
-                            />
-                        )}
-                    />
-
-                    {/* 3. Confirm Password (signup only) */}
-                    {/* {!isLogin && (
-                        <Controller
-                            name="confirmPassword"
-                            control={control}
-                            rules={{
-                                required: "请确认密码",
-                                validate: (value) =>
-                                    value === watchedPassword || "两次密码不一致",
-                            }}
-                            render={({ field }) => (
+                            <Box sx={{ mb: 2 }}>
                                 <TextField
                                     {...field}
                                     margin="normal"
                                     fullWidth
-                                    label="确认密码"
-                                    type="password"
-                                    id="confirmPassword"
-                                    autoComplete="new-password"
-                                    error={!!errors.confirmPassword}
-                                    helperText={errors.confirmPassword ? errors.confirmPassword.message : undefined}
+                                    label="密码"
+                                    type={showPassword ? 'text' : 'password'}
+                                    id="password"
+                                    autoComplete={isLogin ? "current-password" : "new-password"}
+                                    error={!!error}
+                                    helperText={error ? error.message : undefined}
                                     disabled={loading}
                                     size="small"
-                                    sx={{ mb: 2 }}
+                                    InputProps={{
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                <IconButton
+                                                    aria-label="toggle password visibility"
+                                                    onClick={handleClickShowPassword}
+                                                    onMouseDown={handleMouseDownPassword}
+                                                    edge="end"
+                                                >
+                                                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                </IconButton>
+                                            </InputAdornment>
+                                        ),
+                                    }}
                                 />
-                            )}
-                        />
-                    )} */}
+                                {!isLogin && !error && field.value && (
+                                    <Typography sx={{ fontSize: 12, color: "success.main", mt: 0.5 }}>
+                                        ✓ 密码格式正确
+                                    </Typography>
+                                )}
+                                {!isLogin && !field.value && (
+                                    <Box sx={{ mt: 0.75 }}>
+                                        <Typography sx={{ fontSize: 11, color: "text.secondary", mb: 0.25 }}>
+                                            密码要求：
+                                        </Typography>
+                                        <Typography sx={{ fontSize: 11, color: "text.secondary" }}>
+                                            • 8-16 个字符，不能有空格<br/>
+                                            • 不能都是相同字符<br/>
+                                            • 不能有连续递增/递减的字符或数字
+                                        </Typography>
+                                    </Box>
+                                )}
+                            </Box>
+                        )}
+                    />
 
                     <Button
                         type="submit"

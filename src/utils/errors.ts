@@ -12,8 +12,9 @@ export const ERROR_MESSAGES = {
     'EMAIL_ALREADY_EXISTS': '该邮箱已被注册。',
 
     'INVALID_CREDENTIALS': '邮箱或密码错误，请检查。',
-    'INVALID_PASSWORD': '邮箱或密码错误，请检查。',
-    'USER_NOT_FOUND': '邮箱或密码错误，请检查。',
+    'INVALID_PASSWORD': '密码错误',
+    'USER_NOT_FOUND': '用户不存在',
+    'INVALID_PASSWORD_FORMAT':"密码格式不正确",
 
     'INVALID_TOKEN': '登录状态无效，请重新登录。',
 

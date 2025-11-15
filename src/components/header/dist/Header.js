@@ -66,7 +66,7 @@ function Header() {
                     flexGrow: isMobile ? 1 : 0
                 } }, "\u68B5\u00B7\u9AD8\u6863\u6848\u9986"),
             !isMobile && React.createElement(Menu_2["default"], __assign({}, logic)),
-            isLoading ? (React.createElement(material_1.CircularProgress, { size: 22, sx: { color: "#777" } })) : (isLoggedIn && React.createElement(AvatarMenu_1["default"], { user: user, onLogout: handleLogout })),
+            React.createElement(material_1.Box, { sx: { ml: 1, width: { xs: 30, sm: 35 }, height: { xs: 30, sm: 35 }, display: "flex", alignItems: "center", justifyContent: "center" } }, isLoading ? (React.createElement(material_1.CircularProgress, { size: 20, sx: { color: "#777" } })) : (React.createElement(AvatarMenu_1["default"], { user: user, onLogout: handleLogout }))),
             isMobile && React.createElement(Menu_2["default"], __assign({}, logic)))));
 }
 exports["default"] = Header;

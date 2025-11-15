@@ -9,6 +9,7 @@ var Header_1 = require("./components/header/Header");
 var SearchPage_1 = require("./pages/SearchPage");
 require("./styles/index.css");
 var AuthPage_1 = require("./pages/AuthPage");
+var ProfilePage_1 = require("./pages/ProfilePage");
 var ScrollToTop_1 = require("./components/ScrollToTop");
 var FavoritesPage_1 = require("./pages/FavoritesPage");
 var GlobalLayout = function () {
@@ -32,6 +33,7 @@ function App() {
             React.createElement(react_router_dom_1.Route, { path: "/", element: React.createElement(GlobalLayout, null) },
                 React.createElement(react_router_dom_1.Route, { index: true, element: React.createElement(HomePage_1["default"], null) }),
                 React.createElement(react_router_dom_1.Route, { path: "auth", element: React.createElement(AuthPage_1["default"], null) }),
+                React.createElement(react_router_dom_1.Route, { path: "profile", element: React.createElement(ProfilePage_1["default"], null) }),
                 React.createElement(react_router_dom_1.Route, { path: "search", element: React.createElement(SearchPage_1["default"], null) }),
                 React.createElement(react_router_dom_1.Route, { path: "vincent/:id", element: React.createElement(DetailsPage_1["default"], null) }),
                 React.createElement(react_router_dom_1.Route, { path: "favorites", element: React.createElement(FavoritesPage_1["default"], null) })))));

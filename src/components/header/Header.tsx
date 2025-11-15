@@ -5,6 +5,7 @@ import {
   IconButton,
   CircularProgress,
   useMediaQuery,
+  Box,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
@@ -94,11 +95,13 @@ export default function Header() {
         </IconButton> */}
 
         {/* Avatar */}
-        {isLoading ? (
-          <CircularProgress size={22} sx={{ color: "#777" }} />
-        ) : (
-          isLoggedIn && <AvatarMenu user={user} onLogout={handleLogout} />
-        )}
+        <Box sx={{ ml: 1, width: { xs: 30, sm: 35 }, height: { xs: 30, sm: 35 }, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          {isLoading ? (
+            <CircularProgress size={20} sx={{ color: "#777" }} />
+          ) : (
+            <AvatarMenu user={user} onLogout={handleLogout} />
+          )}
+        </Box>
 
         {/* Mobile Drawer 菜单 */}
         {isMobile && <Menu {...logic} />}

@@ -54,6 +54,7 @@ var react_router_dom_1 = require("react-router-dom");
 var react_hook_form_1 = require("react-hook-form");
 var errors_1 = require("@/utils/errors");
 var icons_material_1 = require("@mui/icons-material");
+var PasswordField_1 = require("@/components/PasswordField");
 var ART_BLUE = "#215A8F"; // 深普鲁士蓝 (主色)
 var HOVER_BLUE = "#17436B"; // 悬停加深色
 var ACTIVE_BLUE = "#0E2C48"; // 按下色
@@ -65,12 +66,13 @@ var AuthPage = function () {
     var _c = react_1.useState(false), loading = _c[0], setLoading = _c[1];
     var _d = react_1.useState(undefined), apiError = _d[0], setApiError = _d[1];
     var _e = react_1.useState(false), showPassword = _e[0], setShowPassword = _e[1];
-    var _f = react_hook_form_1.useForm({
+    var _f = react_1.useState(""), passwordError = _f[0], setPasswordError = _f[1];
+    var _g = react_hook_form_1.useForm({
         mode: "onBlur",
         defaultValues: {
             credential: "", password: "", confirmPassword: "", phone: ""
         }
-    }), control = _f.control, handleSubmit = _f.handleSubmit, errors = _f.formState.errors, reset = _f.reset, watch = _f.watch;
+    }), control = _g.control, handleSubmit = _g.handleSubmit, errors = _g.formState.errors, reset = _g.reset, watch = _g.watch;
     var watchedPassword = watch("password");
     react_1.useEffect(function () {
         if (user)
@@ -101,7 +103,7 @@ var AuthPage = function () {
                     return [3 /*break*/, 8];
                 case 6:
                     err_1 = _c.sent();
-                    code = (_b = (_a = err_1.response) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.error.code;
+                    code = (_b = (_a = err_1.response) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.errorCode;
                     msg = errors_1.ERROR_MESSAGES[code];
                     setApiError(msg);
                     return [3 /*break*/, 8];
@@ -115,6 +117,7 @@ var AuthPage = function () {
     var toggleMode = function () {
         setIsLogin(function (prev) { return !prev; });
         setApiError(undefined);
+        setPasswordError("");
         reset();
     };
     var handleClickShowPassword = function () {
@@ -156,14 +159,35 @@ var AuthPage = function () {
                         }
                     }, render: function (_a) {
                         var field = _a.field;
-                        return (react_1["default"].createElement(material_1.TextField, __assign({}, field, { variant: "outlined", margin: "normal", fullWidth: true, id: "credential", label: isLogin ? "邮箱/手机号" : "电子邮箱", autoComplete: "username", autoFocus: true, error: !!errors.credential, helperText: errors.credential ? errors.credential.message : undefined, disabled: loading, size: "medium", sx: { mb: 3 } })));
+                        return (react_1["default"].createElement(material_1.TextField, __assign({}, field, { variant: "outlined", margin: "normal", fullWidth: true, id: "credential", label: isLogin ? "邮箱" : "电子邮箱", autoComplete: "username", autoFocus: true, error: !!errors.credential, helperText: errors.credential ? errors.credential.message : undefined, disabled: loading, size: "medium", sx: { mb: 3 } })));
                     } }),
-                react_1["default"].createElement(react_hook_form_1.Controller, { name: "password", control: control, rules: { required: "密码必填" }, render: function (_a) {
+                react_1["default"].createElement(react_hook_form_1.Controller, { name: "password", control: control, rules: {
+                        required: "密码必填",
+                        validate: !isLogin ? function (value) {
+                            var validation = PasswordField_1.validatePassword(value);
+                            if (!validation.valid) {
+                                setPasswordError(validation.error || "密码格式不正确");
+                                return validation.error || "密码格式不正确";
+                            }
+                            setPasswordError("");
+                            return true;
+                        } : undefined
+                    }, render: function (_a) {
                         var field = _a.field, error = _a.fieldState.error;
-                        return (react_1["default"].createElement(material_1.TextField, __assign({}, field, { margin: "normal", fullWidth: true, label: "\u5BC6\u7801", type: showPassword ? 'text' : 'password', id: "password", autoComplete: isLogin ? "current-password" : "new-password", error: !!error, helperText: error ? error.message : undefined, disabled: loading, size: "small", sx: { mb: 2 }, InputProps: {
-                                endAdornment: (react_1["default"].createElement(material_1.InputAdornment, { position: "end" },
-                                    react_1["default"].createElement(material_1.IconButton, { "aria-label": "toggle password visibility", onClick: handleClickShowPassword, onMouseDown: handleMouseDownPassword, edge: "end" }, showPassword ? react_1["default"].createElement(icons_material_1.VisibilityOff, null) : react_1["default"].createElement(icons_material_1.Visibility, null))))
-                            } })));
+                        return (react_1["default"].createElement(material_1.Box, { sx: { mb: 2 } },
+                            react_1["default"].createElement(material_1.TextField, __assign({}, field, { margin: "normal", fullWidth: true, label: "\u5BC6\u7801", type: showPassword ? 'text' : 'password', id: "password", autoComplete: isLogin ? "current-password" : "new-password", error: !!error, helperText: error ? error.message : undefined, disabled: loading, size: "small", InputProps: {
+                                    endAdornment: (react_1["default"].createElement(material_1.InputAdornment, { position: "end" },
+                                        react_1["default"].createElement(material_1.IconButton, { "aria-label": "toggle password visibility", onClick: handleClickShowPassword, onMouseDown: handleMouseDownPassword, edge: "end" }, showPassword ? react_1["default"].createElement(icons_material_1.VisibilityOff, null) : react_1["default"].createElement(icons_material_1.Visibility, null))))
+                                } })),
+                            !isLogin && !error && field.value && (react_1["default"].createElement(material_1.Typography, { sx: { fontSize: 12, color: "success.main", mt: 0.5 } }, "\u2713 \u5BC6\u7801\u683C\u5F0F\u6B63\u786E")),
+                            !isLogin && !field.value && (react_1["default"].createElement(material_1.Box, { sx: { mt: 0.75 } },
+                                react_1["default"].createElement(material_1.Typography, { sx: { fontSize: 11, color: "text.secondary", mb: 0.25 } }, "\u5BC6\u7801\u8981\u6C42\uFF1A"),
+                                react_1["default"].createElement(material_1.Typography, { sx: { fontSize: 11, color: "text.secondary" } },
+                                    "\u2022 8-16 \u4E2A\u5B57\u7B26\uFF0C\u4E0D\u80FD\u6709\u7A7A\u683C",
+                                    react_1["default"].createElement("br", null),
+                                    "\u2022 \u4E0D\u80FD\u90FD\u662F\u76F8\u540C\u5B57\u7B26",
+                                    react_1["default"].createElement("br", null),
+                                    "\u2022 \u4E0D\u80FD\u6709\u8FDE\u7EED\u9012\u589E/\u9012\u51CF\u7684\u5B57\u7B26\u6216\u6570\u5B57")))));
                     } }),
                 react_1["default"].createElement(material_1.Button, { type: "submit", fullWidth: true, variant: "contained", disableElevation: true, sx: {
                         mt: 2,
