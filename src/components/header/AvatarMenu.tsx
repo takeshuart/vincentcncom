@@ -60,9 +60,10 @@ export default function AvatarMenu({ user, onLogout }: AvatarMenuProps) {
       ) : (
         <IconButton onClick={(e) => setAnchorEl(e.currentTarget)} sx={{ p: 0, width: "100%", height: "100%" }}>
           <Avatar sx={{
-            bgcolor: color, color: "white", fontWeight: 600,
+            bgcolor: color, color: "white", fontWeight: 500,
             width: { xs: 30, sm: 35 },
             height: { xs: 30, sm: 35 },
+            fontSize: { xs: "1rem", sm: "1.25rem"}
           }}>
             {letter}
           </Avatar>
@@ -91,7 +92,16 @@ export default function AvatarMenu({ user, onLogout }: AvatarMenuProps) {
         }}
       >
         <Stack direction="row" spacing={1.5} alignItems="center" sx={{ px: 0, py: 1 }}>
-          <Avatar sx={{ bgcolor: color, color: "white", width: 44, height: 44 }}>{letter}</Avatar>
+          <Avatar sx={{
+            bgcolor: color,
+            color: "white",
+            width: 44,
+            height: 44,
+            fontSize: "1.15rem",
+            fontWeight: 500,
+          }}>
+            {letter}
+          </Avatar>
           <Box sx={{ display: "flex", flexDirection: "column" }}>
             <Typography sx={{ fontSize: "0.95rem", fontWeight: 700 }}>{nickname}</Typography>
             {email ? (

@@ -13,9 +13,10 @@ var ProfilePage_1 = require("./pages/ProfilePage");
 var ScrollToTop_1 = require("./components/ScrollToTop");
 var FavoritesPage_1 = require("./pages/FavoritesPage");
 var GlobalLayout = function () {
+    var isMobile = material_1.useMediaQuery("(max-width: 600px)");
     return (React.createElement(material_1.Box, { sx: { minHeight: '100vh', display: 'flex', flexDirection: 'column' } },
         React.createElement(Header_1["default"], null),
-        React.createElement(material_1.Box, { component: "main", sx: { flexGrow: 1 } },
+        React.createElement(material_1.Box, { component: "main", sx: { flexGrow: 1, pb: isMobile ? 7 : 0 } },
             React.createElement(material_1.Box, { sx: {
                     flexGrow: 1,
                     minHeight: '100%',

@@ -71,7 +71,7 @@ function ArtSearchPage() {
                     width: '90%',
                     mx: 'auto',
                     '@media (max-width: 600px)': { width: '100%', px: '1px' },
-                    pt: '100px'
+                    pt: { xs: 8, md: 10 }
                 } },
                 React.createElement(material_1.Grid, { container: true, justifyContent: "center" },
                     React.createElement(material_1.Grid, { item: true, xs: 12, md: 10 },
@@ -91,16 +91,18 @@ function ArtSearchPage() {
                                 React.createElement(ColorSearchBar_1["default"], { selectedColor: query.color, updateQueryFilter: updateFilter }))),
                         React.createElement(material_1.Grid, { container: true, justifyContent: "center" },
                             React.createElement(material_1.Box, { sx: {
-                                    minHeight: 40,
+                                    minHeight: { xs: 20, md: 50 },
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center'
-                                } }, isNewSearch ? (React.createElement(material_1.CircularProgress, { size: 20, sx: { color: '#9694c2ff', m: 0 } })) : (React.createElement(material_1.Typography, { variant: "subtitle1", sx: { color: 'grey' } },
+                                } }, isNewSearch ? (React.createElement(material_1.CircularProgress, { size: 20, sx: { color: '#9694c2ff', m: 0 } })) : (React.createElement(material_1.Typography, { variant: "subtitle1", sx: {
+                                    color: 'grey',
+                                    fontSize: { xs: '0.9rem', md: '1rem' }
+                                } },
                                 "\u53D1\u73B0",
-                                ' ',
                                 React.createElement("span", { style: { fontWeight: 'bold' } }, totalResults),
                                 " \u4E2A\u4F5C\u54C1")))),
-                        React.createElement(material_1.Grid, { container: true, spacing: 8, justifyContent: "center", sx: { mt: 4, minHeight: 600, '@media (max-width: 600px)': { mt: 0 } } },
+                        React.createElement(material_1.Grid, { container: true, spacing: { xs: 0, md: 8 }, justifyContent: "center", sx: { mt: 4, minHeight: 600, '@media (max-width: 600px)': { mt: 0 } } },
                             artworks.length === 0 && !isNewSearch && (React.createElement(material_1.Box, { sx: {
                                     width: '100%',
                                     minHeight: 300,
@@ -207,7 +209,8 @@ var ArtworkCard = function (_a) {
                     opacity: 0.99,
                     transition: 'opacity 0.5s'
                 },
-                _b)
+                _b),
+            pb: '0 !important'
         } },
         React.createElement(material_1.Card, { variant: "outlined", sx: {
                 height: '100%',
@@ -263,7 +266,8 @@ var ArtworkCard = function (_a) {
                         textAlign: 'left',
                         opacity: showCardOverlay ? 0.6 : 1,
                         transition: 'opacity 0.3s',
-                        pb: 0
+                        padding: '8px !important',
+                        pb: '0 !important'
                     } },
                     React.createElement(material_1.Typography, { sx: {
                             fontWeight: 400,
@@ -274,6 +278,6 @@ var ArtworkCard = function (_a) {
                     React.createElement(material_1.Typography, { color: "text.secondary", variant: "body2", sx: { textAlign: 'left' } },
                         artwork.displayDateZh,
                         artwork.placeOfOrigin ? ", " + artwork.placeOfOrigin : ''),
-                    artwork.collection && (React.createElement(material_1.Typography, { variant: "body2", color: "text.secondary", textAlign: "left" }, artwork.collectionZh)))))));
+                    artwork.collection && (React.createElement(material_1.Typography, { sx: { fontSize: { xs: 12, md: 14 } }, color: "text.secondary", textAlign: "left" }, artwork.collectionZh)))))));
 };
 var templateObject_1;

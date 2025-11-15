@@ -34,9 +34,10 @@ function AvatarMenu(_a) {
     return (React.createElement(React.Fragment, null,
         !isLoggedIn ? (React.createElement(material_1.Button, { color: "inherit", onClick: function () { return navigate('/auth'); }, sx: { p: 0, minWidth: "auto" } }, "\u767B\u5F55")) : (React.createElement(material_1.IconButton, { onClick: function (e) { return setAnchorEl(e.currentTarget); }, sx: { p: 0, width: "100%", height: "100%" } },
             React.createElement(material_1.Avatar, { sx: {
-                    bgcolor: color, color: "white", fontWeight: 600,
+                    bgcolor: color, color: "white", fontWeight: 500,
                     width: { xs: 30, sm: 35 },
-                    height: { xs: 30, sm: 35 }
+                    height: { xs: 30, sm: 35 },
+                    fontSize: { xs: "1rem", sm: "1.25rem" }
                 } }, letter))),
         React.createElement(material_1.Menu, { anchorEl: anchorEl, open: open, onClose: handleClose, disableScrollLock: true, anchorOrigin: { vertical: "bottom", horizontal: "right" }, transformOrigin: { vertical: "top", horizontal: "right" }, PaperProps: {
                 elevation: 6,
@@ -52,7 +53,14 @@ function AvatarMenu(_a) {
                 }
             } },
             React.createElement(material_1.Stack, { direction: "row", spacing: 1.5, alignItems: "center", sx: { px: 0, py: 1 } },
-                React.createElement(material_1.Avatar, { sx: { bgcolor: color, color: "white", width: 44, height: 44 } }, letter),
+                React.createElement(material_1.Avatar, { sx: {
+                        bgcolor: color,
+                        color: "white",
+                        width: 44,
+                        height: 44,
+                        fontSize: "1.15rem",
+                        fontWeight: 500
+                    } }, letter),
                 React.createElement(material_1.Box, { sx: { display: "flex", flexDirection: "column" } },
                     React.createElement(material_1.Typography, { sx: { fontSize: "0.95rem", fontWeight: 700 } }, nickname),
                     email ? (React.createElement(material_1.Typography, { sx: { fontSize: "0.82rem", color: "text.secondary" } }, email)) : (React.createElement(material_1.Typography, { sx: { fontSize: "0.82rem", color: "text.secondary" } },

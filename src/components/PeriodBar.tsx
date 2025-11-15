@@ -113,7 +113,8 @@ export default function PeriodTimelineFilter({ selectedValue, updateQueryFilter 
                             flexDirection: 'column',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            padding: '10px 5px',
+                            px: {xs: 2, md: 2},
+                            py: {xs: '4px', md: 1},
                             textAlign: 'center',
                             cursor: 'pointer',
                             transition: 'all 0.3s',
@@ -125,7 +126,6 @@ export default function PeriodTimelineFilter({ selectedValue, updateQueryFilter 
                                 sm: `0 0 ${calculatedWidth}`, // 桌面端固定比例
                             },
                             minWidth: {
-                                xs: '100px', // 移动端保证最小可点击区域
                                 sm: 'auto',
                             },
                             backgroundColor: isSelected

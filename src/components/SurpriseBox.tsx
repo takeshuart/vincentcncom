@@ -95,66 +95,43 @@ const SurpriseBox = React.forwardRef<HTMLDivElement, SurpriseBoxProps>(
 
                         {/* 右侧：作品信息和 Surprise Me 按钮 */}
                         <Grid item xs={12} sm={6} md={4}>
-                            <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
-                                <Typography
-                                    // variant="h4" 
-                                    sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '0.8rem', md: '2.0rem' } }}
-                                >
-                                    {artwork!.titleZh || artwork!.titleEn}
-                                </Typography>
-
-                                <Typography color="text.secondary" sx={{ fontSize: { xs: '0.80rem', md: '1.25rem' } }}>
-                                    {artwork!.titleEn}
-                                </Typography>
-
-                                <Typography
-                                    variant="subtitle1"
-                                    color="text.secondary"
-                                    sx={{ mb: 2, fontStyle: 'italic', display: { xs: 'none', md: 'block' } }}
-                                >
-                                    {artwork!.displayDate}
-                                </Typography>
-                                <Typography
-                                    variant="subtitle1"
-                                    sx={{
-                                        mb: 4, color: 'gray',
-                                        fontSize: { xs: '0.875rem', md: '1rem' },
-                                        display: { xs: 'none', md: 'block' }
-                                    }}
-                                >
-                                    {artwork!.collection || '收藏地：未知'}
-                                </Typography>
-
-                                {/* 详情按钮 */}
-                                <Box sx={{
-                                    display: 'flex',
-                                    justifyContent: { xs: 'center', md: 'flex-start' }
+                            <Box
+                                sx={{
+                                    mt: { xs: 2 },
+                                    textAlign: { xs: 'center', md: 'left' },
                                 }}>
-                                    <Link to={`/vincent/${artwork!.id}`} target="_self" style={{ textDecoration: 'none' }}>
-                                        <Button variant="contained" size='large' sx={{
-                                            borderColor: '#2A5A29', // 边框：深绿色
-                                            // color: '#2A5A29',       // 文字：深绿色
-                                            backgroundColor: '#2A5A29',
-                                            // 悬停样式：背景和文字色反转
-                                            '&:hover': {
-                                                backgroundColor: '#2A5A29', // 悬停背景变深绿色
-                                                color: '#FFFFFF',           // 悬停文字变白色
-                                                borderColor: '#2A5A29',
-                                            },
-                                            padding: {
-                                                xs: '4px 8px',
-                                                md: '8px 22px' 
-                                            },
-                                            fontWeight: {
-                                                xs: 300, 
-                                                md: 700 
-                                            },
-                                        }}>
-                                            查看详情
-                                        </Button>
-                                    </Link>
+                                <Link to={`/vincent/${artwork!.id}`} target="_self" style={{ textDecoration: 'none' }}>
 
-                                </Box>
+                                    <Typography
+                                        // variant="h4" 
+                                        sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '0.8rem', md: '2.0rem' } }}
+                                    >
+                                        {artwork!.titleZh || artwork!.titleEn}
+                                    </Typography>
+
+                                    <Typography color="text.secondary" sx={{ fontSize: { xs: '0.80rem', md: '1.25rem' } }}>
+                                        {artwork!.titleEn}
+                                    </Typography>
+
+                                    <Typography
+                                        variant="subtitle1"
+                                        color="text.secondary"
+                                        sx={{ mb: 2, fontStyle: 'italic', display: { xs: 'none', md: 'block' } }}
+                                    >
+                                        {artwork!.displayDate}
+                                    </Typography>
+                                    <Typography
+                                        variant="subtitle1"
+                                        sx={{
+                                            mb: 4, color: 'gray',
+                                            fontSize: { xs: '0.875rem', md: '1rem' },
+                                            display: { xs: 'none', md: 'block' }
+                                        }}
+                                    >
+                                        {artwork!.collection || '收藏地：未知'}
+                                    </Typography>
+                                </Link>
+
                             </Box>
                         </Grid>
                     </Grid>

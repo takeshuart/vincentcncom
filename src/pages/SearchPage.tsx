@@ -114,7 +114,7 @@ export default function ArtSearchPage() {
                         width: '90%',
                         mx: 'auto',
                         '@media (max-width: 600px)': { width: '100%', px: '1px' },
-                        pt: '100px',
+                        pt: { xs: 8, md: 10 },
                     }}
                 >
                     <Grid container justifyContent="center">
@@ -152,7 +152,7 @@ export default function ArtSearchPage() {
                             <Grid container justifyContent="center">
                                 <Box
                                     sx={{
-                                        minHeight: 40,
+                                        minHeight: { xs: 20, md: 50 },
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
@@ -161,8 +161,13 @@ export default function ArtSearchPage() {
                                     {isNewSearch ? (
                                         <CircularProgress size={20} sx={{ color: '#9694c2ff', m: 0 }} />
                                     ) : (
-                                        <Typography variant="subtitle1" sx={{ color: 'grey' }}>
-                                            发现{' '}
+                                        <Typography variant="subtitle1"
+                                            sx={{
+                                                color: 'grey',
+                                                fontSize: { xs: '0.9rem', md: '1rem' }
+                                            }}
+                                        >
+                                            发现
                                             <span style={{ fontWeight: 'bold' }}>{totalResults}</span> 个作品
                                         </Typography>
                                     )}
@@ -171,7 +176,7 @@ export default function ArtSearchPage() {
 
                             <Grid
                                 container
-                                spacing={8} //=n x 8px
+                                spacing={{ xs: 0, md: 8 }} // mobile spacing = 4, desktop = 8
                                 justifyContent="center"
                                 sx={{ mt: 4, minHeight: 600, '@media (max-width: 600px)': { mt: 0 } }}
                             >
@@ -344,6 +349,8 @@ const ArtworkCard: React.FC<ArtworkCardProps> = ({
                         transition: 'opacity 0.5s',
                     },
                 },
+                pb: '0 !important'
+
             }}
         >
             <Card
@@ -425,7 +432,8 @@ const ArtworkCard: React.FC<ArtworkCardProps> = ({
                             textAlign: 'left',
                             opacity: showCardOverlay ? 0.6 : 1,
                             transition: 'opacity 0.3s',
-                            pb: 0,
+                            padding: '8px !important',//force overwrite defualt value
+                            pb: '0 !important'
                         }}
                     >
                         <Typography sx={{
@@ -441,7 +449,7 @@ const ArtworkCard: React.FC<ArtworkCardProps> = ({
                             {artwork.placeOfOrigin ? `, ${artwork.placeOfOrigin}` : ''}
                         </Typography>
                         {artwork.collection && (
-                            <Typography variant="body2" color="text.secondary" textAlign="left">
+                            <Typography sx={{ fontSize: { xs: 12, md: 14 } }} color="text.secondary" textAlign="left">
                                 {artwork.collectionZh}
                             </Typography>
                         )}

@@ -1,7 +1,7 @@
 import { BrowserRouter, Route, Routes, Outlet } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import DetailsPage from './pages/DetailsPage';
-import { Box } from '@mui/material';
+import { Box, useMediaQuery } from '@mui/material';
 // import AppHeader from './components/AppHeader';
 import AppHeader from './components/header/Header';
 import ArtSearchPage from './pages/SearchPage';
@@ -13,11 +13,13 @@ import ScrollToTop from './components/ScrollToTop';
 import FavoritesPage from './pages/FavoritesPage';
 
 const GlobalLayout = () => {
+  const isMobile = useMediaQuery("(max-width: 600px)");
+  
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <AppHeader />
 
-      <Box component="main" sx={{ flexGrow: 1, }}>
+      <Box component="main" sx={{ flexGrow: 1, pb: isMobile ? 7 : 0 }}>
         <Box sx={{
           flexGrow: 1,
           minHeight: '100%',//全屏显示子页面，

@@ -33,13 +33,14 @@ exports.ColorSearchBar = function (_a) {
         react_1["default"].createElement(material_1.Box, { sx: {
                 display: 'flex',
                 alignItems: 'stretch',
-                height: 30,
+                // height: 30,
                 borderRadius: '6px',
                 overflow: 'hidden',
                 border: '1px solid #ccc'
             } }, exports.VAN_GOGH_PALETTE.map(function (color) {
             var isSelected = selectedColor === color.scoreField;
             return (react_1["default"].createElement(material_1.Box, { key: color.displayColor, onClick: function () { return handleSelect(color.scoreField); }, title: "" + color.name + (isSelected ? ' (已选中)' : ''), sx: {
+                    py: { xs: '10px', md: 2 },
                     flex: 1,
                     backgroundColor: color.displayColor,
                     cursor: 'pointer',

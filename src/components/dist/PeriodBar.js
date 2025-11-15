@@ -80,7 +80,8 @@ function PeriodTimelineFilter(_a) {
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                padding: '10px 5px',
+                px: { xs: 2, md: 2 },
+                py: { xs: '4px', md: 1 },
                 textAlign: 'center',
                 cursor: 'pointer',
                 transition: 'all 0.3s',
@@ -92,7 +93,6 @@ function PeriodTimelineFilter(_a) {
                     sm: "0 0 " + calculatedWidth
                 },
                 minWidth: {
-                    xs: '100px',
                     sm: 'auto'
                 },
                 backgroundColor: isSelected

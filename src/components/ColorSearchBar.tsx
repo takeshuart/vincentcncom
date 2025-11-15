@@ -45,7 +45,7 @@ export const ColorSearchBar: React.FC<ColorSearchBarProps> = ({
                 sx={{
                     display: 'flex',
                     alignItems: 'stretch',
-                    height: 30,
+                    // height: 30,
                     borderRadius: '6px',
                     overflow: 'hidden',
                     border: '1px solid #ccc',
@@ -60,6 +60,7 @@ export const ColorSearchBar: React.FC<ColorSearchBarProps> = ({
                             onClick={() => handleSelect(color.scoreField)}
                             title={`${color.name}${isSelected ? ' (已选中)' : ''}`}
                             sx={{
+                                py: { xs: '10px', md: 2 },
                                 flex: 1,
                                 backgroundColor: color.displayColor,
                                 cursor: 'pointer',

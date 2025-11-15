@@ -43,13 +43,17 @@ var FavoritesPage = function () {
             react_1["default"].createElement(material_1.Typography, { variant: "h6", color: "text.secondary" }, "\u6682\u65E0\u6536\u85CF\u4F5C\u54C1")));
     }
     var favorites = data;
-    return (react_1["default"].createElement(material_1.Container, { sx: { display: 'flex', paddingTop: { xs: 10, md: 15 } } },
-        react_1["default"].createElement(material_1.Box, { sx: { p: { xs: 2, md: 4 }, justifyContent: 'center' } },
+    return (react_1["default"].createElement(material_1.Container
+    // disableGutters {/** remove Container's defualt padding */}
+    , { 
+        // disableGutters {/** remove Container's defualt padding */}
+        sx: { display: 'flex', paddingTop: { xs: 10, md: 15 }, px: { xs: 1, sm: 3, md: 10 }, justifyContent: 'center' } },
+        react_1["default"].createElement(material_1.Box, { sx: { p: { xs: 0, md: 4 }, justifyContent: 'center' } },
             react_1["default"].createElement(material_1.Typography, { variant: "subtitle1", sx: { fontWeight: 600, color: "black" } },
                 "\u6211\u7684\u6536\u85CF\uFF08",
                 favorites.length,
                 "\uFF09"),
-            react_1["default"].createElement(material_1.ImageList, { variant: "masonry", cols: isMobile ? 2 : 4, gap: 8 }, favorites.map(function (fav) {
+            react_1["default"].createElement(material_1.ImageList, { variant: "masonry", cols: isMobile ? 2 : 4, sx: { gap: { xs: 4, md: 8 } } }, favorites.map(function (fav) {
                 var artwork = fav.artwork;
                 var transparency = 0.8;
                 var hoverOverlayColor = "rgba(" + (artwork.r || 0) + ", " + (artwork.g || 0) + ", " + (artwork.b || 0) + ", " + transparency + ")";
@@ -67,7 +71,7 @@ var FavoritesPage = function () {
                             width: "100%",
                             height: "auto",
                             display: "block",
-                            borderRadius: "8px"
+                            borderRadius: "4px"
                         } }),
                     react_1["default"].createElement(material_1.Box, { className: "overlay", sx: {
                             position: "absolute",
