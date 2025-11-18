@@ -11,10 +11,11 @@ import AuthPage from './pages/AuthPage';
 import ProfilePage from './pages/ProfilePage';
 import ScrollToTop from './components/ScrollToTop';
 import FavoritesPage from './pages/FavoritesPage';
+import { Toaster } from 'react-hot-toast';
 
 const GlobalLayout = () => {
   const isMobile = useMediaQuery("(max-width: 600px)");
-  
+
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <AppHeader />
@@ -36,20 +37,34 @@ const GlobalLayout = () => {
 
 function App() {
   return (
-      <>
-        <ScrollToTop />
-        <Routes>
-          <Route path="/" element={<GlobalLayout />}>
-            <Route index element={<HomePage />} />
-            <Route path="auth" element={<AuthPage />} />
-            <Route path="profile" element={<ProfilePage />} />
-            <Route path="search" element={<ArtSearchPage />} />
-            <Route path="vincent/:id" element={<DetailsPage />} />
-            <Route path="favorites" element={<FavoritesPage />} />
-          </Route>
-        </Routes>
-      </>
-    );
+    <>
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 2000, 
+          style: {
+            padding: '6px 12px',
+            fontSize: '10px',
+            borderRadius: '8px',
+            background: 'rgba(33, 90, 143, 0.1)', 
+            color: '#215A8F',                    
+            boxShadow: '0 2px 6px rgba(0,0,0,0.15)', 
+          },
+        }}
+      />
+      <ScrollToTop />
+      <Routes>
+        <Route path="/" element={<GlobalLayout />}>
+          <Route index element={<HomePage />} />
+          <Route path="auth" element={<AuthPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="search" element={<ArtSearchPage />} />
+          <Route path="vincent/:id" element={<DetailsPage />} />
+          <Route path="favorites" element={<FavoritesPage />} />
+        </Route>
+      </Routes>
+    </>
+  );
 }
 
 export default App;

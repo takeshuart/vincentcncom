@@ -53,7 +53,6 @@ var useAuth_1 = require("@/hooks/useAuth");
 var react_router_dom_1 = require("react-router-dom");
 var react_hook_form_1 = require("react-hook-form");
 var errors_1 = require("@/utils/errors");
-var icons_material_1 = require("@mui/icons-material");
 var PasswordField_1 = require("@/components/PasswordField");
 var ART_BLUE = "#215A8F"; // 深普鲁士蓝 (主色)
 var HOVER_BLUE = "#17436B"; // 悬停加深色
@@ -65,15 +64,12 @@ var AuthPage = function () {
     var _b = react_1.useState(true), isLogin = _b[0], setIsLogin = _b[1];
     var _c = react_1.useState(false), loading = _c[0], setLoading = _c[1];
     var _d = react_1.useState(undefined), apiError = _d[0], setApiError = _d[1];
-    var _e = react_1.useState(false), showPassword = _e[0], setShowPassword = _e[1];
-    var _f = react_1.useState(""), passwordError = _f[0], setPasswordError = _f[1];
-    var _g = react_hook_form_1.useForm({
-        mode: "onBlur",
+    var _e = react_hook_form_1.useForm({
+        mode: "onChange",
         defaultValues: {
             credential: "", password: "", confirmPassword: "", phone: ""
         }
-    }), control = _g.control, handleSubmit = _g.handleSubmit, errors = _g.formState.errors, reset = _g.reset, watch = _g.watch;
-    var watchedPassword = watch("password");
+    }), control = _e.control, handleSubmit = _e.handleSubmit, errors = _e.formState.errors, reset = _e.reset, watch = _e.watch;
     react_1.useEffect(function () {
         if (user)
             navigate("/");
@@ -117,23 +113,14 @@ var AuthPage = function () {
     var toggleMode = function () {
         setIsLogin(function (prev) { return !prev; });
         setApiError(undefined);
-        setPasswordError("");
         reset();
-    };
-    var handleClickShowPassword = function () {
-        setShowPassword(function (show) { return !show; });
-    };
-    var handleMouseDownPassword = function (event) {
-        event.preventDefault();
     };
     return (react_1["default"].createElement(material_1.Container, { component: "main", maxWidth: false, sx: {
             backgroundColor: LIGHT_BACKGROUND,
             display: "flex",
             justifyContent: "center",
             alignItems: "flex-start",
-            minHeight: "100vh",
-            paddingTop: { xs: 4, sm: 8, md: 25 },
-            paddingBottom: { xs: 4, sm: 8, md: 8 }
+            py: { xs: 8, sm: 8, md: 25 }
         } },
         react_1["default"].createElement(material_1.Box, { sx: {
                 width: "100%",
@@ -146,12 +133,12 @@ var AuthPage = function () {
                 borderRadius: 4,
                 boxShadow: "0 10px 30px rgba(0, 0, 0, 0.1)"
             } },
-            react_1["default"].createElement(material_1.Typography, { component: "h1", variant: "h5", fontWeight: 700, sx: { mb: 1, color: ART_BLUE } }, isLogin ? "欢迎回来" : "创建新账户"),
-            react_1["default"].createElement(material_1.Typography, { variant: "body2", color: "text.secondary", sx: { mb: 4 } }, isLogin ? "登录后探索更多艺术品。" : "加入我们，体验梵高数字档案。"),
+            react_1["default"].createElement(material_1.Typography, { component: "h1", fontWeight: 700, fontSize: { xs: 18, sm: 26, md: 28 }, sx: { mb: 1, color: ART_BLUE } }, isLogin ? "欢迎回来" : "创建新账户"),
+            react_1["default"].createElement(material_1.Typography, { variant: "body2", color: "text.secondary", sx: { mb: { xs: 1, md: 4 } } }, isLogin ? "登录后探索更多艺术品。" : "加入我们，体验梵高数字档案。"),
             apiError && (react_1["default"].createElement(material_1.Alert, { severity: "error", sx: { width: "100%", mb: 3 } }, apiError)),
             react_1["default"].createElement(material_1.Box, { component: "form", onSubmit: handleSubmit(onSubmit), noValidate: true, sx: { mt: 1, width: "100%" } },
                 react_1["default"].createElement(react_hook_form_1.Controller, { name: "credential", control: control, rules: {
-                        required: isLogin ? "邮箱或手机号必填" : "电子邮箱必填",
+                        required: true,
                         validate: {
                             isEmailValid: function (value) {
                                 return isLogin || validator.isEmail(value) || "请输入有效的电子邮箱格式";
@@ -159,36 +146,12 @@ var AuthPage = function () {
                         }
                     }, render: function (_a) {
                         var field = _a.field;
-                        return (react_1["default"].createElement(material_1.TextField, __assign({}, field, { variant: "outlined", margin: "normal", fullWidth: true, id: "credential", label: isLogin ? "邮箱" : "电子邮箱", autoComplete: "username", autoFocus: true, error: !!errors.credential, helperText: errors.credential ? errors.credential.message : undefined, disabled: loading, size: "medium", sx: { mb: 3 } })));
+                        return (react_1["default"].createElement(material_1.TextField, __assign({}, field, { variant: "outlined", margin: "normal", fullWidth: true, id: "credential", label: "\u90AE\u7BB1", autoComplete: "username", autoFocus: true, error: !!errors.credential, helperText: errors.credential ? errors.credential.message : undefined, disabled: loading, size: "small", sx: { mb: { xs: 2, md: 3 } } })));
                     } }),
-                react_1["default"].createElement(react_hook_form_1.Controller, { name: "password", control: control, rules: {
-                        required: "密码必填",
-                        validate: !isLogin ? function (value) {
-                            var validation = PasswordField_1.validatePassword(value);
-                            if (!validation.valid) {
-                                setPasswordError(validation.error || "密码格式不正确");
-                                return validation.error || "密码格式不正确";
-                            }
-                            setPasswordError("");
-                            return true;
-                        } : undefined
-                    }, render: function (_a) {
+                isLogin ? (react_1["default"].createElement(react_hook_form_1.Controller, { name: "password", control: control, rules: { required: true }, render: function (_a) {
                         var field = _a.field, error = _a.fieldState.error;
-                        return (react_1["default"].createElement(material_1.Box, { sx: { mb: 2 } },
-                            react_1["default"].createElement(material_1.TextField, __assign({}, field, { margin: "normal", fullWidth: true, label: "\u5BC6\u7801", type: showPassword ? 'text' : 'password', id: "password", autoComplete: isLogin ? "current-password" : "new-password", error: !!error, helperText: error ? error.message : undefined, disabled: loading, size: "small", InputProps: {
-                                    endAdornment: (react_1["default"].createElement(material_1.InputAdornment, { position: "end" },
-                                        react_1["default"].createElement(material_1.IconButton, { "aria-label": "toggle password visibility", onClick: handleClickShowPassword, onMouseDown: handleMouseDownPassword, edge: "end" }, showPassword ? react_1["default"].createElement(icons_material_1.VisibilityOff, null) : react_1["default"].createElement(icons_material_1.Visibility, null))))
-                                } })),
-                            !isLogin && !error && field.value && (react_1["default"].createElement(material_1.Typography, { sx: { fontSize: 12, color: "success.main", mt: 0.5 } }, "\u2713 \u5BC6\u7801\u683C\u5F0F\u6B63\u786E")),
-                            !isLogin && !field.value && (react_1["default"].createElement(material_1.Box, { sx: { mt: 0.75 } },
-                                react_1["default"].createElement(material_1.Typography, { sx: { fontSize: 11, color: "text.secondary", mb: 0.25 } }, "\u5BC6\u7801\u8981\u6C42\uFF1A"),
-                                react_1["default"].createElement(material_1.Typography, { sx: { fontSize: 11, color: "text.secondary" } },
-                                    "\u2022 8-16 \u4E2A\u5B57\u7B26\uFF0C\u4E0D\u80FD\u6709\u7A7A\u683C",
-                                    react_1["default"].createElement("br", null),
-                                    "\u2022 \u4E0D\u80FD\u90FD\u662F\u76F8\u540C\u5B57\u7B26",
-                                    react_1["default"].createElement("br", null),
-                                    "\u2022 \u4E0D\u80FD\u6709\u8FDE\u7EED\u9012\u589E/\u9012\u51CF\u7684\u5B57\u7B26\u6216\u6570\u5B57")))));
-                    } }),
+                        return (react_1["default"].createElement(material_1.TextField, __assign({}, field, { margin: "normal", fullWidth: true, label: "\u5BC6\u7801", type: "password", id: "password", autoComplete: "current-password", error: !!error, helperText: error ? error.message : undefined, disabled: loading, size: "small", sx: { mb: 2 } })));
+                    } })) : (react_1["default"].createElement(PasswordField_1["default"], { control: control, name: "password", disabled: loading, showRequirements: false, showVisibilityToggle: true })),
                 react_1["default"].createElement(material_1.Button, { type: "submit", fullWidth: true, variant: "contained", disableElevation: true, sx: {
                         mt: 2,
                         mb: 3,

@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -39,99 +50,136 @@ exports.__esModule = true;
 var react_1 = require("react");
 var material_1 = require("@mui/material");
 var Edit_1 = require("@mui/icons-material/Edit");
-var Save_1 = require("@mui/icons-material/Save");
-var Close_1 = require("@mui/icons-material/Close");
-var Lock_1 = require("@mui/icons-material/Lock");
 var useAuth_1 = require("@/hooks/useAuth");
-var requests_1 = require("@/api/requests");
+var react_hook_form_1 = require("react-hook-form");
+var react_router_dom_1 = require("react-router-dom");
 var react_hot_toast_1 = require("react-hot-toast");
 var PasswordField_1 = require("@/components/PasswordField");
+var AuthApi_1 = require("@/api/AuthApi");
+var errors_1 = require("@/utils/errors");
+var ART_BLUE = "#215A8F";
+var HOVER_BLUE = "#17436B";
+var LIGHT_BACKGROUND = "#f5f7fa";
 function ProfilePage() {
     var _this = this;
-    var _a, _b;
-    var user = useAuth_1.useAuth().user;
-    var userData = user !== null && user !== void 0 ? user : null;
-    var _c = react_1.useState((_a = userData === null || userData === void 0 ? void 0 : userData.nickName) !== null && _a !== void 0 ? _a : ""), nickName = _c[0], setNickName = _c[1];
-    var _d = react_1.useState((_b = userData === null || userData === void 0 ? void 0 : userData.email) !== null && _b !== void 0 ? _b : ""), email = _d[0], setEmail = _d[1];
-    var _e = react_1.useState(""), password = _e[0], setPassword = _e[1];
-    var _f = react_1.useState(""), confirm = _f[0], setConfirm = _f[1];
-    var _g = react_1.useState(null), editing = _g[0], setEditing = _g[1];
-    var _h = react_1.useState(false), loading = _h[0], setLoading = _h[1];
-    var _j = react_1.useState(""), passwordError = _j[0], setPasswordError = _j[1];
-    var _k = react_1.useState(""), apiError = _k[0], setApiError = _k[1];
-    var ART_BLUE = "#215A8F";
-    var HOVER_BLUE = "#17436B";
-    var ACTIVE_BLUE = "#0E2C48";
-    var LIGHT_BACKGROUND = "#d8dbf0ff";
-    // Removed validatePassword as it's now imported from PasswordField component
+    var _a, _b, _c, _d, _e;
+    var auth = useAuth_1.useAuth();
+    var navigate = react_router_dom_1.useNavigate();
+    var userData = (_a = auth.user) !== null && _a !== void 0 ? _a : null;
+    var _f = react_1.useState(null), editing = _f[0], setEditing = _f[1];
+    var _g = react_1.useState(false), loading = _g[0], setLoading = _g[1];
+    var _h = react_1.useState(""), apiError = _h[0], setApiError = _h[1];
+    var _j = react_hook_form_1.useForm({
+        mode: "onChange",
+        defaultValues: {
+            nickName: (_b = userData === null || userData === void 0 ? void 0 : userData.nickName) !== null && _b !== void 0 ? _b : "",
+            email: (_c = userData === null || userData === void 0 ? void 0 : userData.email) !== null && _c !== void 0 ? _c : "",
+            password: "",
+            confirmPassword: "",
+            currentPassword: ""
+        }
+    }), control = _j.control, reset = _j.reset, getValues = _j.getValues;
     react_1.useEffect(function () {
         var _a, _b;
-        setNickName((_a = userData === null || userData === void 0 ? void 0 : userData.nickName) !== null && _a !== void 0 ? _a : "");
-        setEmail((_b = userData === null || userData === void 0 ? void 0 : userData.email) !== null && _b !== void 0 ? _b : "");
-    }, [userData === null || userData === void 0 ? void 0 : userData.nickName, userData === null || userData === void 0 ? void 0 : userData.email]);
+        reset({
+            nickName: (_a = userData === null || userData === void 0 ? void 0 : userData.nickName) !== null && _a !== void 0 ? _a : "",
+            email: (_b = userData === null || userData === void 0 ? void 0 : userData.email) !== null && _b !== void 0 ? _b : "",
+            password: "",
+            confirmPassword: "",
+            currentPassword: ""
+        });
+    }, [userData, reset]);
     var startEdit = function (key) {
         setEditing(key);
-        setPassword("");
-        setConfirm("");
-        setPasswordError("");
         setApiError("");
     };
     var cancelEdit = function () {
         var _a, _b;
         setEditing(null);
-        setPassword("");
-        setConfirm("");
-        setPasswordError("");
         setApiError("");
-        // reset to original values
-        setNickName((_a = userData === null || userData === void 0 ? void 0 : userData.nickName) !== null && _a !== void 0 ? _a : "");
-        setEmail((_b = userData === null || userData === void 0 ? void 0 : userData.email) !== null && _b !== void 0 ? _b : "");
+        reset({
+            nickName: (_a = userData === null || userData === void 0 ? void 0 : userData.nickName) !== null && _a !== void 0 ? _a : "",
+            email: (_b = userData === null || userData === void 0 ? void 0 : userData.email) !== null && _b !== void 0 ? _b : "",
+            password: "",
+            confirmPassword: "",
+            currentPassword: ""
+        });
     };
     var saveField = function (key) { return __awaiter(_this, void 0, void 0, function () {
-        var pwdValidation, payload, err_1, msg;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
+        var formValues, payload, pwdValidation, updatedUser, err_1, code, msg;
+        var _a, _b;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
                 case 0:
                     if (!key)
                         return [2 /*return*/];
                     setApiError("");
-                    if (key === "password") {
-                        if (!password) {
-                            react_hot_toast_1.toast.error("请输入新密码");
+                    formValues = getValues();
+                    payload = {};
+                    // 不提交重复值
+                    if (key === "nickName" && formValues.nickName === (userData === null || userData === void 0 ? void 0 : userData.nickName)) {
+                        setEditing(null);
+                        return [2 /*return*/];
+                    }
+                    if (key === "email" && formValues.email === (userData === null || userData === void 0 ? void 0 : userData.email)) {
+                        setEditing(null);
+                        return [2 /*return*/];
+                    }
+                    if (key === "password" && !formValues.password) {
+                        react_hot_toast_1.toast.error("请输入新密码");
+                        return [2 /*return*/];
+                    }
+                    _c.label = 1;
+                case 1:
+                    _c.trys.push([1, 3, 4, 5]);
+                    setLoading(true);
+                    if (key === "nickName") {
+                        if (!formValues.nickName.trim()) {
+                            react_hot_toast_1.toast.error("昵称不能为空");
                             return [2 /*return*/];
                         }
-                        pwdValidation = PasswordField_1.validatePassword(password);
+                        payload.nickname = formValues.nickName;
+                    }
+                    else if (key === "email") {
+                        if (!formValues.email.trim()) {
+                            react_hot_toast_1.toast.error("邮箱不能为空");
+                            return [2 /*return*/];
+                        }
+                        if (!formValues.currentPassword) {
+                            react_hot_toast_1.toast.error("修改邮箱需要输入当前密码");
+                            return [2 /*return*/];
+                        }
+                        payload.email = formValues.email;
+                        payload.currentPassword = formValues.currentPassword;
+                    }
+                    else if (key === "password") {
+                        pwdValidation = PasswordField_1.validatePassword(formValues.password);
                         if (!pwdValidation.valid) {
-                            setPasswordError(pwdValidation.error || "密码格式不正确");
+                            react_hot_toast_1.toast.error(pwdValidation.error || "密码格式不正确");
                             return [2 /*return*/];
                         }
-                        if (password !== confirm) {
+                        if (formValues.password !== formValues.confirmPassword) {
                             react_hot_toast_1.toast.error("两次输入的密码不一致");
                             return [2 /*return*/];
                         }
+                        if (!formValues.currentPassword) {
+                            react_hot_toast_1.toast.error("修改密码需要输入当前密码");
+                            return [2 /*return*/];
+                        }
+                        payload.password = formValues.password;
+                        payload.currentPassword = formValues.currentPassword;
                     }
-                    payload = {};
-                    if (key === "nickName")
-                        payload.nickName = nickName || undefined;
-                    if (key === "email")
-                        payload.email = email || undefined;
-                    if (key === "password")
-                        payload.password = password;
-                    _a.label = 1;
-                case 1:
-                    _a.trys.push([1, 3, 4, 5]);
-                    setLoading(true);
-                    return [4 /*yield*/, requests_1["default"].patch("/users/me", payload)];
+                    return [4 /*yield*/, AuthApi_1.updateUserApi(payload)];
                 case 2:
-                    _a.sent();
-                    react_hot_toast_1.toast.success("保存成功");
+                    updatedUser = _c.sent();
+                    auth.setUser(updatedUser);
                     setEditing(null);
-                    // refresh to update auth context
-                    setTimeout(function () { return window.location.reload(); }, 700);
+                    react_hot_toast_1.toast.success("修改成功", { duration: 1500, position: "top-center" });
                     return [3 /*break*/, 5];
                 case 3:
-                    err_1 = _a.sent();
-                    msg = (err_1 === null || err_1 === void 0 ? void 0 : err_1.displayMessage) || (err_1 === null || err_1 === void 0 ? void 0 : err_1.message) || "保存失败";
+                    err_1 = _c.sent();
+                    code = (_b = (_a = err_1.response) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.errorCode;
+                    msg = errors_1.ERROR_MESSAGES[code];
                     setApiError(msg);
                     return [3 /*break*/, 5];
                 case 4:
@@ -141,75 +189,82 @@ function ProfilePage() {
             }
         });
     }); };
-    return (react_1["default"].createElement(material_1.Box, { sx: {
-            backgroundColor: LIGHT_BACKGROUND,
-            display: "flex",
-            justifyContent: "center",
-            minHeight: "100vh",
-            pt: { xs: 6, md: 12 },
-            px: 2
-        } },
-        react_1["default"].createElement(material_1.Paper, { sx: { width: "100%", maxWidth: 760, p: { xs: 3, md: 5 }, borderRadius: 4, backgroundColor: "white", boxShadow: "0 10px 30px rgba(0,0,0,0.1)" } },
-            react_1["default"].createElement(material_1.Typography, { variant: "h5", sx: { fontWeight: 700, mb: 1, color: ART_BLUE } }, "\u4E2A\u4EBA\u8D44\u6599"),
-            react_1["default"].createElement(material_1.Typography, { sx: { color: "text.secondary", mb: 3 } }, "\u7BA1\u7406\u4F60\u7684\u8D26\u6237\u4FE1\u606F\u3002\u70B9\u51FB\u53F3\u4FA7\u7684\u7F16\u8F91\u56FE\u6807\u53EF\u4EE5\u4FEE\u6539\u5BF9\u5E94\u5B57\u6BB5\u3002"),
-            apiError && (react_1["default"].createElement(material_1.Alert, { severity: "error", sx: { width: "100%", mb: 2 } }, apiError)),
-            react_1["default"].createElement(material_1.Box, { sx: { display: "flex", alignItems: "center", justifyContent: "space-between", py: 1.25 } },
-                react_1["default"].createElement(material_1.Box, null,
-                    react_1["default"].createElement(material_1.Typography, { sx: { fontSize: 13, color: "text.secondary" } }, "\u6635\u79F0"),
-                    editing === "nickName" ? (react_1["default"].createElement(material_1.TextField, { size: "small", value: nickName, onChange: function (e) { return setNickName(e.target.value); }, sx: { mt: 1, width: 360 } })) : (react_1["default"].createElement(material_1.Typography, { sx: { fontSize: 16, fontWeight: 600, mt: 0.5 } }, nickName || "未设置"))),
-                react_1["default"].createElement(material_1.Box, null, editing === "nickName" ? (react_1["default"].createElement(material_1.Stack, { direction: "row", spacing: 1 },
-                    react_1["default"].createElement(material_1.Tooltip, { title: "\u4FDD\u5B58" },
-                        react_1["default"].createElement(material_1.IconButton, { sx: { bgcolor: ART_BLUE, color: "white", '&:hover': { bgcolor: HOVER_BLUE } }, onClick: function () { return saveField("nickName"); }, disabled: loading },
-                            react_1["default"].createElement(Save_1["default"], null))),
-                    react_1["default"].createElement(material_1.Tooltip, { title: "\u53D6\u6D88" },
-                        react_1["default"].createElement(material_1.IconButton, { onClick: cancelEdit },
-                            react_1["default"].createElement(Close_1["default"], null))))) : (react_1["default"].createElement(material_1.Tooltip, { title: "\u7F16\u8F91\u6635\u79F0" },
-                    react_1["default"].createElement(material_1.IconButton, { onClick: function () { return startEdit("nickName"); } },
-                        react_1["default"].createElement(Edit_1["default"], null)))))),
-            react_1["default"].createElement(material_1.Divider, null),
-            react_1["default"].createElement(material_1.Box, { sx: { display: "flex", alignItems: "center", justifyContent: "space-between", py: 1.25 } },
-                react_1["default"].createElement(material_1.Box, null,
-                    react_1["default"].createElement(material_1.Typography, { sx: { fontSize: 13, color: "text.secondary" } }, "\u90AE\u7BB1"),
-                    editing === "email" ? (react_1["default"].createElement(material_1.TextField, { size: "small", value: email, onChange: function (e) { return setEmail(e.target.value); }, sx: { mt: 1, width: 360 } })) : (react_1["default"].createElement(material_1.Typography, { sx: { fontSize: 16, fontWeight: 600, mt: 0.5 } }, email || "未设置"))),
-                react_1["default"].createElement(material_1.Box, null, editing === "email" ? (react_1["default"].createElement(material_1.Stack, { direction: "row", spacing: 1 },
-                    react_1["default"].createElement(material_1.Tooltip, { title: "\u4FDD\u5B58" },
-                        react_1["default"].createElement(material_1.IconButton, { sx: { bgcolor: ART_BLUE, color: "white", '&:hover': { bgcolor: HOVER_BLUE } }, onClick: function () { return saveField("email"); }, disabled: loading },
-                            react_1["default"].createElement(Save_1["default"], null))),
-                    react_1["default"].createElement(material_1.Tooltip, { title: "\u53D6\u6D88" },
-                        react_1["default"].createElement(material_1.IconButton, { onClick: cancelEdit },
-                            react_1["default"].createElement(Close_1["default"], null))))) : (react_1["default"].createElement(material_1.Tooltip, { title: "\u7F16\u8F91\u90AE\u7BB1" },
-                    react_1["default"].createElement(material_1.IconButton, { onClick: function () { return startEdit("email"); } },
-                        react_1["default"].createElement(Edit_1["default"], null)))))),
-            react_1["default"].createElement(material_1.Divider, null),
-            react_1["default"].createElement(material_1.Box, { sx: { display: "flex", alignItems: "center", justifyContent: "space-between", py: 1.25 } },
-                react_1["default"].createElement(material_1.Box, null,
-                    react_1["default"].createElement(material_1.Typography, { sx: { fontSize: 13, color: "text.secondary" } }, "\u5BC6\u7801"),
-                    editing === "password" ? (react_1["default"].createElement(material_1.Box, { sx: { display: "flex", gap: 1, mt: 1 } },
-                        react_1["default"].createElement(material_1.Box, { sx: { flex: 1 } },
-                            react_1["default"].createElement(PasswordField_1["default"], { label: "\u65B0\u5BC6\u7801", value: password, onChange: function (value) {
-                                    setPassword(value);
-                                    if (value) {
-                                        var validation = PasswordField_1.validatePassword(value);
-                                        setPasswordError(validation.error || "");
-                                    }
-                                    else {
-                                        setPasswordError("");
-                                    }
-                                }, error: passwordError, disabled: loading, showRequirements: true, showVisibilityToggle: true, size: "small" })),
-                        react_1["default"].createElement(material_1.TextField, { size: "small", label: "\u786E\u8BA4\u5BC6\u7801", type: "password", value: confirm, onChange: function (e) { return setConfirm(e.target.value); } }))) : (react_1["default"].createElement(material_1.Box, { sx: { display: "flex", alignItems: "center", gap: 1, mt: 0.5 } },
-                        react_1["default"].createElement(Lock_1["default"], { fontSize: "small", color: "disabled" }),
-                        react_1["default"].createElement(material_1.Typography, { sx: { fontSize: 16, fontWeight: 600 } }, "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022")))),
-                react_1["default"].createElement(material_1.Box, null, editing === "password" ? (react_1["default"].createElement(material_1.Stack, { direction: "row", spacing: 1 },
-                    react_1["default"].createElement(material_1.Tooltip, { title: "\u4FDD\u5B58" },
-                        react_1["default"].createElement(material_1.IconButton, { sx: { bgcolor: ART_BLUE, color: "white", '&:hover': { bgcolor: HOVER_BLUE } }, onClick: function () { return saveField("password"); }, disabled: loading },
-                            react_1["default"].createElement(Save_1["default"], null))),
-                    react_1["default"].createElement(material_1.Tooltip, { title: "\u53D6\u6D88" },
-                        react_1["default"].createElement(material_1.IconButton, { onClick: cancelEdit },
-                            react_1["default"].createElement(Close_1["default"], null))))) : (react_1["default"].createElement(material_1.Tooltip, { title: "\u4FEE\u6539\u5BC6\u7801" },
-                    react_1["default"].createElement(material_1.IconButton, { onClick: function () { return startEdit("password"); } },
-                        react_1["default"].createElement(Edit_1["default"], null)))))),
-            react_1["default"].createElement(material_1.Divider, { sx: { my: 2 } }),
-            react_1["default"].createElement(material_1.Box, { sx: { display: "flex", justifyContent: "flex-end", gap: 1 } },
-                react_1["default"].createElement(material_1.Button, { variant: "outlined", onClick: function () { return window.history.back(); }, sx: { textTransform: "none" } }, "\u8FD4\u56DE")))));
+    /** FieldRow 组件 */
+    var FieldRow = function (_a) {
+        var label = _a.label, displayValue = _a.displayValue, editKey = _a.editKey, children = _a.children;
+        var isEditing = editing === editKey;
+        return (react_1["default"].createElement(material_1.Box, { sx: { mb: 3 } },
+            react_1["default"].createElement(material_1.Typography, { sx: { fontSize: { xs: 12, sm: 13 }, color: "#666", mb: 1 } }, label),
+            isEditing ? (react_1["default"].createElement(material_1.Box, { sx: { display: "flex", flexDirection: "column", gap: 1.5 } },
+                children,
+                react_1["default"].createElement(material_1.Box, { sx: { alignSelf: "flex-end" } },
+                    react_1["default"].createElement(material_1.Button, { size: "small", sx: {
+                            minWidth: 0,
+                            px: 1,
+                            color: ART_BLUE,
+                            fontWeight: 700,
+                            textTransform: "none",
+                            "&:hover": { backgroundColor: "transparent", color: HOVER_BLUE }
+                        }, onClick: function () { return saveField(editKey); }, disabled: loading }, "\u2713"),
+                    react_1["default"].createElement(material_1.Button, { size: "small", variant: "text", sx: {
+                            ml: 1,
+                            minWidth: 0,
+                            px: 1,
+                            textTransform: "none",
+                            color: "#999"
+                        }, onClick: cancelEdit, disabled: loading }, "\u2715")))) : (react_1["default"].createElement(material_1.Box, { sx: { display: "flex", justifyContent: "space-between", alignItems: "center" } },
+                react_1["default"].createElement(material_1.Typography, { sx: { fontSize: { xs: 14, sm: 16 }, color: "#333" } }, label === "密码" ? "••••••••" : displayValue || "未设置"),
+                react_1["default"].createElement(material_1.Button, { size: "small", variant: "text", sx: {
+                        textTransform: "none",
+                        minWidth: 0,
+                        px: 1,
+                        color: ART_BLUE
+                    }, onClick: function () { return startEdit(editKey); } },
+                    react_1["default"].createElement(Edit_1["default"], { fontSize: "small" }))))));
+    };
+    return (react_1["default"].createElement(material_1.Box, { sx: { mt: { xs: 8, sm: 6, md: 8 }, px: { xs: 1, sm: 2 } } },
+        react_1["default"].createElement(material_1.Container, null,
+            react_1["default"].createElement(material_1.Box, { sx: { mb: 3, textAlign: 'center' } },
+                react_1["default"].createElement(material_1.Typography, { variant: "h6", sx: { fontWeight: 700, color: ART_BLUE, fontSize: { xs: 18, sm: 22 } } }, "\u4E2A\u4EBA\u8D44\u6599")),
+            react_1["default"].createElement(material_1.Paper, { sx: { borderRadius: 2, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden", border: "1px solid rgba(0,0,0,0.08)" } },
+                react_1["default"].createElement(material_1.Box, { sx: { p: { xs: 2, sm: 3, md: 4 } } },
+                    apiError && react_1["default"].createElement(material_1.Alert, { severity: "error", sx: { mb: 2, fontSize: { xs: 12, sm: 13 } }, onClose: function () { return setApiError(""); } }, apiError),
+                    react_1["default"].createElement(material_1.Box, { sx: { mb: 2 } },
+                        react_1["default"].createElement(material_1.Typography, { variant: "body2", sx: { color: "#999", textAlign: "left" } },
+                            "\u7528\u6237ID: ", userData === null || userData === void 0 ? void 0 :
+                            userData.userId)),
+                    react_1["default"].createElement(material_1.Divider, { sx: { my: 1 } }),
+                    react_1["default"].createElement(FieldRow, { label: "\u6635\u79F0", displayValue: (_d = userData === null || userData === void 0 ? void 0 : userData.nickName) !== null && _d !== void 0 ? _d : "", editKey: "nickName" },
+                        react_1["default"].createElement(react_hook_form_1.Controller, { name: "nickName", control: control, render: function (_a) {
+                                var field = _a.field;
+                                return react_1["default"].createElement(material_1.TextField, __assign({}, field, { size: "small", variant: "standard", placeholder: "\u8F93\u5165\u6635\u79F0", disabled: loading, fullWidth: true }));
+                            } })),
+                    react_1["default"].createElement(material_1.Divider, { sx: { my: 1 } }),
+                    react_1["default"].createElement(FieldRow, { label: "\u90AE\u7BB1", displayValue: (_e = userData === null || userData === void 0 ? void 0 : userData.email) !== null && _e !== void 0 ? _e : "", editKey: "email" },
+                        react_1["default"].createElement(react_hook_form_1.Controller, { name: "email", control: control, render: function (_a) {
+                                var field = _a.field;
+                                return react_1["default"].createElement(material_1.TextField, __assign({}, field, { size: "small", variant: "standard", placeholder: "\u8F93\u5165\u90AE\u7BB1", disabled: loading, fullWidth: true }));
+                            } }),
+                        react_1["default"].createElement(react_hook_form_1.Controller, { name: "currentPassword", control: control, render: function (_a) {
+                                var field = _a.field;
+                                return react_1["default"].createElement(material_1.TextField, __assign({}, field, { size: "small", variant: "standard", placeholder: "\u8F93\u5165\u5F53\u524D\u5BC6\u7801", type: "password", disabled: loading, fullWidth: true }));
+                            } })),
+                    react_1["default"].createElement(material_1.Divider, { sx: { my: 1 } }),
+                    react_1["default"].createElement(FieldRow, { label: "\u5BC6\u7801", displayValue: "", editKey: "password" }, editing === "password" && (react_1["default"].createElement(material_1.Box, { sx: { display: "flex", flexDirection: "column", gap: 1.5 } },
+                        react_1["default"].createElement(react_hook_form_1.Controller, { name: "currentPassword", control: control, render: function (_a) {
+                                var field = _a.field;
+                                return react_1["default"].createElement(material_1.TextField, __assign({}, field, { size: "small", 
+                                    // variant="standard" 
+                                    placeholder: "\u8F93\u5165\u5F53\u524D\u5BC6\u7801", type: "password", disabled: loading, fullWidth: true }));
+                            } }),
+                        react_1["default"].createElement(PasswordField_1["default"], { control: control, name: "password", label: "\u65B0\u5BC6\u7801", size: "small", 
+                            // variant="standard"
+                            showRequirements: false, showVisibilityToggle: true, disabled: loading }),
+                        react_1["default"].createElement(react_hook_form_1.Controller, { name: "confirmPassword", control: control, render: function (_a) {
+                                var field = _a.field;
+                                return react_1["default"].createElement(material_1.TextField, __assign({}, field, { size: "small", placeholder: "\u518D\u6B21\u8F93\u5165\u65B0\u5BC6\u7801", type: "password", disabled: loading, fullWidth: true }));
+                            } })))))),
+            react_1["default"].createElement(material_1.Box, { sx: { display: "flex", justifyContent: "flex-end", gap: 1, mt: 3 } },
+                react_1["default"].createElement(material_1.Button, { variant: "outlined", onClick: function () { return navigate(-1); }, sx: { textTransform: "none", borderColor: "#ddd" }, size: "small" }, "\u8FD4\u56DE")))));
 }
 exports["default"] = ProfilePage;

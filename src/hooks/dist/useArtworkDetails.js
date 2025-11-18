@@ -49,13 +49,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 exports.__esModule = true;
 var react_1 = require("react");
 var ArtworkApi_1 = require("../api/ArtworkApi");
-/**
- * 辅助函数：清洗和预处理艺术品数据中的 JSON 字段和图片路径
- * @param fetchedArtwork - 原始 API 返回的作品数据
- */
+var react_query_1 = require("@tanstack/react-query");
 var cleanArtworkData = function (fetchedArtwork) {
     var processedArtwork = __assign(__assign({}, fetchedArtwork), { exhibitionHistory: [] });
-    var extLinks = {};
     try {
         if (processedArtwork.exhibitions) {
             processedArtwork.exhibitionHistory = JSON.parse(processedArtwork.exhibitions);
@@ -74,127 +70,63 @@ var cleanArtworkData = function (fetchedArtwork) {
     else if (processedArtwork.primaryImageSmall) {
         processedArtwork.primaryImageLarge = "https://www.pubhist.com" + processedArtwork.primaryImageSmall;
     }
-    return { processedArtwork: processedArtwork, extLinks: extLinks };
+    return { processedArtwork: processedArtwork };
 };
-/**
- * 封装作品详情页的数据获取、清洗和状态管理。
- * @param id - 作品 ID (通常是字符串)
- * @returns 包含作品数据、状态和操作函数的对象。
- */
 var useArtworkDetails = function (id) {
-    var _a = react_1.useState(null), artwork = _a[0], setArtwork = _a[1];
-    var _b = react_1.useState({}), extLinks = _b[0], setExtLinks = _b[1];
-    var _c = react_1.useState('overview'), activeSection = _c[0], setActiveSection = _c[1];
-    // 延迟加载数据和状态
-    var _d = react_1.useState(null), lettersData = _d[0], setLettersData = _d[1];
-    var _e = react_1.useState(false), isLoadingLetters = _e[0], setIsLoadingLetters = _e[1];
-    var _f = react_1.useState(true), isLoadingArtwork = _f[0], setIsLoadingArtwork = _f[1];
-    // --- 1. 艺术品数据获取 (useEffect) ---
-    react_1.useEffect(function () {
-        if (!id)
-            return;
-        var fetchAndCleanArtwork = function () { return __awaiter(void 0, void 0, Promise, function () {
-            var fetchedArtwork, _a, processedArtwork, cleanedExtLinks, error_1;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        setIsLoadingArtwork(true);
-                        setArtwork(null);
-                        setExtLinks({});
-                        _b.label = 1;
+    // const [artwork, setArtwork] = useState<Artwork | null>(null);
+    var _a = react_1.useState('overview'), activeSection = _a[0], setActiveSection = _a[1];
+    var _b = react_query_1.useQuery({
+        queryKey: ['artwork', id],
+        queryFn: function () { return __awaiter(void 0, void 0, void 0, function () {
+            var fetchedArtwork, processedArtwork;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, ArtworkApi_1.fetchArtworkById(id)];
                     case 1:
-                        _b.trys.push([1, 3, 4, 5]);
-                        return [4 /*yield*/, ArtworkApi_1.fetchArtworkById(id)];
-                    case 2:
-                        fetchedArtwork = _b.sent();
-                        _a = cleanArtworkData(fetchedArtwork), processedArtwork = _a.processedArtwork, cleanedExtLinks = _a.extLinks;
-                        setArtwork(processedArtwork);
-                        setExtLinks(cleanedExtLinks);
-                        return [3 /*break*/, 5];
-                    case 3:
-                        error_1 = _b.sent();
-                        console.error('Error fetching artwork data', error_1);
-                        setArtwork(null);
-                        return [3 /*break*/, 5];
-                    case 4:
-                        setIsLoadingArtwork(false);
-                        return [7 /*endfinally*/];
-                    case 5: return [2 /*return*/];
+                        fetchedArtwork = _a.sent();
+                        processedArtwork = cleanArtworkData(fetchedArtwork).processedArtwork;
+                        // setArtwork(processedArtwork);
+                        return [2 /*return*/, processedArtwork];
                 }
             });
-        }); };
-        fetchAndCleanArtwork();
-    }, [id]);
-    // --- 2. 动态计算导航栏目 (useMemo) ---
+        }); },
+        staleTime: 1000 * 60 * 5,
+        retry: 2,
+        gcTime: 1000 * 60 * 10
+    }), artwork = _b.data, isLoadingArtwork = _b.isLoading, artworkError = _b.error;
+    // --- 2. 动态计算导航栏目  ---
     var sections = react_1.useMemo(function () {
-        if (!artwork)
-            return [];
-        var sectionsList = [
-            { id: 'overview', label: '详情', dataField: 'shortDesc' },
-            { id: 'letters', label: '梵高书信', dataField: 'letters' },
-            { id: 'exhibition', label: '展出信息', dataField: 'exhibitions' },
-        ];
-        return sectionsList.filter(function (section) {
-            if (section.id === 'overview')
-                return true;
-            var dataFieldKey = section.dataField;
-            var dataFieldValue = artwork[dataFieldKey];
-            // 针对 letters 字段进行特殊检查，因为它可能是 number 或 string
-            if (section.id === 'letters') {
-                return dataFieldValue != null && String(dataFieldValue).length > 0;
-            }
-            // 针对 exhibitions 字段进行特殊检查
-            if (section.id === 'exhibition') {
-                // 检查原始字符串字段 exhibitions 
-                return dataFieldValue && String(dataFieldValue).length > 0;
-            }
-            // 检查其他字段是否有值
-            return !!dataFieldValue;
-        });
-    }, [artwork]);
-    // --- 3. 延迟加载书信数据 (useEffect) ---
-    react_1.useEffect(function () {
-        // 只有当切换到 'letters' 选项卡 且 尚未开始加载时，才执行加载
-        if (artwork && activeSection === 'letters' && !lettersData && !isLoadingLetters) {
-            var loadLetters = function () { return __awaiter(void 0, void 0, Promise, function () {
-                var data, error_2;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            setIsLoadingLetters(true);
-                            _a.label = 1;
-                        case 1:
-                            _a.trys.push([1, 5, 6, 7]);
-                            if (!artwork.letters) return [3 /*break*/, 3];
-                            return [4 /*yield*/, ArtworkApi_1.getLettersByIds(String(artwork.letters))];
-                        case 2:
-                            data = _a.sent();
-                            setLettersData(data);
-                            return [3 /*break*/, 4];
-                        case 3:
-                            setLettersData([]);
-                            _a.label = 4;
-                        case 4: return [3 /*break*/, 7];
-                        case 5:
-                            error_2 = _a.sent();
-                            console.error("Error loading letters:", error_2);
-                            setLettersData([]);
-                            return [3 /*break*/, 7];
-                        case 6:
-                            setIsLoadingLetters(false);
-                            return [7 /*endfinally*/];
-                        case 7: return [2 /*return*/];
-                    }
-                });
-            }); };
-            loadLetters();
+        var _a;
+        var result = [{ id: 'overview', label: '概览', dataField: 'overview' },];
+        if (artwork === null || artwork === void 0 ? void 0 : artwork.letters) {
+            result.push({ id: 'letters', label: '梵高书信', dataField: 'letters' });
         }
-    }, [activeSection, artwork, lettersData, isLoadingLetters]);
-    // 依赖项中添加 artwork, lettersData 和 isLoadingLetters 以确保逻辑的正确性
-    // --- 4. 返回结果 ---
+        if ((_a = artwork === null || artwork === void 0 ? void 0 : artwork.exhibitionHistory) === null || _a === void 0 ? void 0 : _a.length) {
+            result.push({ id: 'exhibition', label: '展览历史', dataField: 'exhibitionHistory' });
+        }
+        return result;
+    }, [artwork]);
+    var _c = react_query_1.useQuery({
+        queryKey: ['letters', artwork === null || artwork === void 0 ? void 0 : artwork.letters],
+        queryFn: function () { return __awaiter(void 0, void 0, void 0, function () {
+            var res;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, ArtworkApi_1.getLettersByIds(String(artwork === null || artwork === void 0 ? void 0 : artwork.letters))];
+                    case 1:
+                        res = _a.sent();
+                        if (Array.isArray(res))
+                            return [2 /*return*/, res];
+                        return [2 /*return*/, []];
+                }
+            });
+        }); },
+        enabled: activeSection === 'letters' && !!(artwork === null || artwork === void 0 ? void 0 : artwork.letters),
+        retry: 1,
+        gcTime: 1000 * 60 * 10
+    }), lettersData = _c.data, isLoadingLetters = _c.isLoading;
     return {
         artwork: artwork,
-        extLinks: extLinks,
         activeSection: activeSection,
         lettersData: lettersData,
         isLoadingLetters: isLoadingLetters,

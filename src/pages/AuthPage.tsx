@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Container, Box, Typography, TextField, Button, Alert, CircularProgress, Stack, Link as MuiLink, InputAdornment,IconButton } from "@mui/material";
+import { Container, Box, Typography, TextField, Button, Alert, CircularProgress, Stack, Link as MuiLink } from "@mui/material";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import validator from "validator";
 
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { ERROR_MESSAGES } from "@/utils/errors";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
-import PasswordField, { validatePassword } from "@/components/PasswordField";
+import ValidatePasswordField from "@/components/PasswordField";
 
 interface FormData {
     credential: string;
@@ -28,8 +27,6 @@ const AuthPage: React.FC = () => {
     const [isLogin, setIsLogin] = useState(true);
     const [loading, setLoading] = useState(false);
     const [apiError, setApiError] = useState<string | undefined>(undefined);
-    const [showPassword, setShowPassword] = useState(false);
-    const [passwordError, setPasswordError] = useState<string>("");
 
 
     const {
@@ -39,13 +36,11 @@ const AuthPage: React.FC = () => {
         reset,
         watch
     } = useForm<FormData>({
-        mode: "onBlur",
+        mode: "onChange",
         defaultValues: {
             credential: "", password: "", confirmPassword: "", phone: ""
         }
     });
-
-    const watchedPassword = watch("password");
 
     useEffect(() => {
         if (user) navigate("/");
@@ -74,15 +69,7 @@ const AuthPage: React.FC = () => {
     const toggleMode = () => {
         setIsLogin((prev) => !prev);
         setApiError(undefined);
-        setPasswordError("");
         reset();
-    };
-    const handleClickShowPassword = () => {
-        setShowPassword((show) => !show);
-    };
-
-    const handleMouseDownPassword = (event:any) => {
-        event.preventDefault();
     };
 
     return (
@@ -94,9 +81,7 @@ const AuthPage: React.FC = () => {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "flex-start",
-                minHeight: "100vh",
-                paddingTop: { xs: 4, sm: 8, md: 25 },
-                paddingBottom: { xs: 4, sm: 8, md: 8 },
+                py: { xs: 8, sm: 8, md: 25 },
             }}
         >
             <Box
@@ -112,10 +97,12 @@ const AuthPage: React.FC = () => {
                     boxShadow: "0 10px 30px rgba(0, 0, 0, 0.1)",
                 }}
             >
-                <Typography component="h1" variant="h5" fontWeight={700} sx={{ mb: 1, color: ART_BLUE }}>
+                <Typography component="h1" fontWeight={700}
+                    fontSize={{ xs: 18, sm: 26, md: 28 }}
+                    sx={{ mb: 1, color: ART_BLUE }}>
                     {isLogin ? "欢迎回来" : "创建新账户"}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: { xs: 1, md: 4 } }}>
                     {isLogin ? "登录后探索更多艺术品。" : "加入我们，体验梵高数字档案。"}
                 </Typography>
 
@@ -136,7 +123,7 @@ const AuthPage: React.FC = () => {
                         name="credential"
                         control={control}
                         rules={{
-                            required: isLogin ? "邮箱或手机号必填" : "电子邮箱必填",
+                            required: true ,
                             validate: {
                                 isEmailValid: (value) =>
                                     isLogin || validator.isEmail(value) || "请输入有效的电子邮箱格式",
@@ -149,83 +136,50 @@ const AuthPage: React.FC = () => {
                                 margin="normal"
                                 fullWidth
                                 id="credential"
-                                label={isLogin ? "邮箱" : "电子邮箱"}
+                                label= "邮箱"
                                 autoComplete="username"
                                 autoFocus
                                 error={!!errors.credential}
                                 helperText={errors.credential ? errors.credential.message : undefined}
                                 disabled={loading}
-                                size="medium"
-                                sx={{ mb: 3 }}
+                                size="small"
+                                sx={{ mb: { xs: 2, md: 3 } }}
                             />
                         )}
                     />
 
                     {/* 2. Password */}
-                    <Controller
-                        name="password"
-                        control={control}
-                        rules={{
-                            required: "密码必填",
-                            validate: !isLogin ? (value) => {
-                                const validation = validatePassword(value);
-                                if (!validation.valid) {
-                                    setPasswordError(validation.error || "密码格式不正确");
-                                    return validation.error || "密码格式不正确";
-                                }
-                                setPasswordError("");
-                                return true;
-                            } : undefined,
-                        }}
-                        render={({ field, fieldState: { error } }) => (
-                            <Box sx={{ mb: 2 }}>
+                    {isLogin ? (
+                        <Controller
+                            name="password"
+                            control={control}
+                            rules={{ required: true }}
+                            render={({ field, fieldState: { error } }) => (
                                 <TextField
                                     {...field}
                                     margin="normal"
                                     fullWidth
                                     label="密码"
-                                    type={showPassword ? 'text' : 'password'}
+                                    type="password"
                                     id="password"
-                                    autoComplete={isLogin ? "current-password" : "new-password"}
+                                    autoComplete="current-password"
                                     error={!!error}
                                     helperText={error ? error.message : undefined}
                                     disabled={loading}
                                     size="small"
-                                    InputProps={{
-                                        endAdornment: (
-                                            <InputAdornment position="end">
-                                                <IconButton
-                                                    aria-label="toggle password visibility"
-                                                    onClick={handleClickShowPassword}
-                                                    onMouseDown={handleMouseDownPassword}
-                                                    edge="end"
-                                                >
-                                                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                                                </IconButton>
-                                            </InputAdornment>
-                                        ),
-                                    }}
+                                    sx={{ mb: 2 }}
                                 />
-                                {!isLogin && !error && field.value && (
-                                    <Typography sx={{ fontSize: 12, color: "success.main", mt: 0.5 }}>
-                                        ✓ 密码格式正确
-                                    </Typography>
-                                )}
-                                {!isLogin && !field.value && (
-                                    <Box sx={{ mt: 0.75 }}>
-                                        <Typography sx={{ fontSize: 11, color: "text.secondary", mb: 0.25 }}>
-                                            密码要求：
-                                        </Typography>
-                                        <Typography sx={{ fontSize: 11, color: "text.secondary" }}>
-                                            • 8-16 个字符，不能有空格<br/>
-                                            • 不能都是相同字符<br/>
-                                            • 不能有连续递增/递减的字符或数字
-                                        </Typography>
-                                    </Box>
-                                )}
-                            </Box>
-                        )}
-                    />
+                            )}
+                        />
+                    ) : (
+                        <ValidatePasswordField
+                            control={control}
+                            name="password"
+                            disabled={loading}
+                            showRequirements={false}
+                            showVisibilityToggle={true}
+                        />
+                    )}
 
                     <Button
                         type="submit"

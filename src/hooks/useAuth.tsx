@@ -11,6 +11,8 @@ export interface AuthContextType {
     login: (params: LoginParams) => Promise<User>;
     register: (params: RegisterParams) => Promise<User>;
     logout: () => void;
+    setUser: (user: User | null) => void;
+    refreshUser: () => Promise<void>;
 }
 
 // ------------------ Context 初始化 ------------------
@@ -39,10 +41,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         fetchUser();
     }, []);
 
+    const refreshUser = async () => {
+        try {
+            const me = await itsmeApi();
+            setUser(me);
+        } catch {
+            setUser(null);
+        }
+    };
     // ------------------ Mutation 定义 ------------------
 
     const loginMutation = useMutation<User, any, LoginParams>({
-        mutationFn: async (params)=> loginApi(params),
+        mutationFn: async (params) => loginApi(params),
         onSuccess: (user) => {
             if (user) {
                 setUser(user);
@@ -50,7 +60,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
     });
 
-    const registerMutation = useMutation<User,any,RegisterParams>({
+    const registerMutation = useMutation<User, any, RegisterParams>({
         mutationFn: async (params) => registerApi(params),
         onSuccess: (user) => {
             if (user) {
@@ -76,6 +86,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             login: async (params: LoginParams) => await loginMutation.mutateAsync(params),
             register: async (params: RegisterParams) => registerMutation.mutateAsync(params),
             logout: () => logoutMutation.mutateAsync(),
+            setUser,            
+            refreshUser,
         }),
         [user, loginMutation.isPending, registerMutation.isPending]
     );

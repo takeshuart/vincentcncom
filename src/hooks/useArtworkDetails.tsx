@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { fetchArtworkById, getLettersByIds } from '../api/ArtworkApi';
+import { useQuery } from '@tanstack/react-query';
 
 interface RawArtwork {
     id: string;
@@ -12,14 +13,8 @@ interface RawArtwork {
     [key: string]: any; // 允许其他未显式声明的属性
 }
 
-// 清洗后的艺术品数据结构
 interface Artwork extends RawArtwork {
     exhibitionHistory: any[];
-}
-
-interface ExternalLinks {
-    // 根据实际使用的外部链接字段进行补充
-    [key: string]: string;
 }
 
 interface Section {
@@ -35,23 +30,17 @@ interface LetterData {
 }
 
 interface UseArtworkDetailsResult {
-    artwork: Artwork | null;
-    extLinks: ExternalLinks;
+    artwork?: Artwork;
     activeSection: string;
-    lettersData: LetterData[] | null;
+    lettersData?: LetterData[]
     isLoadingLetters: boolean;
     isLoadingArtwork: boolean;
     sections: Section[];
     setActiveSection: React.Dispatch<React.SetStateAction<string>>;
 }
 
-/**
- * 辅助函数：清洗和预处理艺术品数据中的 JSON 字段和图片路径
- * @param fetchedArtwork - 原始 API 返回的作品数据
- */
-const cleanArtworkData = (fetchedArtwork: RawArtwork): { processedArtwork: Artwork, extLinks: ExternalLinks } => {
+const cleanArtworkData = (fetchedArtwork: RawArtwork): { processedArtwork: Artwork } => {
     const processedArtwork: Artwork = { ...fetchedArtwork, exhibitionHistory: [] };
-    const extLinks: ExternalLinks = {};
 
     try {
         if (processedArtwork.exhibitions) {
@@ -70,117 +59,60 @@ const cleanArtworkData = (fetchedArtwork: RawArtwork): { processedArtwork: Artwo
         processedArtwork.primaryImageLarge = `https://www.pubhist.com${processedArtwork.primaryImageSmall}`;
     }
 
-    return { processedArtwork, extLinks };
+    return { processedArtwork };
 };
 
-/**
- * 封装作品详情页的数据获取、清洗和状态管理。
- * @param id - 作品 ID (通常是字符串)
- * @returns 包含作品数据、状态和操作函数的对象。
- */
+
 const useArtworkDetails = (id: string): UseArtworkDetailsResult => {
-    const [artwork, setArtwork] = useState<Artwork | null>(null);
-    const [extLinks, setExtLinks] = useState<ExternalLinks>({});
+    // const [artwork, setArtwork] = useState<Artwork | null>(null);
     const [activeSection, setActiveSection] = useState<string>('overview');
 
-    // 延迟加载数据和状态
-    const [lettersData, setLettersData] = useState<LetterData[] | null>(null);
-    const [isLoadingLetters, setIsLoadingLetters] = useState<boolean>(false);
+    const {
+        data: artwork,
+        isLoading: isLoadingArtwork,
+        error: artworkError
+    } = useQuery({
+        queryKey: ['artwork', id],
+        queryFn: async () => {
+            const fetchedArtwork = await fetchArtworkById(id);
+            const { processedArtwork } = cleanArtworkData(fetchedArtwork);
+            // setArtwork(processedArtwork);
+            return processedArtwork;
+        },
+        staleTime: 1000 * 60 * 5,
+        retry: 2,
+        gcTime: 1000 * 60 * 10,
+    });
 
-    const [isLoadingArtwork, setIsLoadingArtwork] = useState<boolean>(true);
-
-    // --- 1. 艺术品数据获取 (useEffect) ---
-    useEffect(() => {
-        if (!id) return;
-
-        const fetchAndCleanArtwork = async (): Promise<void> => {
-            setIsLoadingArtwork(true);
-            setArtwork(null);
-            setExtLinks({});
-
-            try {
-                // 假设 fetchArtworkById 返回 RawArtwork 类型
-                const fetchedArtwork: RawArtwork = await fetchArtworkById(id);
-                const { processedArtwork, extLinks: cleanedExtLinks } = cleanArtworkData(fetchedArtwork);
-
-                setArtwork(processedArtwork);
-                setExtLinks(cleanedExtLinks);
-
-            } catch (error) {
-                console.error('Error fetching artwork data', error);
-                setArtwork(null);
-            } finally {
-                setIsLoadingArtwork(false);
-            }
-        };
-
-        fetchAndCleanArtwork();
-    }, [id]);
-
-    // --- 2. 动态计算导航栏目 (useMemo) ---
+    // --- 2. 动态计算导航栏目  ---
     const sections = useMemo<Section[]>(() => {
-        if (!artwork) return [];
-
-        const sectionsList: Section[] = [
-            { id: 'overview', label: '详情', dataField: 'shortDesc' },
-            { id: 'letters', label: '梵高书信', dataField: 'letters' },
-            { id: 'exhibition', label: '展出信息', dataField: 'exhibitions' },
-            // ... 其他 section
-        ];
-
-        return sectionsList.filter(section => {
-            if (section.id === 'overview') return true;
-
-            const dataFieldKey = section.dataField as keyof Artwork;
-            const dataFieldValue = artwork[dataFieldKey];
-
-            // 针对 letters 字段进行特殊检查，因为它可能是 number 或 string
-            if (section.id === 'letters') {
-                return dataFieldValue != null && String(dataFieldValue).length > 0;
-            }
-
-            // 针对 exhibitions 字段进行特殊检查
-            if (section.id === 'exhibition') {
-                // 检查原始字符串字段 exhibitions 
-                return dataFieldValue && String(dataFieldValue).length > 0;
-            }
-
-            // 检查其他字段是否有值
-            return !!dataFieldValue;
-        });
+        const result: Section[] = [{ id: 'overview', label: '概览', dataField: 'overview' },];
+        if (artwork?.letters) {
+            result.push({ id: 'letters', label: '梵高书信', dataField: 'letters' });
+        }
+        if (artwork?.exhibitionHistory?.length) {
+            result.push({ id: 'exhibition', label: '展览历史', dataField: 'exhibitionHistory' });
+        }
+        return result;
     }, [artwork]);
 
-    // --- 3. 延迟加载书信数据 (useEffect) ---
-    useEffect(() => {
-        // 只有当切换到 'letters' 选项卡 且 尚未开始加载时，才执行加载
-        if (artwork && activeSection === 'letters' && !lettersData && !isLoadingLetters) {
-            const loadLetters = async (): Promise<void> => {
-                setIsLoadingLetters(true);
-                try {
-                    // 假设 artwork.letters 是一个逗号分隔的 ID 字符串
-                    if (artwork.letters) {
-                        // 假设 getLettersByIds 接收 ID 字符串并返回 LetterData[]
-                        const data: LetterData[] = await getLettersByIds(String(artwork.letters));
-                        setLettersData(data);
-                    } else {
-                        setLettersData([]);
-                    }
-                } catch (error) {
-                    console.error("Error loading letters:", error);
-                    setLettersData([]);
-                } finally {
-                    setIsLoadingLetters(false);
-                }
-            };
-            loadLetters();
-        }
-    }, [activeSection, artwork, lettersData, isLoadingLetters]);
-    // 依赖项中添加 artwork, lettersData 和 isLoadingLetters 以确保逻辑的正确性
+    const {
+        data: lettersData,
+        isLoading: isLoadingLetters,
+    } = useQuery({
+        queryKey: ['letters', artwork?.letters],
+        queryFn: async () => {
+            const res = await getLettersByIds(String(artwork?.letters));
+            if (Array.isArray(res)) return res;
+            return [];
+        },
+        enabled: activeSection === 'letters' && !!artwork?.letters,
+        retry: 1,
+        gcTime: 1000 * 60 * 10,
+    });
 
-    // --- 4. 返回结果 ---
     return {
         artwork,
-        extLinks,
         activeSection,
         lettersData,
         isLoadingLetters,

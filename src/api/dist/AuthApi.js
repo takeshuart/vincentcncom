@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.itsmeApi = exports.logoutApi = exports.loginApi = exports.registerApi = void 0;
+exports.updateUserApi = exports.itsmeApi = exports.logoutApi = exports.loginApi = exports.registerApi = void 0;
 var requests_1 = require("./requests");
 function registerApi(params) {
     return __awaiter(this, void 0, Promise, function () {
@@ -95,3 +95,17 @@ function itsmeApi() {
     });
 }
 exports.itsmeApi = itsmeApi;
+function updateUserApi(params) {
+    return __awaiter(this, void 0, Promise, function () {
+        var res;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, requests_1["default"].patch("/users/update", params)];
+                case 1:
+                    res = _a.sent();
+                    return [2 /*return*/, res.data.data];
+            }
+        });
+    });
+}
+exports.updateUserApi = updateUserApi;

@@ -57,6 +57,7 @@ exports.__esModule = true;
 var react_1 = require("react");
 var react_router_dom_1 = require("react-router-dom");
 var material_1 = require("@mui/material");
+var Close_1 = require("@mui/icons-material/Close");
 require("react-photo-view/dist/react-photo-view.css");
 var useArtworkDetails_1 = require("../hooks/useArtworkDetails");
 var ArtworkImage_1 = require("../components/ArtworkImage");
@@ -67,7 +68,6 @@ var Favorite_1 = require("@mui/icons-material/Favorite");
 var FavoriteBorder_1 = require("@mui/icons-material/FavoriteBorder");
 var useSearchContextNavigation_1 = require("../hooks/useSearchContextNavigation");
 var useAuth_1 = require("@/hooks/useAuth");
-var react_hot_toast_1 = require("react-hot-toast");
 var useFavorites_1 = require("@/hooks/useFavorites");
 var titleStyle = {
     fontWeight: 600,
@@ -80,12 +80,15 @@ var DetailsPage = function () {
     var isMobile = material_1.useMediaQuery('(max-width:600px)');
     var addFavoriteMutation = useFavorites_1.useAddFavoriteMutation();
     var removeFavoriteMutation = useFavorites_1.useRemoveFavoriteMutation();
+    var _a = react_1.useState(false), snackbarOpen = _a[0], setSnackbarOpen = _a[1];
+    var _b = react_1.useState(''), snackbarMessage = _b[0], setSnackbarMessage = _b[1];
+    var _c = react_1.useState(false), isAddAction = _c[0], setIsAddAction = _c[1];
     var id = react_router_dom_1.useParams().id;
     var user = useAuth_1.useAuth().user;
     var navigate = react_router_dom_1.useNavigate();
     var artworkId = id;
-    var _a = useArtworkDetails_1["default"](artworkId), artwork = _a.artwork, extLinks = _a.extLinks, activeSection = _a.activeSection, lettersData = _a.lettersData, isLoadingLetters = _a.isLoadingLetters, isLoadingArtwork = _a.isLoadingArtwork, sections = _a.sections, setActiveSection = _a.setActiveSection;
-    var _b = react_1.useState(false), isFavorited = _b[0], setIsFavorited = _b[1];
+    var _d = useArtworkDetails_1["default"](artworkId), artwork = _d.artwork, activeSection = _d.activeSection, lettersData = _d.lettersData, isLoadingLetters = _d.isLoadingLetters, isLoadingArtwork = _d.isLoadingArtwork, sections = _d.sections, setActiveSection = _d.setActiveSection;
+    var _e = react_1.useState(false), isFavorited = _e[0], setIsFavorited = _e[1];
     react_1.useEffect(function () {
         var _a;
         var apiFavoritedStatus = (_a = artwork === null || artwork === void 0 ? void 0 : artwork.isFavorited) !== null && _a !== void 0 ? _a : false;
@@ -93,9 +96,19 @@ var DetailsPage = function () {
             setIsFavorited(apiFavoritedStatus);
         }
     }, [artwork, artworkId, isLoadingArtwork]);
-    var _c = useSearchContextNavigation_1["default"](id), canGoNext = _c.canGoNext, canGoPrev = _c.canGoPrev, goToNext = _c.goToNext, goToPrev = _c.goToPrev;
+    var _f = useSearchContextNavigation_1["default"](id), canGoNext = _f.canGoNext, canGoPrev = _f.canGoPrev, goToNext = _f.goToNext, goToPrev = _f.goToPrev;
+    var handleSnackbarClose = function (event, reason) {
+        if (reason === 'clickaway') {
+            return; // 阻止点击外部关闭
+        }
+        setSnackbarOpen(false);
+    };
+    var handleActionClick = function () {
+        setSnackbarOpen(false);
+        navigate('/favorites');
+    };
     var handleToggleFavorite = function () { return __awaiter(void 0, void 0, void 0, function () {
-        var variables, error_1, errorMessage;
+        var previousFavoritedStatus, variables, error_1, errorMessage;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -103,29 +116,40 @@ var DetailsPage = function () {
                         navigate('/auth');
                         return [2 /*return*/];
                     }
+                    previousFavoritedStatus = isFavorited;
                     //optimistic UI: Update the local status first and do not wait for the server's result
                     setIsFavorited(function (prev) { return !prev; });
+                    setSnackbarOpen(false); //close previous snackbar
                     _a.label = 1;
                 case 1:
                     _a.trys.push([1, 6, , 7]);
                     variables = { userId: user.userId, artworkId: artworkId };
-                    if (!isFavorited) return [3 /*break*/, 3];
+                    if (!previousFavoritedStatus) return [3 /*break*/, 3];
                     return [4 /*yield*/, removeFavoriteMutation.mutateAsync(variables)];
                 case 2:
                     _a.sent();
+                    setSnackbarMessage('已从“我的收藏”中移除!');
+                    setIsAddAction(false);
+                    setSnackbarOpen(true);
                     return [3 /*break*/, 5];
                 case 3: return [4 /*yield*/, addFavoriteMutation.mutateAsync(variables)];
                 case 4:
                     _a.sent();
+                    setSnackbarMessage('添加收藏成功!');
+                    setIsAddAction(true);
+                    setSnackbarOpen(true);
+                    setTimeout(function () { setSnackbarOpen(false); }, 5000); //auto close after 5s
                     _a.label = 5;
                 case 5: return [3 /*break*/, 7];
                 case 6:
                     error_1 = _a.sent();
                     //rollback 
-                    setIsFavorited(function (prev) { return !prev; });
+                    setIsFavorited(previousFavoritedStatus);
                     errorMessage = isFavorited ? '取消收藏失败' : '收藏失败';
                     console.error(errorMessage, error_1);
-                    react_hot_toast_1["default"].error(errorMessage);
+                    setSnackbarMessage(errorMessage);
+                    setIsAddAction(false);
+                    setSnackbarOpen(true);
                     return [3 /*break*/, 7];
                 case 7: return [2 /*return*/];
             }
@@ -136,7 +160,7 @@ var DetailsPage = function () {
             return null;
         switch (activeSection) {
             case 'overview':
-                return react_1["default"].createElement(ArtworkSections_1.ArtworkOverview, { artwork: artwork, extLinks: extLinks });
+                return react_1["default"].createElement(ArtworkSections_1.ArtworkOverview, { artwork: artwork });
             case 'letters':
                 return react_1["default"].createElement(ArtworkSections_1.ArtworkLetters, { isLoading: isLoadingLetters, lettersData: lettersData });
             case 'exhibition':
@@ -162,6 +186,30 @@ var DetailsPage = function () {
         return (react_1["default"].createElement(material_1.IconButton, { onClick: handleToggleFavorite, "aria-label": tooltipText, sx: { color: '#C93636', ml: 1 } },
             react_1["default"].createElement(IconComponent, { sx: { fontSize: 30 } })));
     };
+    var renderSnackbarContent = function () {
+        if (isAddAction) {
+            return (react_1["default"].createElement(material_1.Box, { sx: {
+                    display: 'flex',
+                    alignItems: 'center',
+                    backgroundColor: '#fab027ff',
+                    padding: '8px 16px',
+                    borderRadius: '4px',
+                    boxShadow: 3,
+                    color: 'white'
+                } },
+                react_1["default"].createElement(material_1.Typography, { variant: "body1", sx: { flexGrow: 1 } }, snackbarMessage),
+                react_1["default"].createElement(material_1.Button, { color: "inherit", size: "small", onClick: handleActionClick, sx: { fontWeight: 'bold', textDecoration: 'underline' } }, "\u67E5\u770B"),
+                react_1["default"].createElement(material_1.IconButton, { size: "small", "aria-label": "close", color: "inherit", onClick: handleSnackbarClose, sx: { ml: 1 } },
+                    react_1["default"].createElement(Close_1["default"], { fontSize: "small" }))));
+        }
+        else {
+            return (react_1["default"].createElement(material_1.Alert, { onClose: handleSnackbarClose, severity: snackbarMessage.includes('失败') ? "error" : "success", variant: "filled", sx: { backgroundColor: snackbarMessage.includes('移除') ? '#388e3c' : undefined } }, snackbarMessage));
+        }
+    };
+    //snackbar position
+    var anchorOrigin = isMobile
+        ? { vertical: 'center', horizontal: 'center' }
+        : { vertical: 'bottom', horizontal: 'center' };
     return (react_1["default"].createElement(material_1.Grid, { container: true, justifyContent: "center", sx: { paddingTop: 10 } },
         react_1["default"].createElement(material_1.Box, { sx: {
                 position: 'relative',
@@ -195,26 +243,48 @@ var DetailsPage = function () {
         react_1["default"].createElement(material_1.Grid, { container: true, justifyContent: "center", sx: { mt: 5, mb: 10 } },
             react_1["default"].createElement(material_1.Grid, { item: true, xs: 10, sm: 8, md: 8 },
                 react_1["default"].createElement(material_1.Grid, { container: true },
-                    !isMobile && (react_1["default"].createElement(material_1.Grid, { item: true, md: 2, sx: { pr: 3, borderRight: '1px solid #eee' } }, isLoadingArtwork ? (react_1["default"].createElement(material_1.List, { sx: { p: 0 } }, __spreadArrays(Array(4)).map(function (_, i) { return (react_1["default"].createElement(material_1.ListItem, { key: i },
-                        react_1["default"].createElement(material_1.Skeleton, { width: "80%", height: 24 }))); }))) : (react_1["default"].createElement(material_1.List, { component: "nav", sx: { p: 0 } }, sections.map(function (section) { return (react_1["default"].createElement(material_1.ListItem, { key: section.id, disablePadding: true },
+                    react_1["default"].createElement(material_1.Grid, { item: true, xs: 12, md: 2, sx: {
+                            pr: { xs: 0, md: 3 },
+                            borderRight: { xs: 'none', md: '1px solid #eee' },
+                            mb: { xs: 3, md: 0 }
+                        } }, isLoadingArtwork ? (react_1["default"].createElement(material_1.List, { sx: { p: 0 } }, __spreadArrays(Array(4)).map(function (_, i) { return (react_1["default"].createElement(material_1.ListItem, { key: i },
+                        react_1["default"].createElement(material_1.Skeleton, { width: "80%", height: 24 }))); }))) : (react_1["default"].createElement(material_1.Box, { component: "nav", sx: {
+                            p: 0,
+                            display: { xs: 'flex', md: 'block' },
+                            overflowX: { xs: 'auto', md: 'hidden' },
+                            whiteSpace: { xs: 'nowrap', md: 'normal' },
+                            '&::-webkit-scrollbar': { display: 'none' },
+                            msOverflowStyle: 'none',
+                            scrollbarWidth: 'none'
+                        } }, sections.map(function (section) { return (react_1["default"].createElement(material_1.ListItem, { key: section.id, disablePadding: true, sx: {
+                            display: 'inline-block',
+                            minWidth: 'fit-content',
+                            mr: { xs: 1, md: 0 }
+                        } },
                         react_1["default"].createElement(material_1.ListItemButton, { selected: activeSection === section.id, onClick: function () { return setActiveSection(section.id); }, sx: {
                                 borderRadius: '4px',
                                 '&.Mui-selected': {
                                     backgroundColor: '#f0f0f0',
-                                    borderRight: '3px solid #C93636',
+                                    borderRight: { xs: 'none', md: '3px solid #C93636' },
+                                    borderBottom: { xs: '3px solid #C93636', md: 'none' },
                                     color: '#C93636',
                                     fontWeight: 'bold',
                                     '&:hover': { backgroundColor: '#e0e0e0' }
                                 },
-                                py: 1
+                                py: { xs: 0.5, md: 1 },
+                                px: { xs: 2, md: 1 }
                             } },
-                            react_1["default"].createElement(material_1.Typography, { variant: "body1" }, section.label)))); }))))),
-                    react_1["default"].createElement(material_1.Grid, { item: true, xs: 12, md: 10, sx: { pl: isMobile ? 0 : 3 } },
+                            react_1["default"].createElement(material_1.Typography, { variant: "body1" }, section.label)))); })))),
+                    react_1["default"].createElement(material_1.Grid, { item: true, xs: 12, md: 10, sx: { pl: { xs: 0, md: 3 } } },
                         react_1["default"].createElement(material_1.Box, { sx: { minHeight: '400px' } }, isLoadingArtwork ? (react_1["default"].createElement(react_1["default"].Fragment, null,
                             react_1["default"].createElement(material_1.Skeleton, { width: "100%", height: 30 }),
                             react_1["default"].createElement(material_1.Skeleton, { width: "90%", height: 20 }),
                             react_1["default"].createElement(material_1.Skeleton, { width: "95%", height: 20 }),
                             react_1["default"].createElement(material_1.Skeleton, { width: "85%", height: 20 }))) : (renderContent())))))),
+        react_1["default"].createElement(material_1.Snackbar, { open: snackbarOpen, autoHideDuration: isAddAction ? null : 3000, onClose: handleSnackbarClose, anchorOrigin: anchorOrigin, sx: {
+                top: isMobile ? 'auto' : '150px',
+                right: isMobile ? 'auto' : '10%'
+            } }, renderSnackbarContent()),
         react_1["default"].createElement(material_1.Grid, { container: true, mt: "50px", justifyContent: "center", sx: { backgroundColor: '#fafafa', height: '100px', width: '100%', py: 3 } },
             react_1["default"].createElement(material_1.Typography, { alignContent: "center" }, "\u68B5\u00B7\u9AD8\u6863\u6848\u9986 2024"))));
 };

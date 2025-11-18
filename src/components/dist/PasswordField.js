@@ -1,9 +1,21 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 exports.__esModule = true;
 exports.validatePassword = void 0;
 var react_1 = require("react");
 var material_1 = require("@mui/material");
 var icons_material_1 = require("@mui/icons-material");
+var react_hook_form_1 = require("react-hook-form");
 exports.validatePassword = function (pwd) {
     if (!pwd)
         return { valid: false, error: "密码不能为空" };
@@ -28,29 +40,39 @@ exports.validatePassword = function (pwd) {
     }
     return { valid: true };
 };
-var PasswordField = function (_a) {
-    var _b = _a.label, label = _b === void 0 ? "密码" : _b, value = _a.value, onChange = _a.onChange, _c = _a.error, error = _c === void 0 ? "" : _c, _d = _a.disabled, disabled = _d === void 0 ? false : _d, _e = _a.showRequirements, showRequirements = _e === void 0 ? false : _e, _f = _a.showVisibilityToggle, showVisibilityToggle = _f === void 0 ? true : _f, _g = _a.fullWidth, fullWidth = _g === void 0 ? true : _g, _h = _a.margin, margin = _h === void 0 ? "normal" : _h, _j = _a.size, size = _j === void 0 ? "medium" : _j;
-    var _k = react_1.useState(false), showPassword = _k[0], setShowPassword = _k[1];
+var ValidatePasswordField = function (_a) {
+    var control = _a.control, name = _a.name, _b = _a.label, label = _b === void 0 ? "密码" : _b, _c = _a.disabled, disabled = _c === void 0 ? false : _c, _d = _a.showRequirements, showRequirements = _d === void 0 ? false : _d, _e = _a.showVisibilityToggle, showVisibilityToggle = _e === void 0 ? true : _e, _f = _a.fullWidth, fullWidth = _f === void 0 ? true : _f, _g = _a.margin, margin = _g === void 0 ? "normal" : _g, _h = _a.size, size = _h === void 0 ? "small" : _h;
+    var _j = react_1.useState(false), showPassword = _j[0], setShowPassword = _j[1];
     var handleClickShowPassword = function () {
         setShowPassword(function (show) { return !show; });
     };
     var handleMouseDownPassword = function (event) {
         event.preventDefault();
     };
-    return (react_1["default"].createElement(material_1.Box, null,
-        react_1["default"].createElement(material_1.TextField, { value: value, onChange: function (e) { return onChange(e.target.value); }, margin: margin, fullWidth: fullWidth, label: label, type: showPassword ? "text" : "password", error: !!error, helperText: error, disabled: disabled, size: size, InputProps: {
-                endAdornment: showVisibilityToggle ? (react_1["default"].createElement(material_1.InputAdornment, { position: "end" },
-                    react_1["default"].createElement(material_1.IconButton, { "aria-label": "toggle password visibility", onClick: handleClickShowPassword, onMouseDown: handleMouseDownPassword, edge: "end", disabled: disabled }, showPassword ? react_1["default"].createElement(icons_material_1.VisibilityOff, null) : react_1["default"].createElement(icons_material_1.Visibility, null)))) : undefined
-            } }),
-        showRequirements && !value && (react_1["default"].createElement(material_1.Box, { sx: { mt: 1 } },
-            react_1["default"].createElement(material_1.Typography, { sx: { fontSize: 11, color: "text.secondary", mb: 0.25 } }, "\u5BC6\u7801\u8981\u6C42\uFF1A"),
-            react_1["default"].createElement(material_1.Typography, { sx: { fontSize: 11, color: "text.secondary" } },
-                "\u2022 8-16 \u4E2A\u5B57\u7B26\uFF0C\u4E0D\u80FD\u6709\u7A7A\u683C",
-                react_1["default"].createElement("br", null),
-                "\u2022 \u4E0D\u80FD\u90FD\u662F\u76F8\u540C\u5B57\u7B26",
-                react_1["default"].createElement("br", null),
-                "\u2022 \u4E0D\u80FD\u6709\u8FDE\u7EED\u9012\u589E/\u9012\u51CF\u7684\u5B57\u7B26\u6216\u6570\u5B57"))),
-        showRequirements && value && error && (react_1["default"].createElement(material_1.Typography, { sx: { fontSize: 12, color: "error.main", mt: 0.5 } }, error)),
-        showRequirements && value && !error && (react_1["default"].createElement(material_1.Typography, { sx: { fontSize: 12, color: "success.main", mt: 0.5 } }, "\u2713 \u5BC6\u7801\u683C\u5F0F\u6B63\u786E"))));
+    return (react_1["default"].createElement(react_hook_form_1.Controller, { name: name, control: control, rules: {
+            validate: function (value) {
+                var validation = exports.validatePassword(value);
+                if (!validation.valid) {
+                    showRequirements = true;
+                }
+                return validation.valid || validation.error || "密码格式不正确";
+            }
+        }, render: function (_a) {
+            var field = _a.field, error = _a.fieldState.error;
+            return (react_1["default"].createElement(material_1.Box, { sx: { mb: 2 } },
+                react_1["default"].createElement(material_1.TextField, __assign({}, field, { margin: margin, fullWidth: fullWidth, label: label, type: showPassword ? "text" : "password", id: name, autoComplete: "new-password", error: !!error, helperText: error ? error.message : undefined, disabled: disabled, size: size, InputProps: {
+                        endAdornment: showVisibilityToggle ? (react_1["default"].createElement(material_1.InputAdornment, { position: "end" },
+                            react_1["default"].createElement(material_1.IconButton, { "aria-label": "toggle password visibility", onClick: handleClickShowPassword, onMouseDown: handleMouseDownPassword, edge: "end", disabled: disabled, size: size === "small" ? "small" : "medium" }, showPassword ? react_1["default"].createElement(icons_material_1.VisibilityOff, null) : react_1["default"].createElement(icons_material_1.Visibility, null)))) : undefined
+                    } })),
+                showRequirements && !field.value && (react_1["default"].createElement(material_1.Box, { sx: { mt: 1 } },
+                    react_1["default"].createElement(material_1.Typography, { sx: { fontSize: 11, color: "text.secondary", mb: 0.25 } }, "\u5BC6\u7801\u8981\u6C42\uFF1A"),
+                    react_1["default"].createElement(material_1.Typography, { sx: { fontSize: 11, color: "text.secondary" } },
+                        "\u2022 8-16 \u4E2A\u5B57\u7B26\uFF0C\u4E0D\u80FD\u6709\u7A7A\u683C",
+                        react_1["default"].createElement("br", null),
+                        "\u2022 \u4E0D\u80FD\u90FD\u662F\u76F8\u540C\u5B57\u7B26",
+                        react_1["default"].createElement("br", null),
+                        "\u2022 \u4E0D\u80FD\u6709\u8FDE\u7EED\u9012\u589E/\u9012\u51CF\u7684\u5B57\u7B26\u6216\u6570\u5B57"))),
+                showRequirements && field.value && !error && (react_1["default"].createElement(material_1.Typography, { sx: { fontSize: 12, color: "success.main", mt: 0.5 } }, "\u2713 \u5BC6\u7801\u683C\u5F0F\u6B63\u786E"))));
+        } }));
 };
-exports["default"] = PasswordField;
+exports["default"] = ValidatePasswordField;

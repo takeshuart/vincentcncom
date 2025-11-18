@@ -7,12 +7,12 @@ import {
   IconButton,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { Controller, Control, FieldValues, Path } from "react-hook-form";
 
-interface PasswordFieldProps {
+interface PasswordFieldProps<T extends FieldValues = any> {
+  control: Control<T>;
+  name: Path<T>;
   label?: string;
-  value: string;
-  onChange: (value: string) => void;
-  error?: string;
   disabled?: boolean;
   showRequirements?: boolean;
   showVisibilityToggle?: boolean;
@@ -45,17 +45,16 @@ export const validatePassword = (pwd: string): { valid: boolean; error?: string 
   return { valid: true };
 };
 
-const PasswordField: React.FC<PasswordFieldProps> = ({
+const ValidatePasswordField: React.FC<PasswordFieldProps> = ({
+  control,
+  name,
   label = "密码",
-  value,
-  onChange,
-  error = "",
   disabled = false,
   showRequirements = false,
   showVisibilityToggle = true,
   fullWidth = true,
   margin = "normal",
-  size = "medium",
+  size = "small",
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -68,63 +67,70 @@ const PasswordField: React.FC<PasswordFieldProps> = ({
   };
 
   return (
-    <Box>
-      <TextField
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        margin={margin}
-        fullWidth={fullWidth}
-        label={label}
-        type={showPassword ? "text" : "password"}
-        error={!!error}
-        helperText={error}
-        disabled={disabled}
-        size={size}
-        InputProps={{
-          endAdornment: showVisibilityToggle ? (
-            <InputAdornment position="end">
-              <IconButton
-                aria-label="toggle password visibility"
-                onClick={handleClickShowPassword}
-                onMouseDown={handleMouseDownPassword}
-                edge="end"
-                disabled={disabled}
-              >
-                {showPassword ? <VisibilityOff /> : <Visibility />}
-              </IconButton>
-            </InputAdornment>
-          ) : undefined,
-        }}
-      />
-      
-      {/* Show format requirements */}
-      {showRequirements && !value && (
-        <Box sx={{ mt: 1 }}>
-          <Typography sx={{ fontSize: 11, color: "text.secondary", mb: 0.25 }}>
-            密码要求：
-          </Typography>
-          <Typography sx={{ fontSize: 11, color: "text.secondary" }}>
-            • 8-16 个字符，不能有空格<br/>
-            • 不能都是相同字符<br/>
-            • 不能有连续递增/递减的字符或数字
-          </Typography>
+    <Controller
+      name={name}
+      control={control}
+      rules={{
+        validate: (value) => {
+          const validation = validatePassword(value);
+          if(!validation.valid) {showRequirements = true}
+          return validation.valid || validation.error || "密码格式不正确";
+        }
+      }}
+      render={({ field, fieldState: { error } }) => (
+        <Box sx={{ mb: 2 }}>
+          <TextField
+            {...field}
+            margin={margin}
+            fullWidth={fullWidth}
+            label={label}
+            type={showPassword ? "text" : "password"}
+            id={name}
+            autoComplete="new-password"
+            error={!!error}
+            helperText={error ? error.message : undefined}
+            disabled={disabled}
+            size={size}
+            InputProps={{
+              endAdornment: showVisibilityToggle ? (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={handleClickShowPassword}
+                    onMouseDown={handleMouseDownPassword}
+                    edge="end"
+                    disabled={disabled}
+                    size={size === "small" ? "small" : "medium"}
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ) : undefined,
+            }}
+          />
+          
+          {/* Show format requirements */}
+          {showRequirements && !field.value && (
+            <Box sx={{ mt: 1 }}>
+              <Typography sx={{ fontSize: 11, color: "text.secondary", mb: 0.25 }}>
+                密码要求：
+              </Typography>
+              <Typography sx={{ fontSize: 11, color: "text.secondary" }}>
+                • 8-16 个字符，不能有空格<br/>
+                • 不能都是相同字符<br/>
+                • 不能有连续递增/递减的字符或数字
+              </Typography>
+            </Box>
+          )}
+          {showRequirements && field.value && !error && (
+            <Typography sx={{ fontSize: 12, color: "success.main", mt: 0.5 }}>
+              ✓ 密码格式正确
+            </Typography>
+          )}
         </Box>
       )}
-
-      {/* Show validation status */}
-      {showRequirements && value && error && (
-        <Typography sx={{ fontSize: 12, color: "error.main", mt: 0.5 }}>
-          {error}
-        </Typography>
-      )}
-
-      {showRequirements && value && !error && (
-        <Typography sx={{ fontSize: 12, color: "success.main", mt: 0.5 }}>
-          ✓ 密码格式正确
-        </Typography>
-      )}
-    </Box>
+    />
   );
 };
 
-export default PasswordField;
+export default ValidatePasswordField;

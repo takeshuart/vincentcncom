@@ -2,9 +2,8 @@
 import React from 'react';
 import { Box, Typography, List, ListItem, Link, Grid, CircularProgress } from '@mui/material';
 
-export const ArtworkOverview = ({ artwork, extLinks }) => (
+export const ArtworkOverview = ({ artwork }) => (
   <Box>
-    {/* 简介 & 深度阅读引导 （没有相关数据，demo）*/}
     {artwork.fullArticleUrl && (
       <Box
         sx={{
@@ -39,25 +38,9 @@ export const ArtworkOverview = ({ artwork, extLinks }) => (
     <InfoRow label="材料" value={artwork.material} />
     <InfoRow label="作品编码" value={`${artwork.jhCode} / ${artwork.fCode}`} />
 
-    {/* 外部链接 */}
-    {Object.keys(extLinks || {}).length > 0 && (
-      <Box sx={{ mt: 3 }}>
-        <Typography sx={{ fontWeight: 600, mb: 1 }}>外部链接：</Typography>
-        <List sx={{ p: 0, ml: 2, listStyleType: 'disc', '& .MuiListItem-root': { display: 'list-item', py: 0.5, px: 0 } }}>
-          {Object.keys(extLinks).map((key, i) => (
-            <ListItem key={i} disablePadding>
-              <Link href={extLinks[key].url} target="_blank" rel="noopener noreferrer">
-                <Typography color="text.secondary">{extLinks[key].linkName}</Typography>
-              </Link>
-            </ListItem>
-          ))}
-        </List>
-      </Box>
-    )}
   </Box>
 );
 
-// ========== ArtworkLetters ==========
 export const ArtworkLetters = ({ isLoading, lettersData }) => {
   if (isLoading) {
     return (
@@ -73,7 +56,7 @@ export const ArtworkLetters = ({ isLoading, lettersData }) => {
 
   return (
     <Box>
-      <Typography variant="h6" sx={{ mb: 2 }}>
+      <Typography sx={{ mb: 2 ,fontSize: { xs: 14, md: 16 }}}>
         本作品曾在以下书信中被提及：
       </Typography>
       <List sx={{ border: '1px solid #eee', borderRadius: '4px' }}>
@@ -92,7 +75,7 @@ export const ArtworkLetters = ({ isLoading, lettersData }) => {
                 '&:hover': { backgroundColor: '#f5f5f5', color: '#C93636' },
               }}
             >
-              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+              <Typography  sx={{ fontWeight: 'bold' }}>
                 No. {letter.letterId} - 致 {letter.recipientZh}
               </Typography>
               <Typography variant="caption" color="text.secondary">

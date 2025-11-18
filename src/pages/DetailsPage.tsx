@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Box, Divider, Grid, Typography, useMediaQuery, List, ListItem, ListItemButton, Skeleton, IconButton } from '@mui/material';
+import {
+  Snackbar, Alert, Box, Divider, Grid, Typography,
+  useMediaQuery, List, ListItem, ListItemButton, Skeleton, IconButton,
+  Button
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import 'react-photo-view/dist/react-photo-view.css';
 import useArtworkDetails from '../hooks/useArtworkDetails';
 import ArtworkImage from '../components/ArtworkImage';
@@ -32,13 +37,16 @@ const DetailsPage: React.FC = () => {
   const addFavoriteMutation = useAddFavoriteMutation();
   const removeFavoriteMutation = useRemoveFavoriteMutation();
 
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [isAddAction, setIsAddAction] = useState(false);
+
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
   const artworkId: string = id!;
   const {
     artwork,
-    extLinks,
     activeSection,
     lettersData,
     isLoadingLetters,
@@ -57,9 +65,20 @@ const DetailsPage: React.FC = () => {
     }
 
   }, [artwork, artworkId, isLoadingArtwork]);
-  
+
   const { canGoNext, canGoPrev, goToNext, goToPrev } = useSearchContextNavigation(id);
 
+  const handleSnackbarClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return; // 阻止点击外部关闭
+    }
+    setSnackbarOpen(false);
+  };
+
+  const handleActionClick = () => {
+    setSnackbarOpen(false);
+    navigate('/favorites');
+  };
 
   const handleToggleFavorite = async () => {
     if (!user) {
@@ -67,24 +86,34 @@ const DetailsPage: React.FC = () => {
       return;
     }
 
-
+    const previousFavoritedStatus = isFavorited;
     //optimistic UI: Update the local status first and do not wait for the server's result
     setIsFavorited((prev) => !prev);
+    setSnackbarOpen(false);//close previous snackbar
 
     try {
       const variables = { userId: user.userId as string, artworkId: artworkId as string };
-      if (isFavorited) {
+      if (previousFavoritedStatus) {
         await removeFavoriteMutation.mutateAsync(variables);
+        setSnackbarMessage('已从“我的收藏”中移除!');
+        setIsAddAction(false);
+        setSnackbarOpen(true);
       } else {
         await addFavoriteMutation.mutateAsync(variables);
+        setSnackbarMessage('添加收藏成功!');
+        setIsAddAction(true);
+        setSnackbarOpen(true);
+        setTimeout(() => { setSnackbarOpen(false); }, 5000);//auto close after 5s
       }
 
     } catch (error) {
       //rollback 
-      setIsFavorited((prev) => !prev);
+      setIsFavorited(previousFavoritedStatus);
       const errorMessage = isFavorited ? '取消收藏失败' : '收藏失败';
       console.error(errorMessage, error);
-      toast.error(errorMessage);
+      setSnackbarMessage(errorMessage);
+      setIsAddAction(false);
+      setSnackbarOpen(true);
     }
   };
 
@@ -92,7 +121,7 @@ const DetailsPage: React.FC = () => {
     if (!artwork) return null;
     switch (activeSection) {
       case 'overview':
-        return <ArtworkOverview artwork={artwork} extLinks={extLinks} />;
+        return <ArtworkOverview artwork={artwork} />;
       case 'letters':
         return <ArtworkLetters isLoading={isLoadingLetters} lettersData={lettersData} />;
       case 'exhibition':
@@ -131,6 +160,61 @@ const DetailsPage: React.FC = () => {
       </IconButton>
     );
   };
+  const renderSnackbarContent = () => {
+    if (isAddAction) {
+      return (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            backgroundColor: '#fab027ff',
+            padding: '8px 16px',
+            borderRadius: '4px',
+            boxShadow: 3,
+            color: 'white'
+          }}
+        >
+          <Typography variant="body1" sx={{ flexGrow: 1 }}>
+            {snackbarMessage}
+          </Typography>
+          <Button
+            color="inherit"
+            size="small"
+            onClick={handleActionClick}
+            sx={{ fontWeight: 'bold', textDecoration: 'underline' }}
+          >
+            查看
+          </Button>
+          <IconButton
+            size="small"
+            aria-label="close"
+            color="inherit"
+            onClick={handleSnackbarClose}
+            sx={{ ml: 1 }}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </Box>
+      );
+    } else {
+      return (
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarMessage.includes('失败') ? "error" : "success"}
+          variant="filled"
+          sx={{ backgroundColor: snackbarMessage.includes('移除') ? '#388e3c' : undefined }}
+        >
+          {snackbarMessage}
+        </Alert>
+      );
+    }
+  };
+
+  //snackbar position
+  const anchorOrigin = isMobile
+    ? { vertical: 'center' as const, horizontal: 'center' as const } 
+    : { vertical: 'bottom' as const, horizontal: 'center' as const }; 
+
   return (
     <Grid container justifyContent="center" sx={{ paddingTop: 10 }}>
       <Box
@@ -167,7 +251,6 @@ const DetailsPage: React.FC = () => {
         )}
       </Box>
 
-      {/* 标题 */}
       <Grid container justifyContent="center">
         <Grid item xs={10} sm={8} md={6}>
           <Divider sx={{ my: 3 }} />
@@ -216,45 +299,78 @@ const DetailsPage: React.FC = () => {
       <Grid container justifyContent="center" sx={{ mt: 5, mb: 10 }}>
         <Grid item xs={10} sm={8} md={8}>
           <Grid container>
-            {!isMobile && (
-              <Grid item md={2} sx={{ pr: 3, borderRight: '1px solid #eee' }}>
-                {isLoadingArtwork ? (
-                  <List sx={{ p: 0 }}>
-                    {[...Array(4)].map((_, i) => (
-                      <ListItem key={i}>
-                        <Skeleton width="80%" height={24} />
-                      </ListItem>
-                    ))}
-                  </List>
-                ) : (
-                  <List component="nav" sx={{ p: 0 }}>
-                    {sections.map((section: Section) => (
-                      <ListItem key={section.id} disablePadding>
-                        <ListItemButton
-                          selected={activeSection === section.id}
-                          onClick={() => setActiveSection(section.id)}
-                          sx={{
-                            borderRadius: '4px',
-                            '&.Mui-selected': {
-                              backgroundColor: '#f0f0f0',
-                              borderRight: '3px solid #C93636',
-                              color: '#C93636',
-                              fontWeight: 'bold',
-                              '&:hover': { backgroundColor: '#e0e0e0' }
-                            },
-                            py: 1
-                          }}
-                        >
-                          <Typography variant="body1">{section.label}</Typography>
-                        </ListItemButton>
-                      </ListItem>
-                    ))}
-                  </List>
-                )}
-              </Grid>
-            )}
+            <Grid
+              item
+              xs={12}
+              md={2}
+              sx={{
+                pr: { xs: 0, md: 3 },
+                borderRight: { xs: 'none', md: '1px solid #eee' },
+                mb: { xs: 3, md: 0 }
+              }}
+            >
+              {isLoadingArtwork ? (
+                <List sx={{ p: 0 }}>
+                  {[...Array(4)].map((_, i) => (
+                    <ListItem key={i}>
+                      <Skeleton width="80%" height={24} />
+                    </ListItem>
+                  ))}
+                </List>
+              ) : (
+                <Box
+                  component="nav"
+                  sx={{
+                    p: 0,
+                    display: { xs: 'flex', md: 'block' },
+                    overflowX: { xs: 'auto', md: 'hidden' }, //slide on mobile
+                    whiteSpace: { xs: 'nowrap', md: 'normal' },
+                    '&::-webkit-scrollbar': { display: 'none' },
+                    msOverflowStyle: 'none',
+                    scrollbarWidth: 'none',
+                  }}
+                >
+                  {sections.map((section: Section) => (
+                    <ListItem
+                      key={section.id}
+                      disablePadding
+                      sx={{
+                        display: 'inline-block',
+                        minWidth: 'fit-content',
+                        mr: { xs: 1, md: 0 }
+                      }}
+                    >
+                      <ListItemButton
+                        selected={activeSection === section.id}
+                        onClick={() => setActiveSection(section.id)}
+                        sx={{
+                          borderRadius: '4px',
+                          '&.Mui-selected': {
+                            backgroundColor: '#f0f0f0',
+                            borderRight: { xs: 'none', md: '3px solid #C93636' },
+                            borderBottom: { xs: '3px solid #C93636', md: 'none' },
+                            color: '#C93636',
+                            fontWeight: 'bold',
+                            '&:hover': { backgroundColor: '#e0e0e0' }
+                          },
+                          py: { xs: 0.5, md: 1 },
+                          px: { xs: 2, md: 1 }
+                        }}
+                      >
+                        <Typography variant="body1">{section.label}</Typography>
+                      </ListItemButton>
+                    </ListItem>
+                  ))}
+                </Box>
+              )}
+            </Grid>
 
-            <Grid item xs={12} md={10} sx={{ pl: isMobile ? 0 : 3 }}>
+            <Grid
+              item
+              xs={12}
+              md={10}
+              sx={{ pl: { xs: 0, md: 3 } }}
+            >
               <Box sx={{ minHeight: '400px' }}>
                 {isLoadingArtwork ? (
                   <>
@@ -271,6 +387,18 @@ const DetailsPage: React.FC = () => {
           </Grid>
         </Grid>
       </Grid>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={isAddAction ? null : 3000} 
+        onClose={handleSnackbarClose}
+        anchorOrigin={anchorOrigin}
+        sx={{
+          top: isMobile ? 'auto' : '150px', 
+          right: isMobile ? 'auto' : '10%',
+        }}
+      >
+        {renderSnackbarContent()}
+      </Snackbar>
 
       {/* Footer */}
       <Grid
@@ -281,6 +409,7 @@ const DetailsPage: React.FC = () => {
       >
         <Typography alignContent="center">梵·高档案馆 2024</Typography>
       </Grid>
+
     </Grid>
   );
 };

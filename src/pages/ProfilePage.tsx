@@ -5,273 +5,306 @@ import {
   Typography,
   TextField,
   Button,
-  Stack,
-  IconButton,
   Divider,
-  Tooltip,
   Alert,
+  Container,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import SaveIcon from "@mui/icons-material/Save";
-import CloseIcon from "@mui/icons-material/Close";
-import LockIcon from "@mui/icons-material/Lock";
+import EditIcon from '@mui/icons-material/Edit';
+import { IconButton } from "@mui/material";
+
 import { useAuth } from "@/hooks/useAuth";
-import apiV1 from "@/api/requests";
+import { useForm, Controller } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import PasswordField, { validatePassword } from "@/components/PasswordField";
+import ValidatePasswordField, { validatePassword } from "@/components/PasswordField";
+import { updateUserApi } from "@/api/AuthApi";
+import { ERROR_MESSAGES } from "@/utils/errors";
 
 type EditingKey = "nickName" | "email" | "password" | null;
 
-export default function ProfilePage() {
-  const { user } = useAuth();
-  const userData =  user ?? null;
+interface FormData {
+  nickName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  currentPassword: string;
+}
 
-  const [nickName, setNickName] = useState<string>(userData?.nickName ?? "");
-  const [email, setEmail] = useState<string>(userData?.email ?? "");
-  const [password, setPassword] = useState<string>("");
-  const [confirm, setConfirm] = useState<string>("");
+const ART_BLUE = "#215A8F";
+const HOVER_BLUE = "#17436B";
+const LIGHT_BACKGROUND = "#f5f7fa";
+
+export default function ProfilePage() {
+  const auth = useAuth();
+  const navigate = useNavigate();
+  const userData = auth.user ?? null;
 
   const [editing, setEditing] = useState<EditingKey>(null);
   const [loading, setLoading] = useState(false);
-  const [passwordError, setPasswordError] = useState<string>("");
   const [apiError, setApiError] = useState<string>("");
 
-  const ART_BLUE = "#215A8F";
-  const HOVER_BLUE = "#17436B";
-  const ACTIVE_BLUE = "#0E2C48";
-  const LIGHT_BACKGROUND = "#d8dbf0ff";
-
-  // Removed validatePassword as it's now imported from PasswordField component
+  const { control, reset, getValues } = useForm<FormData>({
+    mode: "onChange",
+    defaultValues: {
+      nickName: userData?.nickName ?? "",
+      email: userData?.email ?? "",
+      password: "",
+      confirmPassword: "",
+      currentPassword: "",
+    },
+  });
 
   useEffect(() => {
-    setNickName(userData?.nickName ?? "");
-    setEmail(userData?.email ?? "");
-  }, [userData?.nickName, userData?.email]);
+    reset({
+      nickName: userData?.nickName ?? "",
+      email: userData?.email ?? "",
+      password: "",
+      confirmPassword: "",
+      currentPassword: "",
+    });
+  }, [userData, reset]);
 
   const startEdit = (key: EditingKey) => {
     setEditing(key);
-    setPassword("");
-    setConfirm("");
-    setPasswordError("");
     setApiError("");
   };
 
   const cancelEdit = () => {
     setEditing(null);
-    setPassword("");
-    setConfirm("");
-    setPasswordError("");
     setApiError("");
-    // reset to original values
-    setNickName(userData?.nickName ?? "");
-    setEmail(userData?.email ?? "");
+    reset({
+      nickName: userData?.nickName ?? "",
+      email: userData?.email ?? "",
+      password: "",
+      confirmPassword: "",
+      currentPassword: "",
+    });
   };
 
   const saveField = async (key: EditingKey) => {
     if (!key) return;
     setApiError("");
 
-    if (key === "password") {
-      if (!password) {
-        toast.error("请输入新密码");
-        return;
-      }
-      const pwdValidation = validatePassword(password);
-      if (!pwdValidation.valid) {
-        setPasswordError(pwdValidation.error || "密码格式不正确");
-        return;
-      }
-      if (password !== confirm) {
-        toast.error("两次输入的密码不一致");
-        return;
-      }
-    }
-
+    const formValues = getValues();
     const payload: any = {};
-    if (key === "nickName") payload.nickName = nickName || undefined;
-    if (key === "email") payload.email = email || undefined;
-    if (key === "password") payload.password = password;
+
+    // 不提交重复值
+    if (key === "nickName" && formValues.nickName === userData?.nickName) {
+      setEditing(null);
+      return;
+    }
+    if (key === "email" && formValues.email === userData?.email) {
+      setEditing(null);
+      return;
+    }
+    if (key === "password" && !formValues.password) {
+      toast.error("请输入新密码");
+      return;
+    }
 
     try {
       setLoading(true);
-      await apiV1.patch("/users/me", payload);
-      toast.success("保存成功");
-      setEditing(null);
-      // refresh to update auth context
-      setTimeout(() => window.location.reload(), 700);
-      } catch (err: any) {
-        const msg = err?.displayMessage || err?.message || "保存失败";
-        setApiError(msg);
-      } finally {
-        setLoading(false);
+
+      if (key === "nickName") {
+        if (!formValues.nickName.trim()) { toast.error("昵称不能为空"); return; }
+        payload.nickname = formValues.nickName;
+      } else if (key === "email") {
+        if (!formValues.email.trim()) { toast.error("邮箱不能为空"); return; }
+        if (!formValues.currentPassword) { toast.error("修改邮箱需要输入当前密码"); return; }
+        payload.email = formValues.email;
+        payload.currentPassword = formValues.currentPassword;
+      } else if (key === "password") {
+        const pwdValidation = validatePassword(formValues.password);
+        if (!pwdValidation.valid) { toast.error(pwdValidation.error || "密码格式不正确"); return; }
+        if (formValues.password !== formValues.confirmPassword) { toast.error("两次输入的密码不一致"); return; }
+        if (!formValues.currentPassword) { toast.error("修改密码需要输入当前密码"); return; }
+        payload.password = formValues.password;
+        payload.currentPassword = formValues.currentPassword;
       }
-    };  return (
-    <Box
-      sx={{
-        backgroundColor: LIGHT_BACKGROUND,
-        display: "flex",
-        justifyContent: "center",
-        minHeight: "100vh",
-        pt: { xs: 6, md: 12 },
-        px: 2,
-      }}
-    >
-      <Paper sx={{ width: "100%", maxWidth: 760, p: { xs: 3, md: 5 }, borderRadius: 4, backgroundColor: "white", boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 1, color: ART_BLUE }}>
-          个人资料
-        </Typography>
-        <Typography sx={{ color: "text.secondary", mb: 3 }}>
-          管理你的账户信息。点击右侧的编辑图标可以修改对应字段。
+
+      const updatedUser = await updateUserApi(payload);
+      auth.setUser(updatedUser);
+      setEditing(null);
+      toast.success("修改成功", { duration: 1500, position: "top-center" });
+
+    } catch (err: any) {
+      const code = err.response?.data?.errorCode;
+      const msg = ERROR_MESSAGES[code as keyof typeof ERROR_MESSAGES];
+      setApiError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /** FieldRow 组件 */
+  const FieldRow = ({
+    label,
+    displayValue,
+    editKey,
+    children,
+  }: {
+    label: string;
+    displayValue: string;
+    editKey: EditingKey;
+    children?: React.ReactNode;
+  }) => {
+    const isEditing = editing === editKey;
+
+    return (
+      <Box sx={{ mb: 3 }}>
+        <Typography sx={{ fontSize: { xs: 12, sm: 13 }, color: "#666", mb: 1 }}>
+          {label}
         </Typography>
 
-        {apiError && (
-          <Alert severity="error" sx={{ width: "100%", mb: 2 }}>
-            {apiError}
-          </Alert>
+        {isEditing ? (
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+            {children}
+            <Box sx={{ alignSelf: "flex-end" }}>
+              <Button
+                size="small"
+                sx={{
+                  minWidth: 0,
+                  px: 1,
+                  color: ART_BLUE,
+                  fontWeight: 700,
+                  textTransform: "none",
+                  "&:hover": { backgroundColor: "transparent", color: HOVER_BLUE },
+                }}
+                onClick={() => saveField(editKey)}
+                disabled={loading}
+              >
+                ✓
+              </Button>
+              <Button
+                size="small"
+                variant="text"
+                sx={{
+                  ml: 1,
+                  minWidth: 0,
+                  px: 1,
+                  textTransform: "none",
+                  color: "#999",
+                }}
+                onClick={cancelEdit}
+                disabled={loading}
+              >
+                ✕
+              </Button>
+            </Box>
+          </Box>
+        ) : (
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Typography sx={{ fontSize: { xs: 14, sm: 16 }, color: "#333" }}>
+              {label === "密码" ? "••••••••" : displayValue || "未设置"}
+            </Typography>
+            <Button
+              size="small"
+              variant="text"
+              sx={{
+                textTransform: "none",
+                minWidth: 0,
+                px: 1,
+                color: ART_BLUE,
+              }}
+              onClick={() => startEdit(editKey)}
+            >
+              <EditIcon fontSize="small" />
+            </Button>
+          </Box>
         )}
+      </Box>
+    );
+  };
 
-        {/* Nickname row */}
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 1.25 }}>
-          <Box>
-            <Typography sx={{ fontSize: 13, color: "text.secondary" }}>昵称</Typography>
-            {editing === "nickName" ? (
-              <TextField size="small" value={nickName} onChange={(e) => setNickName(e.target.value)} sx={{ mt: 1, width: 360 }} />
-            ) : (
-              <Typography sx={{ fontSize: 16, fontWeight: 600, mt: 0.5 }}>{nickName || "未设置"}</Typography>
-            )}
-          </Box>
-
-          <Box>
-            {editing === "nickName" ? (
-              <Stack direction="row" spacing={1}>
-                <Tooltip title="保存">
-                  <IconButton sx={{ bgcolor: ART_BLUE, color: "white", '&:hover': { bgcolor: HOVER_BLUE } }} onClick={() => saveField("nickName")} disabled={loading}>
-                    <SaveIcon />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="取消">
-                  <IconButton onClick={cancelEdit}>
-                    <CloseIcon />
-                  </IconButton>
-                </Tooltip>
-              </Stack>
-            ) : (
-              <Tooltip title="编辑昵称">
-                <IconButton onClick={() => startEdit("nickName")}>
-                  <EditIcon />
-                </IconButton>
-              </Tooltip>
-            )}
-          </Box>
+  return (
+    <Box sx={{ mt: { xs: 8, sm: 6, md: 8 }, px: { xs: 1, sm: 2 } }}>
+      <Container>
+        <Box sx={{ mb: 3, textAlign: 'center' }}>
+          <Typography variant="h6"
+            sx={{ fontWeight: 700, color: ART_BLUE, fontSize: { xs: 18, sm: 22 } }}>
+            个人资料
+          </Typography>
         </Box>
 
-        <Divider />
+        <Paper sx={{ borderRadius: 2, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden", border: "1px solid rgba(0,0,0,0.08)" }}>
+          <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+            {apiError && <Alert severity="error" sx={{ mb: 2, fontSize: { xs: 12, sm: 13 } }} onClose={() => setApiError("")}>{apiError}</Alert>}
 
-        {/* Email row */}
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 1.25 }}>
-          <Box>
-            <Typography sx={{ fontSize: 13, color: "text.secondary" }}>邮箱</Typography>
-            {editing === "email" ? (
-              <TextField size="small" value={email} onChange={(e) => setEmail(e.target.value)} sx={{ mt: 1, width: 360 }} />
-            ) : (
-              <Typography sx={{ fontSize: 16, fontWeight: 600, mt: 0.5 }}>{email || "未设置"}</Typography>
-            )}
-          </Box>
+            <Box sx={{ mb: 2 }}>
+              <Typography
+                variant="body2"
+                sx={{ color: "#999", textAlign: "left" }} 
+              >
+                用户ID: {userData?.userId }
+              </Typography>
+            </Box>
+            <Divider sx={{ my: 1 }} />
+            {/* 昵称 */}
+            <FieldRow label="昵称" displayValue={userData?.nickName ?? ""} editKey="nickName">
+              <Controller
+                name="nickName"
+                control={control}
+                render={({ field }) => <TextField {...field} size="small" variant="standard" placeholder="输入昵称" disabled={loading} fullWidth />}
+              />
+            </FieldRow>
 
-          <Box>
-            {editing === "email" ? (
-              <Stack direction="row" spacing={1}>
-                <Tooltip title="保存">
-                  <IconButton sx={{ bgcolor: ART_BLUE, color: "white", '&:hover': { bgcolor: HOVER_BLUE } }} onClick={() => saveField("email")} disabled={loading}>
-                    <SaveIcon />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="取消">
-                  <IconButton onClick={cancelEdit}>
-                    <CloseIcon />
-                  </IconButton>
-                </Tooltip>
-              </Stack>
-            ) : (
-              <Tooltip title="编辑邮箱">
-                <IconButton onClick={() => startEdit("email")}>
-                  <EditIcon />
-                </IconButton>
-              </Tooltip>
-            )}
-          </Box>
-        </Box>
+            <Divider sx={{ my: 1 }} />
 
-        <Divider />
+            {/* 邮箱 */}
+            <FieldRow label="邮箱" displayValue={userData?.email ?? ""} editKey="email">
+              <Controller
+                name="email"
+                control={control}
+                render={({ field }) => <TextField {...field} size="small" variant="standard" placeholder="输入邮箱" disabled={loading} fullWidth />}
+              />
+              <Controller
+                name="currentPassword"
+                control={control}
+                render={({ field }) => <TextField {...field} size="small" variant="standard" placeholder="输入当前密码" type="password" disabled={loading} fullWidth />}
+              />
+            </FieldRow>
 
-        {/* Password row */}
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 1.25 }}>
-          <Box>
-            <Typography sx={{ fontSize: 13, color: "text.secondary" }}>密码</Typography>
-            {editing === "password" ? (
-              <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
-                <Box sx={{ flex: 1 }}>
-                  <PasswordField
+            <Divider sx={{ my: 1 }} />
+
+            {/* 密码 */}
+            <FieldRow label="密码" displayValue="" editKey="password">
+              {editing === "password" && (
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                  <Controller
+                    name="currentPassword"
+                    control={control}
+                    render={({ field }) => <TextField {...field} size="small"
+                      // variant="standard" 
+                      placeholder="输入当前密码" type="password" disabled={loading} fullWidth />}
+                  />
+                  <ValidatePasswordField
+                    control={control}
+                    name="password"
                     label="新密码"
-                    value={password}
-                    onChange={(value) => {
-                      setPassword(value);
-                      if (value) {
-                        const validation = validatePassword(value);
-                        setPasswordError(validation.error || "");
-                      } else {
-                        setPasswordError("");
-                      }
-                    }}
-                    error={passwordError}
-                    disabled={loading}
-                    showRequirements={true}
-                    showVisibilityToggle={true}
                     size="small"
+                    // variant="standard"
+                    showRequirements={false}
+                    showVisibilityToggle
+                    disabled={loading}
+                  />
+                  <Controller
+                    name="confirmPassword"
+                    control={control}
+                    render={({ field }) => <TextField {...field} size="small" placeholder="再次输入新密码" type="password" disabled={loading} fullWidth />}
                   />
                 </Box>
-                <TextField size="small" label="确认密码" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
-              </Box>
-            ) : (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
-                <LockIcon fontSize="small" color="disabled" />
-                <Typography sx={{ fontSize: 16, fontWeight: 600 }}>••••••••</Typography>
-              </Box>
-            )}  
+              )}
+            </FieldRow>
           </Box>
+        </Paper>
 
-          <Box>
-            {editing === "password" ? (
-              <Stack direction="row" spacing={1}>
-                <Tooltip title="保存">
-                  <IconButton sx={{ bgcolor: ART_BLUE, color: "white", '&:hover': { bgcolor: HOVER_BLUE } }} onClick={() => saveField("password")} disabled={loading}>
-                    <SaveIcon />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="取消">
-                  <IconButton onClick={cancelEdit}>
-                    <CloseIcon />
-                  </IconButton>
-                </Tooltip>
-              </Stack>
-            ) : (
-              <Tooltip title="修改密码">
-                <IconButton onClick={() => startEdit("password")}>
-                  <EditIcon />
-                </IconButton>
-              </Tooltip>
-            )}
-          </Box>
-        </Box>
-
-        <Divider sx={{ my: 2 }} />
-
-        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
-          <Button variant="outlined" onClick={() => window.history.back()} sx={{ textTransform: "none" }}>
+        {/* Footer */}
+        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mt: 3 }}>
+          <Button variant="outlined" onClick={() => navigate(-1)} sx={{ textTransform: "none", borderColor: "#ddd" }} size="small">
             返回
           </Button>
         </Box>
-      </Paper>
+      </Container>
     </Box>
   );
 }

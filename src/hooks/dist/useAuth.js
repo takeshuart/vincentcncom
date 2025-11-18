@@ -74,6 +74,25 @@ exports.AuthProvider = function (_a) {
         }); };
         fetchUser();
     }, []);
+    var refreshUser = function () { return __awaiter(void 0, void 0, void 0, function () {
+        var me, _a;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    _b.trys.push([0, 2, , 3]);
+                    return [4 /*yield*/, AuthApi_1.itsmeApi()];
+                case 1:
+                    me = _b.sent();
+                    setUser(me);
+                    return [3 /*break*/, 3];
+                case 2:
+                    _a = _b.sent();
+                    setUser(null);
+                    return [3 /*break*/, 3];
+                case 3: return [2 /*return*/];
+            }
+        });
+    }); };
     // ------------------ Mutation 定义 ------------------
     var loginMutation = react_query_1.useMutation({
         mutationFn: function (params) { return __awaiter(void 0, void 0, void 0, function () { return __generator(this, function (_a) {
@@ -117,7 +136,9 @@ exports.AuthProvider = function (_a) {
         register: function (params) { return __awaiter(void 0, void 0, void 0, function () { return __generator(this, function (_a) {
             return [2 /*return*/, registerMutation.mutateAsync(params)];
         }); }); },
-        logout: function () { return logoutMutation.mutateAsync(); }
+        logout: function () { return logoutMutation.mutateAsync(); },
+        setUser: setUser,
+        refreshUser: refreshUser
     }); }, [user, loginMutation.isPending, registerMutation.isPending]);
     return react_1["default"].createElement(AuthContext.Provider, { value: value }, children);
 };

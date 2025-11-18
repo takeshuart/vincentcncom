@@ -33,6 +33,13 @@ export interface AuthResponse {
     error?: any;
 }
 
+export interface UpdateUserParams {
+  nickname?: string;
+  email?: string;
+  password?: string;
+  currentPassword?: string;
+}
+
 export async function registerApi(params: RegisterParams): Promise<User> {
     const res = await apiV1.post<SuccessResponse<User>>("/users/register", params);
     return res.data.data;
@@ -55,4 +62,9 @@ export async function itsmeApi() :Promise<User>{
     const res = await apiV1.get<SuccessResponse<User>>("/users/me");
 
     return res.data.data;
+}
+
+export async function updateUserApi(params: UpdateUserParams): Promise<User> {
+  const res = await apiV1.patch<SuccessResponse<User>>("/users/update", params);
+  return res.data.data;
 }

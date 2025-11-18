@@ -12,6 +12,7 @@ var AuthPage_1 = require("./pages/AuthPage");
 var ProfilePage_1 = require("./pages/ProfilePage");
 var ScrollToTop_1 = require("./components/ScrollToTop");
 var FavoritesPage_1 = require("./pages/FavoritesPage");
+var react_hot_toast_1 = require("react-hot-toast");
 var GlobalLayout = function () {
     var isMobile = material_1.useMediaQuery("(max-width: 600px)");
     return (React.createElement(material_1.Box, { sx: { minHeight: '100vh', display: 'flex', flexDirection: 'column' } },
@@ -29,6 +30,17 @@ var GlobalLayout = function () {
 };
 function App() {
     return (React.createElement(React.Fragment, null,
+        React.createElement(react_hot_toast_1.Toaster, { position: "top-center", toastOptions: {
+                duration: 2000,
+                style: {
+                    padding: '6px 12px',
+                    fontSize: '10px',
+                    borderRadius: '8px',
+                    background: 'rgba(33, 90, 143, 0.1)',
+                    color: '#215A8F',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.15)'
+                }
+            } }),
         React.createElement(ScrollToTop_1["default"], null),
         React.createElement(react_router_dom_1.Routes, null,
             React.createElement(react_router_dom_1.Route, { path: "/", element: React.createElement(GlobalLayout, null) },
